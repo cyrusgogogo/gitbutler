@@ -1,6 +1,8 @@
 <script lang="ts">
 	import { useSettingsModal } from "$lib/settings/settingsModal.svelte";
+	import { useTranslations } from "@gitbutler/i18n/svelte";
 	import { Button } from "@gitbutler/ui";
+	const i18nMessages = useTranslations();
 
 	const { openGeneralSettings } = useSettingsModal();
 </script>
@@ -12,5 +14,5 @@
 		openGeneralSettings("general");
 	}}
 >
-	Go to Settings
+	{$i18nMessages.t("desktop:GoToSettingsButton.goToSettings")}
 </Button>

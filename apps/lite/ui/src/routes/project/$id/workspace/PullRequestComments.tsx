@@ -1,3 +1,6 @@
+import type { LocalizedText } from "@gitbutler/i18n";
+import { message as i18nMessage } from "@gitbutler/i18n";
+import { Message as I18nMessage, useTranslations } from "@gitbutler/i18n/react";
 import {
 	useAddCommentReaction,
 	useCreateReviewComment,
@@ -100,7 +103,11 @@ const Author: FC<{ user: ForgeReviewUser }> = ({ user }) => (
 	<>
 		<Avatar src={user.avatarUrl} />
 		<span className={classes("text-13", "text-semibold", styles.authorLogin)}>{user.login}</span>
-		{isAgent(user) && <Badge variant="purple">Agent</Badge>}
+		{isAgent(user) && (
+			<Badge variant="purple">
+				<I18nMessage value={{ key: "lite:PullRequestComments.agent" }} />
+			</Badge>
+		)}
 	</>
 );
 
@@ -118,7 +125,7 @@ const Avatar: FC<{ src: string | null | undefined }> = ({ src }) =>
  */
 const Card: FC<{
 	author: ForgeReviewUser | null;
-	badge?: { variant: BadgeVariant; label: string };
+	badge?: { variant: BadgeVariant; label: LocalizedText };
 	timestamp: number | null;
 	/** Shown in place of the time while an optimistic write is in flight. */
 	pendingLabel?: string;
@@ -156,7 +163,11 @@ const Card: FC<{
 			<div className={styles.cardHeader}>
 				<div className={styles.cardIdentity}>
 					{author !== null && <Author user={author} />}
-					{badge !== undefined && <Badge variant={badge.variant}>{badge.label}</Badge>}
+					{badge !== undefined && (
+						<Badge variant={badge.variant}>
+							<I18nMessage value={badge.label} />
+						</Badge>
+					)}
 					{pendingLabel !== undefined ? (
 						<span className={classes("text-12", styles.cardTime)}>{pendingLabel}</span>
 					) : (
@@ -164,7 +175,11 @@ const Card: FC<{
 							<RelativeTime timestamp={timestamp} className={classes("text-12", styles.cardTime)} />
 						)
 					)}
-					{edited && <span className={classes("text-12", styles.cardEdited)}>edited</span>}
+					{edited && (
+						<span className={classes("text-12", styles.cardEdited)}>
+							<I18nMessage value={{ key: "lite:PullRequestComments.edited" }} />
+						</span>
+					)}
 					<FreshBadge timestamp={timestamp} author={author} itemKey={freshKey} />
 				</div>
 				{actions}
@@ -198,7 +213,7 @@ const BodyEditor: FC<{
 		/>
 		<div className={styles.editorActions}>
 			<button className={getButtonClassName({})} disabled={saving} onClick={onCancel} type="button">
-				Cancel
+				<I18nMessage value={{ key: "lite:PullRequestComments.cancel" }} />
 			</button>
 			<button
 				className={getButtonClassName({ variant: "gray" })}
@@ -222,6 +237,7 @@ const Comment: FC<{
 	/** Quote this comment into the composer. */
 	onReply: (comment: ForgeReviewComment) => void;
 }> = ({ projectId, reviewId, comment, currentLogin, onReply }) => {
+	const i18nMessages = useTranslations();
 	const createdAtMs = comment.createdAt === null ? null : Date.parse(comment.createdAt);
 	const isOwn = currentLogin != null && comment.author?.login === currentLogin;
 	// An optimistic comment awaiting its forge id; nothing can act on it yet.
@@ -266,20 +282,20 @@ const Comment: FC<{
 
 	const actions = isOwn && !isSending && !editing && (
 		<button
-			aria-label="Comment actions"
+			aria-label={i18nMessages.t("lite:PullRequestComments.commentActions")}
 			className={classes(getButtonClassName({ variant: "ghost", iconOnly: true }), styles.kebab)}
 			disabled={isDeleting}
 			onClick={(evt) =>
 				void showNativeMenuFromTrigger(evt.currentTarget, [
 					nativeMenuItem({
-						label: "Edit comment",
+						label: i18nMessage("lite:PullRequestComments.editComment"),
 						onSelect: () => {
 							setEditBody(comment.body);
 							setEditing(true);
 						},
 					}),
 					nativeMenuItem({
-						label: "Delete comment",
+						label: i18nMessage("lite:PullRequestComments.deleteComment"),
 						onSelect: () => {
 							// Forge deletion is permanent; double-check.
 							if (window.confirm("Delete this comment? This cannot be undone."))
@@ -301,7 +317,7 @@ const Comment: FC<{
 			className={isSending ? styles.cardSending : undefined}
 			timestamp={createdAtMs}
 			freshKey={comment.id > 0 ? `c:${comment.id}` : undefined}
-			pendingLabel={isSending ? "Sending…" : undefined}
+			pendingLabel={isSending ? i18nMessages.t("lite:PullRequestComments.sending") : undefined}
 			edited={comment.modifiedAt !== null && comment.modifiedAt !== comment.createdAt}
 			actions={actions}
 			footer={
@@ -321,7 +337,7 @@ const Comment: FC<{
 							onClick={() => onReply(comment)}
 							type="button"
 						>
-							Reply
+							<I18nMessage value={{ key: "lite:control.Reply" }} />
 						</button>
 					</>
 				)
@@ -329,11 +345,11 @@ const Comment: FC<{
 		>
 			{editing ? (
 				<BodyEditor
-					label="Edit comment"
+					label={i18nMessages.t("lite:PullRequestComments.editComment")}
 					onCancel={() => setEditing(false)}
 					onChange={setEditBody}
 					onSave={handleSave}
-					saveLabel="Save changes"
+					saveLabel={i18nMessages.t("lite:PullRequestComments.saveChanges")}
 					saving={isSaving}
 					value={editBody}
 				/>
@@ -449,7 +465,7 @@ const ThreadHunk: FC<{
 			nativeMenuItemsFromGroups([
 				[
 					nativeMenuItem({
-						label: "Copy",
+						label: i18nMessage("lite:PullRequestComments.copy"),
 						enabled: selection !== "",
 						onSelect: () => void navigator.clipboard.writeText(selection),
 					}),
@@ -457,12 +473,14 @@ const ThreadHunk: FC<{
 				[
 					preferredEditor
 						? nativeMenuItem({
-								label: `Open in ${preferredEditor.name}`,
+								label: i18nMessage("lite:PullRequestComments.openInValue", {
+									value: preferredEditor.name,
+								}),
 								enabled: !isOpenInProgramPending,
 								onSelect: () => openAt(preferredEditor.id),
 							})
 						: nativeMenuItem({
-								label: "Open In Editor",
+								label: i18nMessage("lite:PullRequestComments.openInEditor"),
 								submenu: (editors ?? []).map((editor) =>
 									nativeMenuItem({
 										label: editor.name,
@@ -522,6 +540,7 @@ const Thread: FC<{
 	 * file speak for it; otherwise it holds other branches' content. */
 	branchApplied: boolean;
 }> = ({ projectId, reviewId, thread, branchApplied }) => {
+	const i18nMessages = useTranslations();
 	const [expanded, setExpanded] = useState(!thread.isResolved);
 	// The thread hangs where its first comment was left; later replies carry
 	// the same hunk.
@@ -571,22 +590,31 @@ const Thread: FC<{
 				{/* Both states keep a thread off the diff, so each says so rather
 				    than leaving a reader hunting for it there. */}
 				{thread.isResolved ? (
-					<Badge variant="lightGray" title="Settled, so it is not shown on the diff.">
-						Resolved
+					<Badge
+						variant="lightGray"
+						title={i18nMessages.t("lite:PullRequestComments.settledSoItIsNotShownOnThe")}
+					>
+						<I18nMessage value={{ key: "lite:PullRequestComments.resolved" }} />{" "}
 					</Badge>
 				) : (
 					outdated && (
 						<Badge
 							variant="lightGray"
-							title="These lines have changed since the review saw them, so this is not shown on the diff."
+							title={i18nMessages.t(
+								"lite:PullRequestComments.theseLinesHaveChangedSinceTheReviewSaw",
+							)}
 						>
-							Outdated
+							<I18nMessage value={{ key: "lite:PullRequestComments.outdated" }} />{" "}
 						</Badge>
 					)
 				)}
 				{!expanded && (
 					<span className={styles.threadCount}>
-						{thread.comments.length === 1 ? "1 comment" : `${thread.comments.length} comments`}
+						{thread.comments.length === 1 ? (
+							<I18nMessage value={{ key: "lite:PullRequestComments.1Comment" }} />
+						) : (
+							`${thread.comments.length} comments`
+						)}
 					</span>
 				)}
 			</button>
@@ -664,9 +692,11 @@ const ThreadList: FC<{
 						type="button"
 					>
 						<Icon name={showResolved ? "chevron-down" : "chevron-right"} size={12} />
-						{resolved.length === 1
-							? "1 resolved conversation"
-							: `${resolved.length} resolved conversations`}
+						{resolved.length === 1 ? (
+							<I18nMessage value={{ key: "lite:PullRequestComments.1ResolvedConversation" }} />
+						) : (
+							`${resolved.length} resolved conversations`
+						)}
 					</button>
 					{/* Kept mounted rather than dropped, so a thread opened in here is
 					    still open if the fold is closed and reopened. */}
@@ -706,12 +736,21 @@ const fileThreadsUnderSubmissions = (
 /** The verdict a submission carries into its card header. */
 const submissionBadge: Record<
 	ForgeReviewSubmission["state"],
-	{ variant: BadgeVariant; label: string }
+	{ variant: BadgeVariant; label: LocalizedText }
 > = {
-	approved: { variant: "safe", label: "Approved changes" },
-	changesRequested: { variant: "danger", label: "Requested changes" },
-	commented: { variant: "lightGray", label: "Reviewed" },
-	dismissed: { variant: "lightGray", label: "Review dismissed" },
+	approved: { variant: "safe", label: i18nMessage("lite:PullRequestComments.staticf3e169f5d") },
+	changesRequested: {
+		variant: "danger",
+		label: i18nMessage("lite:PullRequestComments.static1d43c56bd"),
+	},
+	commented: {
+		variant: "lightGray",
+		label: i18nMessage("lite:PullRequestComments.static31ef85933"),
+	},
+	dismissed: {
+		variant: "lightGray",
+		label: i18nMessage("lite:PullRequestComments.static8472f51a0"),
+	},
 };
 
 const Submission: FC<{
@@ -798,7 +837,10 @@ const TimelineEvent: FC<{ event: ForgeReviewTimelineEvent }> = ({ event }) => {
 	if (event.kind === "committed") {
 		return (
 			<FeedEvent icon="commit" timestamp={createdAtMs} freshKey={freshKey} author={event.actor}>
-				{event.commitAuthorName !== null && <Ref>{event.commitAuthorName}</Ref>} committed{" "}
+				{event.commitAuthorName !== null && <Ref>{event.commitAuthorName}</Ref>}{" "}
+				<I18nMessage
+					value={{ key: "lite:PullRequestComments.committedValue", values: { value: String(" ") } }}
+				/>
 				{event.commitSha !== null && <Ref mono>{event.commitSha.slice(0, 7)}</Ref>}{" "}
 				{event.commitSummary}
 			</FeedEvent>
@@ -807,11 +849,14 @@ const TimelineEvent: FC<{ event: ForgeReviewTimelineEvent }> = ({ event }) => {
 
 	return (
 		<FeedEvent icon="user" timestamp={createdAtMs} freshKey={freshKey} author={event.actor}>
-			{event.actor !== null && <Ref>{event.actor.login}</Ref>} requested a review
+			{event.actor !== null && <Ref>{event.actor.login}</Ref>}{" "}
+			<I18nMessage value={{ key: "lite:PullRequestComments.requestedAReview" }} />{" "}
 			{event.requestedReviewer !== null && (
 				<>
-					{" "}
-					from <Ref>{event.requestedReviewer.login}</Ref>
+					<I18nMessage
+						value={{ key: "lite:PullRequestComments.valueFrom", values: { value: String(" ") } }}
+					/>{" "}
+					<Ref>{event.requestedReviewer.login}</Ref>
 				</>
 			)}
 		</FeedEvent>
@@ -907,6 +952,7 @@ const ForgeInserts: FC<{
 	targetRef: RefObject<HTMLTextAreaElement | null>;
 	onInput: (value: string) => void;
 }> = ({ projectId, targetRef, onInput }) => {
+	const i18nMessages = useTranslations();
 	const { data: candidates } = useQuery(reviewerCandidatesQueryOptions(projectId));
 	const { data: reviews } = useQuery(
 		listReviewsQueryOptions({
@@ -950,7 +996,7 @@ const ForgeInserts: FC<{
 	return (
 		<>
 			{button(
-				"Mention someone",
+				i18nMessages.t("lite:PullRequestComments.labelc9aea1558"),
 				"user",
 				() =>
 					(candidates ?? []).map((candidate) =>
@@ -959,19 +1005,22 @@ const ForgeInserts: FC<{
 							onSelect: () => insert(`@${candidate.login} `),
 						}),
 					),
-				"No one to mention",
+				i18nMessages.t("lite:PullRequestComments.label41cd55e60"),
 			)}
 			{button(
-				"Reference a pull request",
+				i18nMessages.t("lite:PullRequestComments.label12c626238"),
 				"hash",
 				() =>
 					(reviews?.reviews ?? []).map((review) =>
 						nativeMenuItem({
-							label: `#${review.number} ${review.title}`,
+							label: i18nMessage("lite:PullRequestComments.valueValue", {
+								value: review.number,
+								value1: review.title,
+							}),
 							onSelect: () => insert(`#${review.number} `),
 						}),
 					),
-				"No pull requests to reference",
+				i18nMessages.t("lite:PullRequestComments.labele712656c9"),
 			)}
 		</>
 	);
@@ -986,6 +1035,7 @@ const Composer: FC<{
 	avatarUrl: string | null | undefined;
 	projectId: string;
 }> = ({ draft, setDraft, onSubmit, textareaRef, avatarUrl, projectId }) => {
+	const i18nMessages = useTranslations();
 	const [scrolled, setScrolled] = useState(false);
 	// Folded to one quiet row until engaged; a draft arriving from outside —
 	// a reply quote, a failed submit restoring its text — unfolds it too.
@@ -1029,11 +1079,13 @@ const Composer: FC<{
 			<button
 				className={classes("text-13", styles.composerCollapsed)}
 				onFocus={() => setEngaged(true)}
-				aria-label="Write a comment"
+				aria-label={i18nMessages.t("lite:PullRequestComments.writeAComment")}
 				type="button"
 			>
 				<Avatar src={avatarUrl} />
-				<span className={styles.composerPrompt}>Write a comment…</span>
+				<span className={styles.composerPrompt}>
+					<I18nMessage value={{ key: "lite:PullRequestComments.writeAComment_ee6540e" }} />
+				</span>
 			</button>
 		);
 	}
@@ -1057,7 +1109,7 @@ const Composer: FC<{
 			<div className={styles.composerBody}>
 				<Avatar src={avatarUrl} />
 				<textarea
-					aria-label="Write a comment"
+					aria-label={i18nMessages.t("lite:PullRequestComments.writeAComment")}
 					className={classes("text-13", "text-body", styles.composerInput)}
 					onChange={(evt) => setDraft(evt.currentTarget.value)}
 					onKeyDown={(evt) => {
@@ -1068,7 +1120,7 @@ const Composer: FC<{
 					}}
 					// Only the flip re-renders: React bails out of an unchanged state.
 					onScroll={(evt) => setScrolled(evt.currentTarget.scrollTop > 0)}
-					placeholder="Write a comment…"
+					placeholder={i18nMessages.t("lite:PullRequestComments.writeAComment_ee6540e")}
 					ref={attachInput}
 					value={draft}
 				/>
@@ -1085,7 +1137,7 @@ const Composer: FC<{
 					onClick={submit}
 					type="button"
 				>
-					Comment
+					<I18nMessage value={{ key: "lite:PullRequestComments.comment" }} />{" "}
 					<Kbd hotkey={pullRequestHotkeys.comment.hotkey} variant="button" />
 				</button>
 			</div>
@@ -1142,7 +1194,13 @@ export const ReviewTimeline: FC<{ projectId: string; review: ForgeReview }> = ({
 		[review, events],
 	);
 
-	if (isPending) return <div className={classes("text-13", styles.commentsEmpty)}>Loading…</div>;
+	if (isPending) {
+		return (
+			<div className={classes("text-13", styles.commentsEmpty)}>
+				<I18nMessage value={{ key: "lite:PullRequestComments.loading" }} />
+			</div>
+		);
+	}
 	const shown = expanded ? items : items.slice(0, collapsedTimelineCount);
 	const hidden = items.length - shown.length;
 
@@ -1152,8 +1210,8 @@ export const ReviewTimeline: FC<{ projectId: string; review: ForgeReview }> = ({
 			{shown.map((item) =>
 				item.kind === "opened" ? (
 					<FeedEvent key="opened" icon="pr" timestamp={item.at}>
-						{item.review.author !== null && <Ref>{item.review.author.login}</Ref>} opened this pull
-						request
+						{item.review.author !== null && <Ref>{item.review.author.login}</Ref>}{" "}
+						<I18nMessage value={{ key: "lite:PullRequestComments.openedThisPullRequest" }} />{" "}
 					</FeedEvent>
 				) : (
 					<TimelineEvent key={item.key} event={item.event} />
@@ -1165,7 +1223,12 @@ export const ReviewTimeline: FC<{ projectId: string; review: ForgeReview }> = ({
 					onClick={() => setExpanded(true)}
 					type="button"
 				>
-					Show {hidden} more
+					<I18nMessage
+						value={{
+							key: "lite:PullRequestComments.showValueMore",
+							values: { hidden: String(hidden) },
+						}}
+					/>
 				</button>
 			)}
 		</div>
@@ -1326,7 +1389,9 @@ export const PullRequestComments: FC<{ projectId: string; review: ForgeReview }>
 				textareaRef={composerRef}
 			/>
 			{loading ? (
-				<div className={classes("text-13", styles.commentsEmpty)}>Loading…</div>
+				<div className={classes("text-13", styles.commentsEmpty)}>
+					<I18nMessage value={{ key: "lite:PullRequestComments.loading" }} />
+				</div>
 			) : (
 				<div className={styles.commentList}>
 					{items.map((item) =>

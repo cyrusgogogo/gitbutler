@@ -15,8 +15,12 @@
 		projectCommitGenerationUseEmojis,
 	} from "$lib/config/config";
 	import { showError } from "$lib/error/showError";
+	import { canonicalMessages } from "$lib/notifications/toasts";
 	import { UI_STATE } from "$lib/state/uiState.svelte";
 	import { inject } from "@gitbutler/core/context";
+	import { errorText, LocalizedError } from "@gitbutler/i18n";
+	import { message as i18nMessage } from "@gitbutler/i18n";
+	import { useTranslations } from "@gitbutler/i18n/svelte";
 	import { uploadFiles } from "@gitbutler/shared/dom";
 	import { persisted } from "@gitbutler/shared/persisted";
 	import { UPLOADS_SERVICE } from "@gitbutler/shared/uploads/uploadsService";
@@ -37,8 +41,8 @@
 	import FileUploadPlugin, {
 		type DropFileResult,
 	} from "@gitbutler/ui/richText/plugins/FileUpload.svelte";
-
 	import { tick, untrack } from "svelte";
+	const i18nMessages = useTranslations();
 
 	const ACCEPTED_FILE_TYPES = ["image/*", "application/*", "text/*", "audio/*", "video/*"];
 
@@ -164,7 +168,13 @@
 
 		if (failed.length > 0) {
 			console.error("File upload failed", failed);
-			showError("File upload failed", failed.map((result) => result.reason).join(", "));
+			const details = failed
+				.map((result) => errorText(result.reason, String(result.reason)))
+				.reduce((first, second) => i18nMessage("common:listPair", { first, second }));
+			showError(
+				i18nMessage("desktop:MessageEditor.fileUploadFailed"),
+				new LocalizedError(details, canonicalMessages.text(details)),
+			);
 		}
 
 		allowUploadOnce = false;
@@ -236,13 +246,15 @@
 	};
 
 	const generateMessages = $derived.by(() => ({
-		commit: "Generate commit message",
-		pr: `Generate ${reviewUnitAbbr ?? "PR"} description`,
+		commit: $i18nMessages.t("desktop:MessageEditor.detail22c5ab343"),
+		pr: $i18nMessages.t("desktop:MessageEditor.detail47b4ced89", {
+			value1: String(reviewUnitAbbr ?? "PR"),
+		}),
 	}));
 
 	function getTooltipText(): string | undefined {
 		if (!canUseAI) {
-			return "You need to enable AI in the project settings to use this feature";
+			return $i18nMessages.t("desktop:MessageEditor.detail2b09ec886");
 		}
 		if (currentEditorWidth <= DROPDOWN_BTN_BREAKPOINTS.medium) {
 			return generateMessages[messageType];
@@ -254,12 +266,14 @@
 </script>
 
 {#snippet buttonText()}
-	{currentEditorWidth > DROPDOWN_BTN_BREAKPOINTS.medium ? "Generate message" : "Generate"}
+	{currentEditorWidth > DROPDOWN_BTN_BREAKPOINTS.medium
+		? $i18nMessages.t("desktop:MessageEditor.generateMessage")
+		: $i18nMessages.t("desktop:MessageEditor.generate")}
 {/snippet}
 
 <Modal
 	type="warning"
-	title="Off to the cloud it goes!"
+	title={$i18nMessages.t("desktop:MessageEditor.offToTheCloudItGoes")}
 	width="small"
 	bind:this={uploadConfirmationModal}
 	onSubmit={async (close) => {
@@ -280,18 +294,20 @@
 		close();
 	}}
 >
-	Your file will be stored in GitButler’s digital vault, safe and sound. We promise it’s secure, so
-	feel free to share the link however you like 🔐
+	{$i18nMessages.t("desktop:MessageEditor.yourFileWillBeStoredInGitButlerS")}
 	{#snippet controls(close)}
 		<div class="modal-footer">
 			<div class="flex flex-1">
 				<label for="dont-show-again" class="modal-footer__checkbox">
 					<Checkbox name="dont-show-again" small bind:checked={$doNotShowUploadWarning} />
-					<span class="text-12"> Don’t show again</span>
+					<span class="text-12">{$i18nMessages.t("desktop:MessageEditor.donTShowAgain")}</span>
 				</label>
 			</div>
-			<Button kind="outline" onclick={close}>Cancel</Button>
-			<Button style="pop" type="submit">Yes, upload!</Button>
+			<Button kind="outline" onclick={close}
+				>{$i18nMessages.t("desktop:MessageEditor.cancel")}</Button
+			>
+			<Button style="pop" type="submit">{$i18nMessages.t("desktop:MessageEditor.yesUpload")}</Button
+			>
 		</div>
 	{/snippet}
 </Modal>
@@ -365,7 +381,9 @@
 				<Button
 					kind="ghost"
 					icon={useFloatingBox.current ? "pop-out-top-left" : "pop-out-bottom-right"}
-					tooltip={useFloatingBox.current ? "Exit floating mode" : "Use floating mode"}
+					tooltip={useFloatingBox.current
+						? $i18nMessages.t("desktop:MessageEditor.inline7c17fcd6e")
+						: $i18nMessages.t("desktop:MessageEditor.inline197c01505")}
 					onclick={() => {
 						useFloatingBox.set(!useFloatingBox.current);
 					}}
@@ -378,7 +396,7 @@
 					<Button
 						kind="ghost"
 						icon="paperclip"
-						tooltip="Drop, paste or click to upload files"
+						tooltip={$i18nMessages.t("desktop:MessageEditor.dropPasteOrClickToUploadFiles")}
 						onclick={handleAttachFiles}
 					/>
 				{/if}
@@ -386,7 +404,7 @@
 					<FormattingButton
 						icon="text-wrap"
 						activated={useRuler}
-						tooltip="Wrap text automatically"
+						tooltip={$i18nMessages.t("desktop:MessageEditor.wrapTextAutomatically")}
 						onclick={async () => {
 							uiState.global.useRuler.set(!useRuler);
 							await tick(); // Wait for reactive update.
@@ -439,7 +457,7 @@
 				{#snippet contextMenuSlot()}
 					<ContextMenuSection>
 						<ContextMenuItem
-							label="Extra concise"
+							label={$i18nMessages.t("desktop:MessageEditor.extraConcise")}
 							onclick={() => ($commitGenerationExtraConcise = !$commitGenerationExtraConcise)}
 						>
 							{#snippet control()}
@@ -448,7 +466,7 @@
 						</ContextMenuItem>
 
 						<ContextMenuItem
-							label="Haiku"
+							label={$i18nMessages.t("desktop:MessageEditor.haiku")}
 							onclick={() => ($commitGenerationHaiku = !$commitGenerationHaiku)}
 						>
 							{#snippet control()}
@@ -457,7 +475,7 @@
 						</ContextMenuItem>
 
 						<ContextMenuItem
-							label="Use emojis 😎"
+							label={$i18nMessages.t("desktop:MessageEditor.useEmojis")}
 							onclick={() => ($commitGenerationUseEmojis = !$commitGenerationUseEmojis)}
 						>
 							{#snippet control()}

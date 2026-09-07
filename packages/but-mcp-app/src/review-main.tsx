@@ -1,4 +1,6 @@
 import { ReviewApp } from "./ReviewApp.tsx";
+import { i18n, McpLanguage } from "./i18n";
+import { I18nProvider } from "@gitbutler/i18n/react";
 import { createRoot } from "react-dom/client";
 import "./styles.css";
 import "./review.css";
@@ -9,4 +11,17 @@ if (root === null) {
 	throw new Error("GitButler MCP App root element is missing");
 }
 
-createRoot(root).render(<ReviewApp />);
+function updateTitle() {
+	document.title = i18n.t("mcp:document.review");
+}
+updateTitle();
+i18n.subscribe(updateTitle);
+
+createRoot(root).render(
+	<I18nProvider i18n={i18n}>
+		<div className="language-bar">
+			<McpLanguage />
+		</div>
+		<ReviewApp />
+	</I18nProvider>,
+);

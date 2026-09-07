@@ -11,8 +11,11 @@
 	import { ActionEvent, POSTHOG_WRAPPER } from "$lib/telemetry/posthog";
 	import { WORKTREE_SERVICE } from "$lib/worktree/worktreeService.svelte";
 	import { inject } from "@gitbutler/core/context";
+	import { useTranslations } from "@gitbutler/i18n/svelte";
 	import { Badge, Button, TestId } from "@gitbutler/ui";
 	import { focusable } from "@gitbutler/ui/focus/focusable";
+	import I18nRichMessage from "@gitbutler/ui/i18n/RichMessage.svelte";
+	const i18nMessages = useTranslations();
 
 	interface Props {
 		projectId: string;
@@ -109,7 +112,7 @@
 		<div class="unassigned-wrap">
 			<div role="presentation" class="unassigned-files-wrapper" onclick={unselectFiles}>
 				<WorktreeChanges
-					title="Unstaged"
+					title={$i18nMessages.t("desktop:UnassignedView.unstaged")}
 					{projectId}
 					stackId={undefined}
 					mode="unassigned"
@@ -121,8 +124,11 @@
 						<div class="unassigned-empty">
 							{@html noChanges}
 							<p class="text-13 text-body unassigned-empty-text">
-								You're all caught up!<br />
-								No files need committing
+								{#snippet i18nSlot1()}<br />{/snippet}
+								<I18nRichMessage
+									value={{ key: "desktop:UnassignedView.youReAllCaughtUpNoFilesNeed" }}
+									components={{ slot1: i18nSlot1 }}
+								/>
 							</p>
 						</div>
 					{/snippet}
@@ -152,9 +158,9 @@
 						kind="outline"
 					>
 						{#if isCommitting}
-							Committing…
+							{$i18nMessages.t("desktop:UnassignedView.committing")}
 						{:else}
-							Commit to new branch
+							{$i18nMessages.t("desktop:UnassignedView.commitToNewBranch")}
 						{/if}
 					</Button>
 				</div>
@@ -178,7 +184,8 @@
 			<span
 				bind:clientWidth={foldedContentWidth}
 				style="height: {foldedContentWidth}px;"
-				class="unassigned-folded-text text-14 text-semibold">Unstaged</span
+				class="unassigned-folded-text text-14 text-semibold"
+				>{$i18nMessages.t("desktop:UnassignedView.unstaged_7e0a039")}</span
 			>
 		</div>
 	</div>

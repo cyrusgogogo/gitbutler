@@ -12,6 +12,7 @@ import { toCommitMovePlacement } from "$lib/stacks/commitMovePlacement";
 import StackMacros from "$lib/stacks/macros";
 import { toMoveBranchWarning } from "$lib/stacks/stack";
 import { withStackBusy } from "$lib/state/uiState.svelte";
+import { message as i18nMessage } from "@gitbutler/i18n";
 import { untrack } from "svelte";
 import type { DropResult } from "$lib/dragging/dropResult";
 import type { DropzoneHandler } from "$lib/dragging/handler";
@@ -243,7 +244,7 @@ export class OutsideLaneDzHandler implements DropzoneHandler {
 					const classified = classify(error);
 					result = {
 						type: "warning",
-						title: "Cannot move commits",
+						title: i18nMessage("desktop:stackDropHandler.staticf41e2263d"),
 						message: classified.userMessage ?? classified.message,
 					};
 				}

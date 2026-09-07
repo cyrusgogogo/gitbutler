@@ -3,7 +3,9 @@
 	import SettingsSection from "$components/shared/SettingsSection.svelte";
 	import { PROJECTS_SERVICE } from "$lib/project/projectsService";
 	import { inject } from "@gitbutler/core/context";
+	import { useTranslations } from "@gitbutler/i18n/svelte";
 	import { CardGroup, Toggle } from "@gitbutler/ui";
+	const i18nMessages = useTranslations();
 
 	const { projectId }: { projectId: string } = $props();
 	const projectsService = inject(PROJECTS_SERVICE);
@@ -15,10 +17,12 @@
 		<SettingsSection gap={8}>
 			<CardGroup.Item standalone labelFor="omitCertificateCheck">
 				{#snippet title()}
-					Ignore host certificate checks
+					{$i18nMessages.t("desktop:PreferencesForm.ignoreHostCertificateChecks")}
 				{/snippet}
 				{#snippet caption()}
-					Enabling this will ignore host certificate checks when authenticating with ssh.
+					{$i18nMessages.t(
+						"desktop:PreferencesForm.enablingThisWillIgnoreHostCertificateChecksWhen",
+					)}
 				{/snippet}
 				{#snippet actions()}
 					<Toggle

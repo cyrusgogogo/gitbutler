@@ -4,8 +4,11 @@
 	import { projectRunCommitHooks } from "$lib/config/config";
 	import { PROJECTS_SERVICE } from "$lib/project/projectsService";
 	import { inject } from "@gitbutler/core/context";
+	import { useTranslations } from "@gitbutler/i18n/svelte";
 	import { CardGroup, Toggle } from "@gitbutler/ui";
+	import I18nRichMessage from "@gitbutler/ui/i18n/RichMessage.svelte";
 	import type { Project } from "$lib/project/project";
+	const i18nMessages = useTranslations();
 
 	const { projectId }: { projectId: string } = $props();
 	const runCommitHooks = $derived(projectRunCommitHooks(projectId));
@@ -21,10 +24,10 @@
 	<CardGroup>
 		<CardGroup.Item labelFor="runHooks">
 			{#snippet title()}
-				Run Git hooks
+				{$i18nMessages.t("desktop:GitHooksForm.runGitHooks")}
 			{/snippet}
 			{#snippet caption()}
-				Enable running git hooks (pre-push, pre/post-commit, commit-msg) during GitButler actions.
+				{$i18nMessages.t("desktop:GitHooksForm.enableRunningGitHooksPrePushPrePost")}
 			{/snippet}
 			{#snippet actions()}
 				<Toggle id="runHooks" bind:checked={$runCommitHooks} />
@@ -37,13 +40,14 @@
 			<CardGroup>
 				<CardGroup.Item labelFor="huskyHooks">
 					{#snippet title()}
-						Enable Husky hooks
+						{$i18nMessages.t("desktop:GitHooksForm.enableHuskyHooks")}
 					{/snippet}
 					{#snippet caption()}
-						⚠️ Only enable this for repositories you trust.
-						<br />
-						Allow GitButler to execute scripts from `.husky` (which can come from the repository). Hooks
-						in `.git/hooks` are unaffected.
+						{#snippet i18nSlot1()}<br />{/snippet}
+						<I18nRichMessage
+							value={{ key: "desktop:GitHooksForm.onlyEnableThisForRepositoriesYouTrustAllow" }}
+							components={{ slot1: i18nSlot1 }}
+						/>
 					{/snippet}
 					{#snippet actions()}
 						<Toggle

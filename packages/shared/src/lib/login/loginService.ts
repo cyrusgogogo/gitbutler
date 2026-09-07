@@ -1,4 +1,5 @@
 import { InjectionToken } from "@gitbutler/core/context";
+import { errorText, message, type LocalizedText } from "@gitbutler/i18n";
 import { isStr } from "@gitbutler/ui/utils/string";
 import type { HttpClient } from "$lib/network/httpClient";
 
@@ -14,7 +15,7 @@ interface ErrorLoginResponse extends BaseLoginResponse {
 	type: "error";
 
 	errorCode: string;
-	errorMessage: string;
+	errorMessage: LocalizedText;
 	raw?: unknown;
 }
 
@@ -42,21 +43,21 @@ export default class LoginService {
 			return {
 				type: "error",
 				errorCode: "empty_response",
-				errorMessage: "No data received from server",
+				errorMessage: message("shared:login.noData"),
 			};
 		} catch (error) {
 			if (error instanceof Error) {
 				return {
 					type: "error",
 					errorCode: "network_error",
-					errorMessage: error.message,
+					errorMessage: errorText(error, message("common:unknownError")),
 					raw: error,
 				};
 			}
 			return {
 				type: "error",
 				errorCode: "unknown_error",
-				errorMessage: "An unknown error occurred",
+				errorMessage: message("common:unknownError"),
 				raw: error,
 			};
 		}
@@ -83,21 +84,21 @@ export default class LoginService {
 			return {
 				type: "error",
 				errorCode: data.error_code || "unknown_error",
-				errorMessage: data.error || "An unknown error occurred",
+				errorMessage: data.error || message("common:unknownError"),
 			};
 		} catch (error) {
 			if (error instanceof Error) {
 				return {
 					type: "error",
 					errorCode: "network_error",
-					errorMessage: error.message,
+					errorMessage: errorText(error, message("common:unknownError")),
 					raw: error,
 				};
 			}
 			return {
 				type: "error",
 				errorCode: "unknown_error",
-				errorMessage: "An unknown error occurred",
+				errorMessage: message("common:unknownError"),
 				raw: error,
 			};
 		}

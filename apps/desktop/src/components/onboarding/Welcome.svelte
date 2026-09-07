@@ -5,13 +5,20 @@
 	import IconLink from "$components/shared/IconLink.svelte";
 	import cloneRepoSvg from "$lib/assets/welcome/clone-repo.svg?raw";
 	import newProjectSvg from "$lib/assets/welcome/new-local-project.svg?raw";
+	import { LANGUAGE_SERVICE } from "$lib/i18n";
 	import { handleAddProjectOutcome } from "$lib/project/project";
 	import { PROJECTS_SERVICE } from "$lib/project/projectsService";
+	import { SETTINGS_SERVICE } from "$lib/settings/appSettings";
 	import { OnboardingEvent, POSTHOG_WRAPPER } from "$lib/telemetry/posthog";
 	import { inject } from "@gitbutler/core/context";
+	import { useTranslations } from "@gitbutler/i18n/svelte";
 	import { TestId } from "@gitbutler/ui";
+	import LanguageSelect from "@gitbutler/ui/i18n/LanguageSelect.svelte";
+	const i18nMessages = useTranslations();
 
 	const projectsService = inject(PROJECTS_SERVICE);
+	const language = inject(LANGUAGE_SERVICE);
+	const appSettings = inject(SETTINGS_SERVICE).appSettings;
 	const posthog = inject(POSTHOG_WRAPPER);
 	const serverCapabilitiesQuery = $derived(projectsService.serverCapabilities());
 	const canAddProjects = $derived(serverCapabilitiesQuery.response?.canAddProjects ?? true);
@@ -42,7 +49,15 @@
 </script>
 
 <div class="welcome" data-testid={TestId.WelcomePage}>
-	<h1 class="welcome-title text-serif-42">Welcome to GitButler!</h1>
+	<h1 class="welcome-title text-serif-42">
+		{$i18nMessages.t("desktop:Welcome.welcomeToGitButler")}
+	</h1>
+	<div class="welcome__language">
+		<LanguageSelect
+			value={$appSettings?.ui.language ?? "system"}
+			onchange={(value) => language.set(value)}
+		/>
+	</div>
 	<div class="welcome__actions">
 		<div class="welcome__actions--repo">
 			<input
@@ -53,7 +68,7 @@
 			/>
 			{#if canAddProjects}
 				<WelcomeAction
-					title="Add local project"
+					title={$i18nMessages.t("desktop:Welcome.addLocalProject")}
 					loading={newProjectLoading}
 					onclick={onNewProject}
 					dimMessage
@@ -63,16 +78,20 @@
 						{@html newProjectSvg}
 					{/snippet}
 					{#snippet message()}
-						Should be a valid git repository
+						{$i18nMessages.t("desktop:Welcome.shouldBeAValidGitRepository")}
 					{/snippet}
 				</WelcomeAction>
 			{/if}
-			<WelcomeAction title="Clone repository" onclick={onCloneProject} dimMessage>
+			<WelcomeAction
+				title={$i18nMessages.t("desktop:Welcome.cloneRepository")}
+				onclick={onCloneProject}
+				dimMessage
+			>
 				{#snippet icon()}
 					{@html cloneRepoSvg}
 				{/snippet}
 				{#snippet message()}
-					Clone a repo using a URL
+					{$i18nMessages.t("desktop:Welcome.cloneARepoUsingAURL")}
 				{/snippet}
 			</WelcomeAction>
 		</div>
@@ -82,25 +101,29 @@
 
 	<div class="links">
 		<div class="links__section">
-			<p class="links__title text-14 text-bold">Quick start</p>
+			<p class="links__title text-14 text-bold">{$i18nMessages.t("desktop:Welcome.quickStart")}</p>
 			<div class="education-links">
 				<IconLink
 					icon="docs"
 					href="https://docs.gitbutler.com/features/virtual-branches/branch-lanes"
 				>
-					GitButler docs
+					{$i18nMessages.t("desktop:Welcome.gitButlerDocs")}
 				</IconLink>
 				<IconLink icon="youtube" href="https://www.youtube.com/@gitbutlerapp">
-					Watch tutorials
+					{$i18nMessages.t("desktop:Welcome.watchTutorials")}
 				</IconLink>
 			</div>
 		</div>
 		<div class="links__section">
-			<p class="links__title text-14 text-bold">Join our community</p>
+			<p class="links__title text-14 text-bold">
+				{$i18nMessages.t("desktop:Welcome.joinOurCommunity")}
+			</p>
 			<div class="community-links">
 				<IconLink icon="discord" href="https://discord.gg/MmFkmaJ42D">Discord</IconLink>
 				<IconLink icon="bluesky" href="https://bsky.app/profile/gitbutler.com">Bluesky</IconLink>
-				<IconLink icon="instagram" href="https://www.instagram.com/gitbutler/">Instagram</IconLink>
+				<IconLink icon="instagram" href="https://www.instagram.com/gitbutler/"
+					>{$i18nMessages.t("desktop:Welcome.instagram")}</IconLink
+				>
 				<IconLink icon="youtube" href="https://www.youtube.com/@gitbutlerapp">YouTube</IconLink>
 			</div>
 		</div>
@@ -115,6 +138,10 @@
 	.welcome-title {
 		color: var(--text-1);
 		line-height: 1;
+	}
+
+	.welcome__language {
+		margin-top: 20px;
 	}
 
 	.welcome__actions {

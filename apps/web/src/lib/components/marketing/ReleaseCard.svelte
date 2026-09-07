@@ -1,7 +1,11 @@
 <script lang="ts">
 	import ReleaseDownloadLinks from "$lib/components/marketing/ReleaseDownloadLinks.svelte";
+	import { formatDate as formatLocaleDate } from "@gitbutler/i18n/format";
+	import { useTranslations } from "@gitbutler/i18n/svelte";
+	import I18nRichMessage from "@gitbutler/ui/i18n/RichMessage.svelte";
 	import Markdown from "svelte-exmarkdown";
 	import type { Release } from "$lib/types/releases";
+	const i18nMessages = useTranslations();
 
 	interface Props {
 		release: Release;
@@ -19,7 +23,7 @@
 	<div class="release-header">
 		<h3 class="release-version">{release.version}</h3>
 		<span class="release-date">
-			{new Date(release.released_at).toLocaleDateString("en-GB", {
+			{formatLocaleDate($i18nMessages.locale, new Date(release.released_at), {
 				day: "numeric",
 				month: "short",
 				year: "numeric",
@@ -41,8 +45,14 @@
 					class="download-links-toggle"
 					onclick={() => (downloadLinksVisible = true)}
 				>
-					<span>Show download options</span>
-					<span>⭳</span>
+					{#snippet i18nSlot1(content: import("svelte").Snippet)}<span>{@render content()}</span
+						>{/snippet}
+					{#snippet i18nSlot2(content: import("svelte").Snippet)}<span>{@render content()}</span
+						>{/snippet}
+					<I18nRichMessage
+						value={{ key: "web:ReleaseCard.showDownloadOptions" }}
+						components={{ slot1: i18nSlot1, slot2: i18nSlot2 }}
+					/>
 				</button>
 			{/if}
 

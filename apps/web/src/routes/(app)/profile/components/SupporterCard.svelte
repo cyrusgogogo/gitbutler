@@ -1,18 +1,27 @@
 <script lang="ts">
+	import { useTranslations } from "@gitbutler/i18n/svelte";
 	import { Button } from "@gitbutler/ui";
+	import I18nRichMessage from "@gitbutler/ui/i18n/RichMessage.svelte";
 	import { env } from "$env/dynamic/public";
+	const i18nMessages = useTranslations();
 </script>
 
 <div class="supporter-card">
-	<h3 class="text-15 text-bold">🎉 Thank you for being a supporter!</h3>
+	<h3 class="text-15 text-bold">
+		{$i18nMessages.t("web:SupporterCard.thankYouForBeingASupporter")}
+	</h3>
 	<p class="text-12 text-body clr-text-2">
-		Your support helps us build a better GitButler.<br />We appreciate your contribution.
+		{#snippet i18nSlot1()}<br />{/snippet}
+		<I18nRichMessage
+			value={{ key: "web:SupporterCard.yourSupportHelpsUsBuildABetterGitButler" }}
+			components={{ slot1: i18nSlot1 }}
+		/>
 	</p>
 	<Button
 		style="pop"
 		onclick={() => (window.location.href = `${env.PUBLIC_APP_HOST}supporter/portal`)}
 	>
-		Manage your subscription
+		{$i18nMessages.t("web:SupporterCard.manageYourSubscription")}
 	</Button>
 </div>
 

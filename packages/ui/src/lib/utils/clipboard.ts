@@ -1,16 +1,17 @@
 import { chipToasts } from "$components/chipToast/chipToastStore";
+import { message as i18nMessage } from "@gitbutler/i18n";
 
 export function copyToClipboard(text: string) {
 	if (!navigator.clipboard) {
-		chipToasts.error("Clipboard API not available");
+		chipToasts.error(i18nMessage("ui:clipboard.clipboardAPINotAvailable"));
 	} else {
 		navigator.clipboard
 			.writeText(text)
 			.then(function () {
-				chipToasts.success("Copied to clipboard");
+				chipToasts.success(i18nMessage("ui:clipboard.copiedToClipboard"));
 			})
 			.catch(function (err) {
-				chipToasts.error("Failed to copy");
+				chipToasts.error(i18nMessage("ui:clipboard.failedToCopy"));
 				console.error("Failed to copy:", err);
 			});
 	}

@@ -1,9 +1,10 @@
 <script lang="ts">
 	import loginSvg from "$lib/assets/login-modal.svg?raw";
+	import { useTranslations } from "@gitbutler/i18n/svelte";
 	import { Button, Modal } from "@gitbutler/ui";
-
 	import { type Snippet } from "svelte";
 	import { env } from "$env/dynamic/public";
+	const i18nMessages = useTranslations();
 
 	let modal: ReturnType<typeof Modal> | undefined = $state();
 
@@ -28,18 +29,20 @@
 			{@html loginSvg}
 		</div>
 		<div class="login-modal__content">
-			<h2 class="text-18 text-bold login-modal__title">🔒 Log in to continue</h2>
+			<h2 class="text-18 text-bold login-modal__title">
+				{$i18nMessages.t("web:LoginModal.logInToContinue")}
+			</h2>
 			<p class="text-13 text-body login-modal__text">
 				{#if children}
 					{@render children()}
 				{:else}
-					You need to be logged in to unlock full access to all features.
+					{$i18nMessages.t("web:LoginModal.youNeedToBeLoggedInToUnlock")}
 				{/if}
 			</p>
 
 			<div class="login-modal__actions">
-				<Button style="pop" onclick={login}>Log in</Button>
-				<Button kind="outline" onclick={login}>Sign up</Button>
+				<Button style="pop" onclick={login}>{$i18nMessages.t("web:LoginModal.logIn")}</Button>
+				<Button kind="outline" onclick={login}>{$i18nMessages.t("web:LoginModal.signUp")}</Button>
 			</div>
 		</div>
 	</div>

@@ -1,6 +1,8 @@
 <script lang="ts">
 	import SeriesIcon from "$components/SeriesIcon.svelte";
 	import Tooltip from "$components/Tooltip.svelte";
+	import { useTranslations } from "@gitbutler/i18n/svelte";
+	const i18nMessages = useTranslations();
 
 	interface Props {
 		series: string[];
@@ -33,7 +35,11 @@
 	{#if series.length > 1}
 		<Tooltip text={"→ " + series.slice(1).join(" → ")}>
 			<div class="series-name more-series text-14 text-semibold">
-				<span>{series.length - 1} more</span>
+				<span
+					>{$i18nMessages.t("ui:SeriesLabelsRow.valueMore", {
+						value: String(series.length - 1),
+					})}</span
+				>
 			</div>
 		</Tooltip>
 	{/if}

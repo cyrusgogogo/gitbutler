@@ -7,11 +7,12 @@
 	import { FILE_SELECTION_MANAGER } from "$lib/selection/fileSelectionManager.svelte";
 	import { readStableSelectionKey, stableSelectionKey, type SelectionId } from "$lib/selection/key";
 	import { inject } from "@gitbutler/core/context";
+	import { useTranslations } from "@gitbutler/i18n/svelte";
 	import { EmptyStatePlaceholder, Icon } from "@gitbutler/ui";
-
 	import type { ConflictEntriesObj } from "$lib/files/conflicts";
 	import type { TreeStats } from "@gitbutler/but-sdk";
 	import type { TreeChange } from "@gitbutler/but-sdk";
+	const i18nMessages = useTranslations();
 
 	type Props = {
 		projectId: string;
@@ -91,7 +92,7 @@
 					e.stopPropagation();
 					folded = !folded;
 				}}
-				aria-label="Toggle file list"
+				aria-label={$i18nMessages.t("desktop:ChangedFilesPanel.toggleFileList")}
 				aria-expanded={!folded}
 			>
 				<Icon name="chevron-down" />
@@ -115,7 +116,7 @@
 					bottomMargin={20}
 				>
 					{#snippet caption()}
-						No files changed
+						{$i18nMessages.t("desktop:ChangedFilesPanel.noFilesChanged")}
 					{/snippet}
 				</EmptyStatePlaceholder>
 			{:else}

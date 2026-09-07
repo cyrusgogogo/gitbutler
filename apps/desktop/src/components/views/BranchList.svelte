@@ -29,11 +29,13 @@
 	import { STACK_SERVICE } from "$lib/stacks/stackService.svelte";
 	import { ensureValue } from "$lib/utils/validation";
 	import { inject } from "@gitbutler/core/context";
+	import { useTranslations } from "@gitbutler/i18n/svelte";
 	import { reactive } from "@gitbutler/shared/reactiveUtils.svelte";
 	import { Button, TestId } from "@gitbutler/ui";
 	import { QueryStatus } from "@reduxjs/toolkit/query";
 	import { tick } from "svelte";
 	import type { Segment } from "@gitbutler/but-sdk";
+	const i18nMessages = useTranslations();
 
 	type Props = {
 		segments: Segment[];
@@ -104,7 +106,7 @@
 		{@const branchReference = segment.refName
 			? new TextDecoder().decode(new Uint8Array(segment.refName.fullNameBytes))
 			: undefined}
-		{@const branchLabel = branchName ?? "Unnamed segment"}
+		{@const branchLabel = branchName ?? $i18nMessages.t("desktop:BranchList.inlinece8d3d465")}
 		{@const remoteTrackingBranch = segment.remoteTrackingRefName
 			? new TextDecoder().decode(new Uint8Array(segment.remoteTrackingRefName.fullNameBytes))
 			: undefined}
@@ -162,7 +164,7 @@
 				<ReduxResult {projectId} {stackId} result={changesQuery.result}>
 					{#snippet children(result, { projectId, stackId })}
 						<ChangedFilesPanel
-							title="All Changes"
+							title={$i18nMessages.t("desktop:BranchList.allChanges")}
 							{projectId}
 							{stackId}
 							draggableFiles
@@ -202,7 +204,9 @@
 					testId={TestId.BranchHeaderAddDependentBranchButton}
 					size="tag"
 					kind="outline"
-					tooltip={controller.isReadOnly ? "Read-only mode" : "Create new branch"}
+					tooltip={controller.isReadOnly
+						? $i18nMessages.t("desktop:BranchList.inline893cd37c4")
+						: $i18nMessages.t("desktop:BranchList.inlined4f8beacb")}
 					onclick={async () => {
 						addDependentBranchModalContext = {
 							projectId,
@@ -239,13 +243,15 @@
 						}}
 						disabled={!!controller.exclusiveAction || blockedByConflicts}
 						tooltip={blockedByConflicts
-							? "Resolve conflicts before landing"
+							? $i18nMessages.t("desktop:BranchList.inline6fffcbe95")
 							: wholeStack
-								? "Land the whole stack directly into the target branch"
-								: "Land directly into the target branch"}
+								? $i18nMessages.t("desktop:BranchList.inlinea4380fd19")
+								: $i18nMessages.t("desktop:BranchList.inline75293db09")}
 						icon="branch-merge"
 					>
-						{wholeStack ? "Land stack" : "Land"}
+						{wholeStack
+							? $i18nMessages.t("desktop:BranchList.landStack")
+							: $i18nMessages.t("desktop:BranchList.land")}
 					</Button>
 				{/if}
 			{:else if canPublishPR && !isNewBranch && branchName}
@@ -266,7 +272,9 @@
 						disabled={!!controller.exclusiveAction}
 						icon="pr-plus"
 					>
-						{`Create ${forgeInfo?.unit.abbr ?? "PR"}`}
+						{$i18nMessages.t("desktop:BranchList.inlineb8f6b0e1e", {
+							value1: String(forgeInfo?.unit.abbr ?? $i18nMessages.t("desktop:BranchList.pR")),
+						})}
 					</Button>
 				{:else}
 					{@const externalPrUrl = forgeInfo ? prUrl(forgeInfo, prNumber) : undefined}
@@ -282,7 +290,7 @@
 						}}
 						icon="arrow-up-righ"
 					>
-						{`View ${forgeInfo?.unit.abbr ?? "PR"}`}
+						{`View ${forgeInfo?.unit.abbr ?? $i18nMessages.t("desktop:BranchList.pR")}`}
 					</Button>
 				{/if}
 			{/if}

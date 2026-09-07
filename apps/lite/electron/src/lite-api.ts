@@ -1,4 +1,5 @@
 import type { AskpassPromptEvent, WatcherEvent } from "@gitbutler/but-sdk";
+import type { GUISettings } from "./settings.js";
 import { exposedEndpoints, localEndpoints } from "./ipc.js";
 import type { LiteElectronApi, StreamAiResponseToken, WatcherSubscribeResult } from "./ipc.js";
 
@@ -20,6 +21,7 @@ type SpecialKey =
 	| "onAskpassPrompt"
 	| "onDeepLink"
 	| "onFullScreenChange"
+	| "onGUISettingsChange"
 	| "platform"
 	| "streamAiResponse"
 	| "watcherSubscribe"
@@ -31,6 +33,7 @@ const specialNames = [
 	"askpassPrompt",
 	"deepLink",
 	"fullScreenChange",
+	"guiSettingsChange",
 	"streamAiResponse",
 	"watcherSubscribe",
 	"watcherUnsubscribe",
@@ -76,6 +79,8 @@ export const createLiteApi = ({
 
 	return {
 		...forwarders,
+		onGUISettingsChange: (callback) =>
+			subscribe("guiSettingsChange", (payload) => callback(payload as GUISettings)),
 		onAskpassPrompt: (callback) =>
 			subscribe("askpassPrompt", (payload) => {
 				callback(payload as AskpassPromptEvent);

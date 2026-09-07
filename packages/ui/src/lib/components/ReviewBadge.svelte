@@ -1,6 +1,8 @@
 <script lang="ts">
 	import Badge from "$components/Badge.svelte";
 	import { getForgeLogo } from "$lib/utils/getForgeLogo";
+	import { useTranslations } from "@gitbutler/i18n/svelte";
+	const i18nMessages = useTranslations();
 
 	interface Props {
 		type: string | undefined;
@@ -43,13 +45,25 @@
 
 		switch (status) {
 			case "open":
-				return `${reviewUnit} ${id} is open`;
+				return $i18nMessages.t("ui:ReviewBadge.detaileea3ce0b6", {
+					value1: String(reviewUnit),
+					value2: String(id),
+				});
 			case "closed":
-				return `${reviewUnit} ${id} is closed`;
+				return $i18nMessages.t("ui:ReviewBadge.detail1f98403c1", {
+					value1: String(reviewUnit),
+					value2: String(id),
+				});
 			case "draft":
-				return `${reviewUnit} ${id} is a draft`;
+				return $i18nMessages.t("ui:ReviewBadge.detail2ac4cc049", {
+					value1: String(reviewUnit),
+					value2: String(id),
+				});
 			case "merged":
-				return `${reviewUnit} ${id} is merged`;
+				return $i18nMessages.t("ui:ReviewBadge.detail3dc2cc5db", {
+					value1: String(reviewUnit),
+					value2: String(id),
+				});
 			default:
 				return `${reviewUnit} ${id}`;
 		}
@@ -65,7 +79,7 @@
 	reversedDirection
 >
 	{#if status === "draft"}
-		Draft {reviewUnit}
+		{$i18nMessages.t("ui:ReviewBadge.draftValue", { reviewUnit: String(reviewUnit) })}
 	{:else}
 		{reviewUnit} {id}
 	{/if}

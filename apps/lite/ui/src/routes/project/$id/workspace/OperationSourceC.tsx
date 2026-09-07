@@ -1,3 +1,5 @@
+import { Message as I18nMessage, I18nProvider } from "@gitbutler/i18n/react";
+import { i18n } from "#ui/i18n.ts";
 import { type Address, addressIdentityKey } from "#ui/addresses.ts";
 import { cancelPendingOperation } from "#ui/use-cursor.ts";
 import { getOperationSources, pointerTransfer } from "#ui/operations/pending-operation.ts";
@@ -82,7 +84,11 @@ export const OperationSourceC: FC<
 					if (!headInfoIndex) return;
 					const root = createRoot(container);
 					root.render(
-						<DragPreview>{addressesLabel({ addresses: dragSources, headInfoIndex })}</DragPreview>,
+						<I18nProvider i18n={i18n}>
+							<DragPreview>
+								<I18nMessage value={addressesLabel({ addresses: dragSources, headInfoIndex })} />
+							</DragPreview>
+						</I18nProvider>,
 					);
 					return () => {
 						root.unmount();

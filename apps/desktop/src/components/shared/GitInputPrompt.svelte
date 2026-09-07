@@ -1,7 +1,9 @@
 <script lang="ts">
 	import { PROMPT_SERVICE } from "$lib/prompt/promptService";
 	import { inject } from "@gitbutler/core/context";
+	import { useTranslations } from "@gitbutler/i18n/svelte";
 	import { Button, Modal, Textbox } from "@gitbutler/ui";
+	const i18nMessages = useTranslations();
 
 	const promptService = inject(PROMPT_SERVICE);
 	const [prompt, error] = promptService.reactToPrompt({ timeoutMs: 30000 });
@@ -55,13 +57,13 @@
 <Modal
 	bind:this={modal}
 	width="small"
-	title="Git needs input"
+	title={$i18nMessages.t("desktop:GitInputPrompt.gitNeedsInput")}
 	onClickOutside={cancel}
 	onSubmit={submit}
 >
 	<div class="message">
 		{#if $error}
-			{$error}
+			{$i18nMessages.text($error)}
 		{:else}
 			<code>{$prompt?.prompt}</code>
 		{/if}
@@ -70,9 +72,11 @@
 
 	{#snippet controls()}
 		<Button kind="outline" type="reset" disabled={loading} onclick={handleCancelButton}
-			>Cancel</Button
+			>{$i18nMessages.t("desktop:GitInputPrompt.cancel")}</Button
 		>
-		<Button style="pop" type="submit" grow disabled={!!$error || loading} {loading}>Submit</Button>
+		<Button style="pop" type="submit" grow disabled={!!$error || loading} {loading}
+			>{$i18nMessages.t("desktop:GitInputPrompt.submit")}</Button
+		>
 	{/snippet}
 </Modal>
 

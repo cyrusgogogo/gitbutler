@@ -4,7 +4,10 @@
 	import osIcons from "$lib/data/os-icons.json";
 	import { latestClientVersion } from "$lib/store";
 	import { getOS, type OS } from "$lib/utils/getOS";
+	import { useTranslations } from "@gitbutler/i18n/svelte";
+	import I18nRichMessage from "@gitbutler/ui/i18n/RichMessage.svelte";
 	import { onMount } from "svelte";
+	const i18nMessages = useTranslations();
 
 	let detectedOS = $state("");
 	let selectedDownload = $state(jsonLinks.downloads.appleSilicon);
@@ -86,7 +89,9 @@
 		: '0'}) scale({isHovering ? 1.02 : 1})"
 >
 	<div class="download-btn__title">
-		<span class="download-btn__title">DOWNLOAD for {detectedOS}</span>
+		<span class="download-btn__title"
+			>{$i18nMessages.t("web:CtaButton.dOWNLOADForValue", { detectedOS: String(detectedOS) })}</span
+		>
 
 		<svg
 			class="download-btn-icon"
@@ -98,7 +103,11 @@
 		</svg>
 	</div>
 
-	<span class="download-btn__version">Open Beta {$latestClientVersion}</span>
+	<span class="download-btn__version"
+		>{$i18nMessages.t("web:CtaButton.openBetaValue", {
+			latestClientVersion: String($latestClientVersion),
+		})}</span
+	>
 
 	<div class="download-btn__canvas-cover"></div>
 	<ImagineCanvas />
@@ -107,9 +116,20 @@
 <!-- MOBILE -->
 <a class="download-btn mobile" href={jsonLinks.resources.downloads.url}>
 	<div class="download-btn__title">
-		<span class="download-btn__title">DOWNLOAD <i>the</i> app</span>
+		{#snippet i18nSlot4(content: import("svelte").Snippet)}<span class="download-btn__title"
+				>{@render content()}</span
+			>{/snippet}
+		{#snippet i18nSlot5(content: import("svelte").Snippet)}<i>{@render content()}</i>{/snippet}
+		<I18nRichMessage
+			value={{ key: "web:CtaButton.dOWNLOADTheApp" }}
+			components={{ slot4: i18nSlot4, slot5: i18nSlot5 }}
+		/>
 	</div>
-	<span class="download-btn__version">Open Beta {$latestClientVersion}</span>
+	<span class="download-btn__version"
+		>{$i18nMessages.t("web:CtaButton.openBetaValue_465971e", {
+			latestClientVersion: String($latestClientVersion),
+		})}</span
+	>
 
 	<div class="download-btn__canvas-cover"></div>
 	<ImagineCanvas />

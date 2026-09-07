@@ -1,9 +1,4 @@
 <script lang="ts">
-	/**
-	 * NOTE: This component MOST only ever be rendered ONCE on the page at one
-	 * time. This is because it is working directly with the query parameters
-	 * and has no idea if it will conflict or not.
-	 */
 	import SectionComponent from "$lib/components/review/Section.svelte";
 	import {
 		setBeforeVersion,
@@ -11,11 +6,19 @@
 		getBeforeVersion,
 		getAfterVersion,
 	} from "$lib/interdiffRangeQuery.svelte";
+	import { useTranslations } from "@gitbutler/i18n/svelte";
 	import Loading from "@gitbutler/shared/network/Loading.svelte";
 	import { getPatchIdableSections } from "@gitbutler/shared/patches/patchCommitsPreview.svelte";
 	import { Button, Select, SelectItem, type SelectItemType } from "@gitbutler/ui";
 	import { isDefined } from "@gitbutler/ui/utils/typeguards";
 	import type { PatchCommit } from "@gitbutler/shared/patches/types";
+	const i18nMessages = useTranslations();
+
+	/**
+	 * NOTE: This component MOST only ever be rendered ONCE on the page at one
+	 * time. This is because it is working directly with the query parameters
+	 * and has no idea if it will conflict or not.
+	 */
 
 	interface Props {
 		branchUuid: string;
@@ -31,7 +34,7 @@
 	let afterSelectorOpen = $state(false);
 
 	const allOptions: readonly SelectItemType<string>[] = $derived.by(() => {
-		const out = [{ value: "-1", label: "Base" }];
+		const out = [{ value: "-1", label: $i18nMessages.t("web:ReviewSections.base") }];
 
 		if (!isDefined(patchCommit.version)) return out;
 
@@ -40,7 +43,7 @@
 
 			out.push({
 				value: i.toString(),
-				label: `v${i}${last ? " (latest)" : ""}`,
+				label: last ? $i18nMessages.t("web:review.latestVersion", { version: i }) : `v${i}`,
 			});
 		}
 
@@ -82,12 +85,20 @@
 		<div class="review-sections-statistics">
 			<div class="review-sections-statistics__metadata">
 				<p class="text-12 text-bold statistic-files">
-					{patchCommit.statistics.fileCount} files changed
+					{$i18nMessages.t("web:ReviewSections.valueFilesChanged", {
+						fileCount: String(patchCommit.statistics.fileCount),
+					})}
 				</p>
 				<p class="text-12 statistic-added">
-					{patchCommit.statistics.lines - patchCommit.statistics.deletions} additions
+					{$i18nMessages.t("web:ReviewSections.valueAdditions", {
+						value: String(patchCommit.statistics.lines - patchCommit.statistics.deletions),
+					})}
 				</p>
-				<p class="text-12 statistic-deleted">{patchCommit.statistics.deletions} deletions</p>
+				<p class="text-12 statistic-deleted">
+					{$i18nMessages.t("web:ReviewSections.valueDeletions", {
+						deletions: String(patchCommit.statistics.deletions),
+					})}
+				</p>
 			</div>
 			<div class="review-sections-statistics__actions">
 				<div class="review-sections-statistics__actions__interdiff">
@@ -95,7 +106,7 @@
 						<div class="review-sections-statistics__actions__interdiff-changed"></div>
 					{/if}
 					<Button
-						tooltip="Show interdiff"
+						tooltip={$i18nMessages.t("web:ReviewSections.showInterdiff")}
 						kind="ghost"
 						icon="interdiff"
 						onclick={() => (isInterdiffBarVisible = !isInterdiffBarVisible)}
@@ -107,7 +118,7 @@
 
 	{#if isInterdiffBarVisible}
 		<div class="interdiff-bar">
-			<p class="text-12 text-bold">Compare versions:</p>
+			<p class="text-12 text-bold">{$i18nMessages.t("web:ReviewSections.compareVersions")}</p>
 
 			<div class="interdiff-bar__selects">
 				<Select
@@ -174,13 +185,13 @@
 						kind="ghost"
 						icon="undo"
 						size="tag"
-						tooltip="Reset to initial selection"
+						tooltip={$i18nMessages.t("web:ReviewSections.resetToInitialSelection")}
 						onclick={async () => {
 							await setBeforeVersion(-1);
 							await setAfterVersion(patchCommit.version, patchCommit.version);
 						}}
 					>
-						Reset
+						{$i18nMessages.t("web:ReviewSections.reset")}
 					</Button>
 				{/if}
 			</div>

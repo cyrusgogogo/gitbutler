@@ -1,3 +1,6 @@
+import { message as i18nMessage } from "@gitbutler/i18n";
+import { createElement as createI18nElement } from "react";
+import { Message as I18nMessage } from "@gitbutler/i18n/react";
 import type { PayloadFor } from "#electron/ipc.ts";
 import { commentsQueryOptions } from "#ui/api/queries.ts";
 import { decodeBytes } from "#ui/api/bytes.ts";
@@ -93,8 +96,10 @@ export const useCommentCreate = () => {
 
 			toastManager.add({
 				type: "error",
-				title: "Failed to create comment",
-				description: errorMessageForToast(error),
+				title: createI18nElement(I18nMessage, {
+					value: i18nMessage("lite:annotation.failedToCreateComment"),
+				}),
+				description: createI18nElement(I18nMessage, { value: errorMessageForToast(error) }),
 				priority: "high",
 			});
 		},
@@ -114,8 +119,10 @@ export const useCommentUpdate = () => {
 
 			toastManager.add({
 				type: "error",
-				title: "Failed to update comment",
-				description: errorMessageForToast(error),
+				title: createI18nElement(I18nMessage, {
+					value: i18nMessage("lite:annotation.failedToUpdateComment"),
+				}),
+				description: createI18nElement(I18nMessage, { value: errorMessageForToast(error) }),
 				priority: "high",
 			});
 		},
@@ -148,8 +155,10 @@ export const useCommentArchive = () => {
 
 			toastManager.add({
 				type: "error",
-				title: "Failed to archive comment",
-				description: errorMessageForToast(error),
+				title: createI18nElement(I18nMessage, {
+					value: i18nMessage("lite:annotation.failedToArchiveComment"),
+				}),
+				description: createI18nElement(I18nMessage, { value: errorMessageForToast(error) }),
 				priority: "high",
 			});
 		},

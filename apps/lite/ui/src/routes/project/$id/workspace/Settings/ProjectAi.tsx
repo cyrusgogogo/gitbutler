@@ -1,3 +1,4 @@
+import { useTranslations } from "@gitbutler/i18n/react";
 import { useSuspenseQueries, useQueryClient } from "@tanstack/react-query";
 import { useState, type FC } from "react";
 import { aiConfigurationQueryOptions } from "#ui/api/queries.ts";
@@ -12,6 +13,7 @@ import styles from "./ProjectAi.module.css";
 import { Row, Section } from "./Section.tsx";
 
 export const ProjectAi: FC<{ projectId: string }> = ({ projectId }) => {
+	const i18nMessages = useTranslations();
 	const [{ data: configuration }, { data: stored }] = useSuspenseQueries({
 		queries: [aiConfigurationQueryOptions, projectAiSettingsQueryOptions(projectId)],
 	});
@@ -36,12 +38,12 @@ export const ProjectAi: FC<{ projectId: string }> = ({ projectId }) => {
 	return (
 		<Section>
 			<Row
-				label="Commit message generation"
+				label={i18nMessages.t("lite:ProjectAi.commitMessageGeneration")}
 				labelId="project-ai-enabled"
 				hint={
 					configuration.isConfigured
-						? "Sends selected file diffs to the configured provider when you generate a message."
-						: "Configure credentials for a provider under Application → AI first."
+						? i18nMessages.t("lite:ProjectAi.sendsSelectedFileDiffsToTheConfiguredProvider")
+						: i18nMessages.t("lite:ProjectAi.configureCredentialsForAProviderUnderApplicationAI")
 				}
 			>
 				<Switch
@@ -54,9 +56,9 @@ export const ProjectAi: FC<{ projectId: string }> = ({ projectId }) => {
 
 			{stored.enabled && configuration.isConfigured && (
 				<Row
-					label="Commit prompt"
+					label={i18nMessages.t("lite:ProjectAi.commitPrompt")}
 					htmlFor="project-ai-commit-prompt"
-					hint="The selected file diffs are appended automatically."
+					hint={i18nMessages.t("lite:ProjectAi.theSelectedFileDiffsAreAppendedAutomatically")}
 					stacked
 				>
 					<textarea

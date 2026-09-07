@@ -1,3 +1,4 @@
+import { useTranslations } from "@gitbutler/i18n/react";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { useDeferredValue, useState, type FC } from "react";
 import * as ms from "ms";
@@ -8,6 +9,7 @@ import { formatDuration } from "#ui/time.ts";
 import { Row, Section } from "./Section.tsx";
 
 export const Git: FC = () => {
+	const i18nMessages = useTranslations();
 	const { data: settings } = useSuspenseQuery(guiSettingsQueryOptions);
 	const { mutate: saveGUISettings } = useSaveGUISettings();
 
@@ -29,9 +31,13 @@ export const Git: FC = () => {
 	return (
 		<Section>
 			<Row
-				label="Auto-fetch frequency"
+				label={i18nMessages.t("lite:Git.autoFetchFrequency")}
 				htmlFor="autofetch"
-				hint={isValidAutofetch ? formatDuration(clampAutoFetch(parsedAutofetch)) : "Disabled"}
+				hint={
+					isValidAutofetch
+						? formatDuration(clampAutoFetch(parsedAutofetch), i18nMessages.locale)
+						: i18nMessages.t("lite:Git.disabled")
+				}
 			>
 				<input
 					id="autofetch"

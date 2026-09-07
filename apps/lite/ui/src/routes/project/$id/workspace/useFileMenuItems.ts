@@ -1,3 +1,4 @@
+import { message as i18nMessage } from "@gitbutler/i18n";
 import { useDiscardFileChanges, useResolveWorktreeConflicts } from "#ui/api/mutations.ts";
 import { startAbsorb, startKeyboardTransfer } from "#ui/use-cursor.ts";
 import { changesInWorktreeQueryOptions } from "#ui/api/queries.ts";
@@ -49,8 +50,7 @@ export const useFileMenuItems = ({
 			? projectSlice.selectors.selectCheckedAddressCount(state, projectId)
 			: 1,
 	);
-	const discardLabel =
-		discardFileCount > 1 ? `Discard Changes in ${discardFileCount} Files` : "Discard Changes";
+	const discardLabel = i18nMessage("lite:files.discard", { count: discardFileCount });
 	const { isPending: isResolvePending, mutate: resolveWorktreeConflicts } =
 		useResolveWorktreeConflicts();
 	// A file listed under uncommitted changes without a change is a conflicted one.
@@ -72,7 +72,7 @@ export const useFileMenuItems = ({
 			? [
 					[
 						nativeMenuItem({
-							label: "Mark as Resolved",
+							label: i18nMessage("lite:useFileMenuItems.markAsResolved"),
 							enabled: !isResolvePending,
 							onSelect: () => resolveWorktreeConflicts({ projectId, paths: [path] }),
 						}),
@@ -83,7 +83,7 @@ export const useFileMenuItems = ({
 			? [
 					[
 						nativeMenuItem({
-							label: "Cut File",
+							label: i18nMessage("lite:useFileMenuItems.cutFile"),
 							onSelect: cutFile,
 							accelerator: toElectronAccelerator(selectionOperationHotkeys.cut.hotkey),
 						}),
@@ -96,7 +96,7 @@ export const useFileMenuItems = ({
 					Match.when({ parent: { _tag: "Commit" } }, () => [
 						[
 							nativeMenuItem({
-								label: "Uncommit",
+								label: i18nMessage("lite:useFileMenuItems.uncommit"),
 								enabled: canUncommit,
 								accelerator: toElectronAccelerator(changesFileHotkeys.uncommit.hotkey),
 								onSelect: () => uncommit?.(change, isChecked),
@@ -148,7 +148,7 @@ export const useFileMenuItems = ({
 						return [
 							[
 								nativeMenuItem({
-									label: "Absorb",
+									label: i18nMessage("lite:useFileMenuItems.absorb"),
 									accelerator: toElectronAccelerator(changesFileHotkeys.absorb.hotkey),
 									onSelect: absorb,
 								}),

@@ -1,7 +1,9 @@
 <script lang="ts" generics="TAccount">
 	import { useSettingsModal } from "$lib/settings/settingsModal.svelte";
+	import { useTranslations } from "@gitbutler/i18n/svelte";
 	import { Button, CardGroup, Link, Select, SelectItem } from "@gitbutler/ui";
 	import type { Component, Snippet } from "svelte";
+	const i18nMessages = useTranslations();
 
 	type Props = {
 		projectId: string;
@@ -47,27 +49,36 @@
 <CardGroup.Item>
 	{#snippet title()}
 		{#if hasAccounts}
-			Configure {displayName} integration
+			{$i18nMessages.t("desktop:ForgeAccountConfig.configureValueIntegration", {
+				displayName: String(displayName),
+			})}
 		{:else}
-			Connect your {displayName} account
+			{$i18nMessages.t("desktop:ForgeAccountConfig.connectYourValueAccount", {
+				displayName: String(displayName),
+			})}
 		{/if}
 	{/snippet}
 
 	{#snippet caption()}
-		Enable {requestType} creation. Read more in the <Link href={docsUrl}>docs</Link>
+		{$i18nMessages.t("desktop:ForgeAccountConfig.enableValueCreationReadMoreInThe", {
+			requestType: String(requestType),
+		})}
+		<Link href={docsUrl}>{$i18nMessages.t("desktop:ForgeAccountConfig.docs")}</Link>
 	{/snippet}
 
 	{#if !hasAccounts}
 		<div class="flex">
 			<Button onclick={() => openGeneralSettings("integrations")} style="pop" icon="link"
-				>Set up in General Settings</Button
+				>{$i18nMessages.t("desktop:ForgeAccountConfig.setUpInGeneralSettings")}</Button
 			>
 		</div>
 	{:else}
 		{@const account = preferredAccount!}
 		{@const accountStr = accountToString(account)}
 		<Select
-			label="{displayName} account for this project"
+			label={$i18nMessages.t("desktop:ForgeAccountConfig.valueAccountForThisProject", {
+				displayName: String(displayName),
+			})}
 			value={accountStr}
 			options={accounts.map((acc) => ({
 				label: getUsername(acc),

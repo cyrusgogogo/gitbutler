@@ -5,6 +5,7 @@
 	import Table from "$lib/components/table/Table.svelte";
 	import { USER_SERVICE } from "$lib/user/userService";
 	import { inject } from "@gitbutler/core/context";
+	import { useTranslations } from "@gitbutler/i18n/svelte";
 	import { getBranchReviewsForRepository } from "@gitbutler/shared/branches/branchesPreview.svelte";
 	import { BranchStatus } from "@gitbutler/shared/branches/types";
 	import Loading from "@gitbutler/shared/network/Loading.svelte";
@@ -12,6 +13,7 @@
 	import { type ProjectParameters } from "@gitbutler/shared/routing/webRoutes.svelte";
 	import { WEB_ROUTES_SERVICE } from "@gitbutler/shared/routing/webRoutes.svelte";
 	import { Button, Select, SelectItem } from "@gitbutler/ui";
+	const i18nMessages = useTranslations();
 
 	// Get authentication service and check if user is logged in
 	const routes = inject(WEB_ROUTES_SERVICE);
@@ -32,12 +34,12 @@
 	let { data }: Props = $props();
 
 	let filterStatus = $state<BranchStatus>(BranchStatus.All);
-	const selectableStatuses = [
-		{ value: BranchStatus.All, label: "All branches" },
-		{ value: BranchStatus.Closed, label: "Closed" },
-		{ value: BranchStatus.Active, label: "Active" },
-		{ value: BranchStatus.Inactive, label: "Inactive" },
-	];
+	const selectableStatuses = $derived([
+		{ value: BranchStatus.All, label: $i18nMessages.t("web:page.allBranches") },
+		{ value: BranchStatus.Closed, label: $i18nMessages.t("web:page.closed") },
+		{ value: BranchStatus.Active, label: $i18nMessages.t("web:page.active") },
+		{ value: BranchStatus.Inactive, label: $i18nMessages.t("web:page.inactive") },
+	]);
 
 	const brancheses = $derived(
 		getBranchReviewsForRepository(data.ownerSlug, data.projectSlug, filterStatus),
@@ -47,7 +49,12 @@
 </script>
 
 <svelte:head>
-	<title>Review: {data.ownerSlug}/{data.projectSlug}</title>
+	<title
+		>{$i18nMessages.t("web:page.reviewValueValue", {
+			ownerSlug: String(data.ownerSlug),
+			projectSlug: String(data.projectSlug),
+		})}</title
+	>
 </svelte:head>
 
 {#snippet filters()}
@@ -86,19 +93,19 @@
 
 			{#if brancheses.length === 0}
 				<div class="empty-state">
-					<h3>No branches found</h3>
-					<p>There are no branches matching your current filter.</p>
+					<h3>{$i18nMessages.t("web:page.noBranchesFound")}</h3>
+					<p>{$i18nMessages.t("web:page.thereAreNoBranchesMatchingYourCurrentFilter")}</p>
 				</div>
 			{:else}
 				<Table
 					headColumns={[
 						{
 							key: "status",
-							value: "Status",
+							value: $i18nMessages.t("web:page.inlinebae7d5be7"),
 						},
 						{
 							key: "title",
-							value: "Name",
+							value: $i18nMessages.t("web:page.inline709a23220"),
 						},
 						{
 							key: "number",
@@ -106,20 +113,20 @@
 						},
 						{
 							key: "number",
-							value: "Commits",
+							value: $i18nMessages.t("web:page.inline74536b517"),
 						},
 						{
 							key: "date",
-							value: "Update",
+							value: $i18nMessages.t("web:page.inlinefb91e24fa"),
 						},
 						{
 							key: "avatars",
-							value: "Authors",
+							value: $i18nMessages.t("web:page.inlined2a52548b"),
 						},
 						{
 							key: "number",
-							value: "Ver.",
-							tooltip: "Commit version",
+							value: $i18nMessages.t("web:page.inlinead13edd94"),
+							tooltip: $i18nMessages.t("web:page.inline4d24a1d8a"),
 						},
 					]}
 				>

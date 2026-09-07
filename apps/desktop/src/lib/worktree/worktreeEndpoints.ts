@@ -4,6 +4,7 @@ import { shouldRaiseHunkAssignmentError } from "$lib/hunks/hunk";
 import { hasBackendExtra } from "$lib/state/backendQuery";
 import { createSelectByIds } from "$lib/state/customSelectors";
 import { invalidatesList, providesList, ReduxTag } from "$lib/state/tags";
+import { message as i18nMessage } from "@gitbutler/i18n";
 import { createEntityAdapter, type EntityState } from "@reduxjs/toolkit";
 import type { UnifiedDiff } from "$lib/hunks/diff";
 import type { BackendEndpointBuilder } from "$lib/state/backendApi";
@@ -64,7 +65,7 @@ export function buildWorktreeEndpoints(build: BackendEndpointBuilder) {
 			transformResponse(response: WorktreeChanges) {
 				if (shouldRaiseDependencyError(response.dependenciesError)) {
 					showError(
-						"Failed to compute dependencies",
+						i18nMessage("desktop:worktreeEndpoints.failedToComputeDependencies"),
 						response.dependenciesError.description,
 						undefined,
 						"worktree-dependencies-error",
@@ -73,7 +74,7 @@ export function buildWorktreeEndpoints(build: BackendEndpointBuilder) {
 
 				if (shouldRaiseHunkAssignmentError(response.assignmentsError)) {
 					showError(
-						"Failed to compute hunk assignments",
+						i18nMessage("desktop:worktreeEndpoints.failedToComputeHunkAssignments"),
 						response.assignmentsError.description,
 						undefined,
 						"worktree-assignments-error",

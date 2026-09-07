@@ -1,9 +1,13 @@
 <script lang="ts">
+	import { useTranslations } from "@gitbutler/i18n/svelte";
+	import type { LocalizedText } from "@gitbutler/i18n";
+	const i18nMessages = useTranslations();
+
 	interface Props {
 		noMargin?: boolean;
 		items: {
-			title: string;
-			description: string;
+			title: LocalizedText;
+			description: LocalizedText;
 			link?: string;
 			icon?: string;
 		}[];
@@ -12,17 +16,17 @@
 	const { noMargin, items }: Props = $props();
 </script>
 
-{#snippet cardContent(title: string, description: string, icon?: string)}
+{#snippet cardContent(title: LocalizedText, description: LocalizedText, icon?: string)}
 	{#if icon}
 		<div class="feature-item__icon">
 			{@html icon}
 		</div>
 	{/if}
 	<div class="m-b-8">
-		<h3>{title}</h3>
+		<h3>{$i18nMessages.text(title)}</h3>
 	</div>
 	<div>
-		<p>{description}</p>
+		<p>{$i18nMessages.text(description)}</p>
 	</div>
 {/snippet}
 
@@ -32,7 +36,9 @@
 			<a class="feature-item" href={item.link} target="_blank" rel="noopener noreferrer">
 				<div class="features__link-indicator">
 					<div class="features__link-indicator-brakets">[</div>
-					<div class="features__link-indicator-text">Learn More</div>
+					<div class="features__link-indicator-text">
+						{$i18nMessages.t("web:Features.learnMore")}
+					</div>
 					<div class="features__link-indicator-arrow">&#8599;</div>
 					<div class="features__link-indicator-brakets">]</div>
 				</div>

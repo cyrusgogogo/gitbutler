@@ -1,13 +1,16 @@
 <script lang="ts">
 	import Icon from "$components/Icon.svelte";
 	import { type IconName } from "$lib/icons/names";
+	import { useTranslations } from "@gitbutler/i18n/svelte";
 	import { untrack } from "svelte";
 	import { fly, fade } from "svelte/transition";
 	import type { ChipToastType, ChipToastButtonConfig } from "$components/chipToast/chipToastTypes";
+	import type { LocalizedText } from "@gitbutler/i18n";
+	const i18nMessages = useTranslations();
 
 	interface Props {
 		type: ChipToastType;
-		message: string;
+		message: LocalizedText;
 		customButton?: ChipToastButtonConfig;
 		showDismiss?: boolean;
 		onDismiss?: () => void;
@@ -49,7 +52,7 @@
 		<div class="chip-toast__icon" style:--icon-toast-color={icon.color}>
 			<Icon name={icon.name} />
 		</div>
-		<span class="chip-toast__message">{message}</span>
+		<span class="chip-toast__message">{$i18nMessages.text(message)}</span>
 	</div>
 
 	{#if customButton || showDismiss}
@@ -60,7 +63,7 @@
 					class="chip-toast__button chip-toast__button--primary"
 					onclick={customButton.action}
 				>
-					{customButton.label}
+					{$i18nMessages.text(customButton.label)}
 				</button>
 			{/if}
 			{#if showDismiss}
@@ -69,7 +72,7 @@
 					class="chip-toast__button chip-toast__button--secondary"
 					onclick={handleDismiss}
 				>
-					Dismiss
+					{$i18nMessages.t("ui:ChipToast.dismiss")}
 				</button>
 			{/if}
 		</div>

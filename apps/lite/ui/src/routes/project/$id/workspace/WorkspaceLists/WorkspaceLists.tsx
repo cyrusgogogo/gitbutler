@@ -1,3 +1,4 @@
+import { Message as I18nMessage, useTranslations } from "@gitbutler/i18n/react";
 import rowStyles from "../Row.module.css";
 import { setCursor, useActiveList, useIsCursorAt, useSelection } from "#ui/use-cursor.ts";
 import { useCommitAmend } from "#ui/api/mutations.ts";
@@ -158,6 +159,7 @@ const OperationTarget: FC<
 		outline: OperationTargetOutline;
 	} & useRender.ComponentProps<"button">
 > = ({ enabled, address, projectId, outline, render, ...props }) => {
+	const i18nMessages = useTranslations();
 	const dropRef = useOperationDropTarget({ enabled, target: address, projectId });
 
 	const absorptionTargetCommitIds = useAbsorptionTargetCommitIds();
@@ -183,7 +185,7 @@ const OperationTarget: FC<
 						address._tag === "Commit" && absorptionTargetCommitIds.has(address.commitId);
 					if (!isActive) return null;
 
-					return { placement: "into", tooltip: "Absorb target" };
+					return { placement: "into", tooltip: i18nMessages.t("lite:WorkspaceLists.absorbTarget") };
 				},
 				Transfer: ({ value: mode }): ActiveOperation | null => {
 					if (mode.placement === null) return null;
@@ -192,14 +194,15 @@ const OperationTarget: FC<
 					const isActive = target !== null && addressEquals(target, address);
 					if (!isActive) return null;
 
+					const operation = getOperation({
+						sources: mode.sources,
+						target: address,
+						placement: mode.placement,
+						kind: getTransferKind(mode),
+					});
 					return {
 						placement: mode.placement,
-						tooltip: getOperation({
-							sources: mode.sources,
-							target: address,
-							placement: mode.placement,
-							kind: getTransferKind(mode),
-						})?.label,
+						tooltip: operation ? i18nMessages.text(operation.label) : undefined,
 					};
 				},
 			}),
@@ -304,6 +307,7 @@ const UncommittedChanges: FC<
 	worktreeChanges,
 	...props
 }) => {
+	const i18nMessages = useTranslations();
 	const dispatch = useAppDispatch();
 
 	const filter = useAppSelector((state) =>
@@ -406,8 +410,8 @@ const UncommittedChanges: FC<
 							focusScope="uncommitted-files"
 							emptyLabel={
 								filter !== null && (worktreeChanges?.changes.length ?? 0) > 0
-									? "No matching files."
-									: "Nothing to commit"
+									? i18nMessages.t("lite:WorkspaceLists.noMatchingFiles")
+									: i18nMessages.t("lite:WorkspaceLists.nothingToCommit")
 							}
 							fileParent={uncommittedChangesFileParent}
 							reviewedPaths={reviewedUncommittedPaths}
@@ -594,7 +598,9 @@ const EmptySegmentContent: FC<{
 					status={segmentPushStatusToGraphSegmentStatus(segment.pushStatus)}
 				/>
 				<RowLabelContainer>
-					<RowLabel className={rowStyles.fadedText}>No commits.</RowLabel>
+					<RowLabel className={rowStyles.fadedText}>
+						<I18nMessage value={{ key: "lite:WorkspaceLists.noCommits" }} />
+					</RowLabel>
 				</RowLabelContainer>
 			</Row>
 		</div>
@@ -779,6 +785,7 @@ const CommitItem: FC<{
 	positionInSet,
 	setSize,
 }) => {
+	const i18nMessages = useTranslations();
 	const address = commitAddress({ commitId: commit.id, changeId: commit.changeId });
 
 	return (
@@ -795,7 +802,7 @@ const CommitItem: FC<{
 		>
 			<TreeItem
 				address={address}
-				aria-label={commitTitle(commit.message) ?? "(no message)"}
+				aria-label={commitTitle(commit.message) ?? i18nMessages.t("lite:WorkspaceLists.noMessage")}
 				aria-level={ariaLevel}
 				aria-posinset={positionInSet}
 				aria-setsize={setSize}
@@ -905,6 +912,7 @@ const StackC: FC<
 	selectedCommitIndex,
 	...props
 }) => {
+	const i18nMessages = useTranslations();
 	const canTearOffBranch = stack.segments.length > 1;
 	// Manual memo: the compiler folds this into the props scope, where it is rebuilt
 	// on every render and hands each branch row a fresh status.
@@ -946,7 +954,7 @@ const StackC: FC<
 			data-forked={forked}
 			// oxlint-disable-next-line jsx-a11y/prefer-tag-over-role -- This is a group of treeitems.
 			role="group"
-			aria-label="Stack"
+			aria-label={i18nMessages.t("lite:WorkspaceLists.stack")}
 		>
 			{stack.segments.map((segment, index) => {
 				// oxlint-disable-next-line typescript/no-non-null-assertion -- Equivalent iteration above.
@@ -1372,6 +1380,7 @@ export const WorkspaceLists: FC<
 	newBranch,
 	...props
 }) => {
+	const i18nMessages = useTranslations();
 	const { data: headInfo } = useQuery(headInfoQueryOptions(projectId));
 	const { data: worktreeChanges } = useQuery(changesInWorktreeQueryOptions(projectId));
 	const appliedSelection = useSelection("applied", addressSpace);
@@ -1574,7 +1583,7 @@ export const WorkspaceLists: FC<
 					minSize={120}
 				>
 					<SectionHeaderRow
-						label="Stacks and branches"
+						label={i18nMessages.t("lite:WorkspaceLists.stacksAndBranches")}
 						className={styles.stacksHeader}
 						leading={<PanelFoldToggle projectId={projectId} panel="stacks" />}
 						actions={stacksHeaderActions}

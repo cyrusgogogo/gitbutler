@@ -8,9 +8,13 @@
 	} from "$lib/forge/gitlab/gitlabUserService.svelte";
 	import { OnboardingEvent, POSTHOG_WRAPPER } from "$lib/telemetry/posthog";
 	import { inject } from "@gitbutler/core/context";
-
+	import { message as i18nMessage } from "@gitbutler/i18n";
+	import { useTranslations } from "@gitbutler/i18n/svelte";
 	import { AddForgeAccountButton, Button, CardGroup, Link, Textbox } from "@gitbutler/ui";
+	import I18nRichMessage from "@gitbutler/ui/i18n/RichMessage.svelte";
 	import { fade } from "svelte/transition";
+	import type { LocalizedText } from "@gitbutler/i18n";
+	const i18nMessages = useTranslations();
 
 	const gitlabUserService = inject(GITLAB_USER_SERVICE);
 	const posthog = inject(POSTHOG_WRAPPER);
@@ -24,12 +28,12 @@
 
 	// PAT flow state
 	let patInput = $state<string>();
-	let patError = $state<string>();
+	let patError = $state<LocalizedText>();
 
 	// Self-hosted GitLab flow state
 	let selfHostedPatInput = $state<string>();
 	let selfHostedHostInput = $state<string>();
-	let selfHostedPatError = $state<string>();
+	let selfHostedPatError = $state<LocalizedText>();
 	let selfHostedHostError = $state<string>();
 
 	function cleanupPatFlow() {
@@ -64,7 +68,7 @@
 			cleanupPatFlow();
 		} catch (err: any) {
 			console.error("Failed to store GitLab PAT:", err);
-			patError = "Invalid token or network error";
+			patError = i18nMessage("desktop:detail.717e974744");
 			posthog.captureOnboarding(OnboardingEvent.GitLabStorePatFailed);
 		}
 	}
@@ -96,12 +100,13 @@
 			{#snippet error()}
 				<CardGroup.Item>
 					{#snippet title()}
-						Failed to load GitLab accounts
+						{$i18nMessages.t("desktop:GitlabIntegration.failedToLoadGitLabAccounts")}
 					{/snippet}
 					<Button
 						style="pop"
 						onclick={deleteAllGitLabAccounts}
-						loading={clearingAllResult.current.isLoading}>Try again</Button
+						loading={clearingAllResult.current.isLoading}
+						>{$i18nMessages.t("desktop:GitlabIntegration.tryAgain")}</Button
 					>
 				</CardGroup.Item>
 			{/snippet}
@@ -125,7 +130,7 @@
 					{/snippet}
 
 					{#snippet caption()}
-						Allows you to create Merge Requests
+						{$i18nMessages.t("desktop:GitlabIntegration.allowsYouToCreateMergeRequests")}
 					{/snippet}
 
 					{#snippet actions()}
@@ -142,28 +147,30 @@
 			<CardGroup>
 				<CardGroup.Item>
 					{#snippet title()}
-						Add Personal Access Token
+						{$i18nMessages.t("desktop:GitlabIntegration.addPersonalAccessToken")}
 					{/snippet}
 
 					<Textbox
 						size="large"
 						type="password"
 						value={patInput}
-						placeholder="glpat-************************"
+						placeholder={$i18nMessages.t("desktop:GitlabIntegration.glpat")}
 						oninput={(value) => (patInput = value)}
-						error={patError}
+						error={$i18nMessages.text(patError ?? "")}
 					/>
 				</CardGroup.Item>
 				<CardGroup.Item>
 					<div class="flex justify-end gap-6">
-						<Button style="gray" kind="outline" onclick={cleanupPatFlow}>Cancel</Button>
+						<Button style="gray" kind="outline" onclick={cleanupPatFlow}
+							>{$i18nMessages.t("desktop:GitlabIntegration.cancel")}</Button
+						>
 						<Button
 							style="pop"
 							disabled={!patInput}
 							loading={storePatResult.current.isLoading}
 							onclick={storePersonalAccessToken}
 						>
-							Add account
+							{$i18nMessages.t("desktop:GitlabIntegration.addAccount")}
 						</Button>
 					</div>
 				</CardGroup.Item>
@@ -174,19 +181,22 @@
 			<CardGroup>
 				<CardGroup.Item>
 					{#snippet title()}
-						Add Self-Hosted GitLab Account
+						{$i18nMessages.t("desktop:GitlabIntegration.addSelfHostedGitLabAccount")}
 					{/snippet}
 
 					{#snippet caption()}
-						To connect to your self-hosted GitLab API, allow-list it in the app's CSP settings.
-						<br />
-						See <Link href="https://docs.gitbutler.com/troubleshooting/custom-csp"
-							>docs for details</Link
+						{#snippet i18nSlot1()}<br />{/snippet}
+						<I18nRichMessage
+							value={{ key: "desktop:GitlabIntegration.toConnectToYourSelfHostedGitLabAPI" }}
+							components={{ slot1: i18nSlot1 }}
+						/>
+						<Link href="https://docs.gitbutler.com/troubleshooting/custom-csp"
+							>{$i18nMessages.t("desktop:GitlabIntegration.docsForDetails")}</Link
 						>
 					{/snippet}
 
 					<Textbox
-						label="API Base URL"
+						label={$i18nMessages.t("desktop:GitlabIntegration.aPIBaseURL")}
 						size="large"
 						value={selfHostedHostInput}
 						oninput={(value) => (selfHostedHostInput = value)}
@@ -194,25 +204,27 @@
 						error={selfHostedHostError}
 					/>
 					<Textbox
-						label="Personal Access Token"
-						placeholder="glpat-************************"
+						label={$i18nMessages.t("desktop:GitlabIntegration.personalAccessToken")}
+						placeholder={$i18nMessages.t("desktop:GitlabIntegration.glpat")}
 						size="large"
 						type="password"
 						value={selfHostedPatInput}
 						oninput={(value) => (selfHostedPatInput = value)}
-						error={selfHostedPatError}
+						error={$i18nMessages.text(selfHostedPatError ?? "")}
 					/>
 				</CardGroup.Item>
 				<CardGroup.Item>
 					<div class="flex justify-end gap-6">
-						<Button style="gray" kind="outline" onclick={cleanupSelfHostedFlow}>Cancel</Button>
+						<Button style="gray" kind="outline" onclick={cleanupSelfHostedFlow}
+							>{$i18nMessages.t("desktop:GitlabIntegration.cancel")}</Button
+						>
 						<Button
 							style="pop"
 							disabled={!selfHostedHostInput || !selfHostedPatInput}
 							loading={storeSelfHostedPatResult.current.isLoading}
 							onclick={storeSelfHostedToken}
 						>
-							Add account
+							{$i18nMessages.t("desktop:GitlabIntegration.addAccount")}
 						</Button>
 					</div>
 				</CardGroup.Item>
@@ -227,9 +239,13 @@
 		disabled={showingFlow !== undefined}
 		loading={storePatResult.current.isLoading || storeSelfHostedPatResult.current.isLoading}
 		menuItems={[
-			{ label: "Add Personal Access Token", icon: "lock-auth", onclick: startPatFlow },
 			{
-				label: "Add Self-Hosted GitLab Account",
+				label: $i18nMessages.t("desktop:GitlabIntegration.inlinec08af6fc3"),
+				icon: "lock-auth",
+				onclick: startPatFlow,
+			},
+			{
+				label: $i18nMessages.t("desktop:GitlabIntegration.inlinedc4ca92d7"),
 				icon: "factory",
 				onclick: startSelfHostedFlow,
 			},

@@ -1,5 +1,7 @@
 <script lang="ts">
+	import { useTranslations } from "@gitbutler/i18n/svelte";
 	import { untrack } from "svelte";
+	const i18nMessages = useTranslations();
 
 	interface Props {
 		scriptsData: Record<string, any>;
@@ -42,7 +44,7 @@
 					{@html script.icon}
 				</div>
 			{/if}
-			<span class="text-14 text-bold script-button__title">{script.title}</span>
+			<span class="text-14 text-bold script-button__title">{$i18nMessages.text(script.title)}</span>
 		</button>
 	{/each}
 </div>

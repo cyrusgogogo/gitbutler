@@ -1,3 +1,4 @@
+import { useTranslations } from "@gitbutler/i18n/react";
 import { getButtonClassName } from "#ui/components/Button.tsx";
 import { classes } from "#ui/components/classes.ts";
 import { Checkbox } from "#ui/components/Checkbox.tsx";
@@ -45,6 +46,7 @@ const LineCheckbox: FC<{
 	slotName: string;
 	onCheck: (address: Extract<Address, { _tag: "Hunk" }>, shiftKey: boolean) => void;
 }> = (p) => {
+	const i18nMessages = useTranslations();
 	const checked = useAppSelector((state) =>
 		projectSlice.selectors.selectAddressChecked(state, p.projectId, p.address),
 	);
@@ -67,7 +69,7 @@ const LineCheckbox: FC<{
 					event.shiftKey === true;
 				p.onCheck(p.address, shiftKey);
 			}}
-			aria-label="Check line"
+			aria-label={i18nMessages.t("lite:DiffGutterPortals.checkLine")}
 			className={styles.checkbox}
 		/>
 	);
@@ -79,27 +81,30 @@ const CommentButton: FC<{
 	slotName: string;
 	getTarget: () => DiffLineTarget | undefined;
 	onComment: (target: DiffLineTarget) => void;
-}> = (p) => (
-	<span slot={p.slotName} className={styles.comment}>
-		<button
-			type="button"
-			onPointerDown={(event) => {
-				// This control lives inside a line-number cell, but pressing it is not a line selection.
-				event.preventDefault();
-				event.stopPropagation();
-			}}
-			onClick={(event) => {
-				event.stopPropagation();
-				const target = p.getTarget();
-				if (target) p.onComment(target);
-			}}
-			aria-label="Annotate"
-			className={getButtonClassName({ variant: "ghost", size: "small", iconOnly: true })}
-		>
-			<Icon name="plus" />
-		</button>
-	</span>
-);
+}> = (p) => {
+	const i18nMessages = useTranslations();
+	return (
+		<span slot={p.slotName} className={styles.comment}>
+			<button
+				type="button"
+				onPointerDown={(event) => {
+					// This control lives inside a line-number cell, but pressing it is not a line selection.
+					event.preventDefault();
+					event.stopPropagation();
+				}}
+				onClick={(event) => {
+					event.stopPropagation();
+					const target = p.getTarget();
+					if (target) p.onComment(target);
+				}}
+				aria-label={i18nMessages.t("lite:DiffGutterPortals.annotate")}
+				className={getButtonClassName({ variant: "ghost", size: "small", iconOnly: true })}
+			>
+				<Icon name="plus" />
+			</button>
+		</span>
+	);
+};
 
 const HunkCheckbox: FC<{
 	projectId: string;
@@ -115,6 +120,7 @@ const HunkCheckbox: FC<{
 	host: HTMLElement;
 	groupKey: string;
 }> = (p) => {
+	const i18nMessages = useTranslations();
 	const checkedState = useAppSelector((state): HunkCheckedState => {
 		const checkedCount = p.lineAddresses.filter((address) =>
 			projectSlice.selectors.selectAddressChecked(state, p.projectId, address),
@@ -156,7 +162,7 @@ const HunkCheckbox: FC<{
 					event.shiftKey === true;
 				p.onCheck(p.address, p.lineAddresses, shiftKey);
 			}}
-			aria-label="Check hunk"
+			aria-label={i18nMessages.t("lite:DiffGutterPortals.checkHunk")}
 		/>
 	);
 };

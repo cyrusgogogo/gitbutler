@@ -1,3 +1,5 @@
+import { Message as I18nMessage, I18nProvider } from "@gitbutler/i18n/react";
+import { i18n } from "#ui/i18n.ts";
 import { headInfoQueryOptions } from "#ui/api/queries.ts";
 import { cancelPendingOperation } from "#ui/use-cursor.ts";
 import { getHeadInfoIndex } from "#ui/api/ref-info.ts";
@@ -168,7 +170,13 @@ export const useDiffHunkDrag = <T>({
 							createElement(
 								DragPreview,
 								null,
-								addressesLabel({ addresses: sources, headInfoIndex }),
+								createElement(
+									I18nProvider,
+									{ i18n },
+									createElement(I18nMessage, {
+										value: addressesLabel({ addresses: sources, headInfoIndex }),
+									}),
+								),
 							),
 						);
 						return () => root.unmount();

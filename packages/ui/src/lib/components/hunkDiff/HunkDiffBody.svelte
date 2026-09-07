@@ -14,8 +14,10 @@
 		SectionType,
 	} from "$lib/utils/diffParsing";
 	import { onHighlighterChange } from "$lib/utils/shikiHighlighter";
+	import { useTranslations } from "@gitbutler/i18n/svelte";
 	import type { LineSelectionParams } from "$components/hunkDiff/lineSelection.svelte";
 	import type { Snippet } from "svelte";
+	const i18nMessages = useTranslations();
 
 	interface Props {
 		filePath: string;
@@ -154,7 +156,9 @@
 {#if commentRow}
 	<tbody>
 		<tr>
-			<td class="diff-comment__number-column" colspan={commentNumericColSpan}>comment</td>
+			<td class="diff-comment__number-column" colspan={commentNumericColSpan}
+				>{$i18nMessages.t("ui:HunkDiffBody.comment")}</td
+			>
 			<td style="--tab-size: {tabSize};" class="diff-comment">
 				{@html commentRow.tokens.join("")}
 			</td>

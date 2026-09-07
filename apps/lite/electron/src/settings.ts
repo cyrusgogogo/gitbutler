@@ -10,9 +10,11 @@ import { app } from "electron";
 import { type Type, type } from "arktype";
 import { readFile, writeFile } from "atomically";
 import path from "node:path";
+import { normalizePreference } from "@gitbutler/i18n";
 
 const guiSettingsV1 = type({
 	version: "1",
+	"language?": "'system' | 'en' | 'zh-CN'",
 	"autoFetchFrequency?": "string",
 	"autoUpdate?": "boolean",
 	"commentAnnotations?": "boolean",
@@ -68,7 +70,11 @@ const cfgPath = () => path.join(app.getPath("userData"), "settings.json");
 export const readSettings = async (): Promise<GUISettings> => {
 	try {
 		const raw: unknown = JSON.parse(await readFile(cfgPath(), "utf8"));
-		const legacy = validate(raw);
+		const normalized =
+			typeof raw === "object" && raw !== null && "language" in raw
+				? { ...raw, language: normalizePreference(raw.language) }
+				: raw;
+		const legacy = validate(normalized);
 		const cfg = migrate(legacy);
 
 		// oxlint-disable-next-line typescript/no-unnecessary-condition -- There'll be more versions soon.

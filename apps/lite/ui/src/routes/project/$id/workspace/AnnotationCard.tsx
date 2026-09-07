@@ -1,3 +1,5 @@
+import { Message as I18nMessage } from "@gitbutler/i18n/react";
+import { useTranslations } from "@gitbutler/i18n/react";
 import {
 	feedbackPrompt,
 	type LocalAnnotation,
@@ -26,6 +28,7 @@ type Props = {
 
 /** One backend-persisted comment rendered inline in the diff, with its edit and action surface. */
 export const AnnotationCard: FC<Props> = (p) => {
+	const i18nMessages = useTranslations();
 	const { annotation, focusAnnotationIdRef } = p;
 	const { mutate: updateComment } = useCommentUpdate();
 	const { mutate: archiveComment } = useCommentArchive();
@@ -149,7 +152,7 @@ export const AnnotationCard: FC<Props> = (p) => {
 					isDraft ? (
 						<>
 							<button type="submit" className={getButtonClassName({ variant: "pop" })}>
-								Save
+								<I18nMessage value={{ key: "lite:control.Save" }} />
 							</button>
 
 							<button
@@ -157,7 +160,7 @@ export const AnnotationCard: FC<Props> = (p) => {
 								className={getButtonClassName({ variant: "ghost" })}
 								onClick={archiveAndRefocus}
 							>
-								Cancel
+								<I18nMessage value={{ key: "lite:control.Cancel" }} />
 							</button>
 						</>
 					) : (
@@ -167,13 +170,13 @@ export const AnnotationCard: FC<Props> = (p) => {
 								className={getButtonClassName({ variant: "ghost" })}
 								onClick={archiveAndRefocus}
 							>
-								Archive
+								<I18nMessage value={{ key: "lite:control.Archive" }} />
 							</button>
 
 							<button
 								type="button"
-								aria-label="Copy as prompt"
-								title="Copy as prompt"
+								aria-label={i18nMessages.t("lite:AnnotationCard.copyAsPrompt")}
+								title={i18nMessages.t("lite:AnnotationCard.copyAsPrompt")}
 								style={{ marginLeft: "auto" }}
 								className={getButtonClassName({ variant: "ghost", iconOnly: true })}
 								onClick={(evt) => {
@@ -194,8 +197,8 @@ export const AnnotationCard: FC<Props> = (p) => {
 
 							<button
 								type="button"
-								aria-label="Copy all as prompt"
-								title="Copy all as prompt"
+								aria-label={i18nMessages.t("lite:AnnotationCard.copyAllAsPrompt")}
+								title={i18nMessages.t("lite:AnnotationCard.copyAllAsPrompt")}
 								className={getButtonClassName({ variant: "ghost", iconOnly: true })}
 								onClick={copyAll}
 							>

@@ -3,7 +3,7 @@
 	import BranchLabel from "$components/branch/BranchLabel.svelte";
 	import CommitPositionIndicator from "$components/commit/CommitPositionIndicator.svelte";
 	import { TestId } from "@gitbutler/ui";
-
+	import I18nRichMessage from "@gitbutler/ui/i18n/RichMessage.svelte";
 	type Props = {
 		branchName: string;
 		lineColor: string;
@@ -52,9 +52,13 @@
 			</div>
 
 			<p class="text-12 text-body branch-header__empty-state">
-				A new branch will be created for your {mode === "commit" ? "commit" : "AI session"}.
-				<br />
-				Click the name to rename it now or later.
+				{#snippet i18nSlot1()}<br />{/snippet}
+				<I18nRichMessage
+					value={{
+						key: mode === "commit" ? "desktop:branch.newForCommit" : "desktop:branch.newForAi",
+					}}
+					components={{ slot1: i18nSlot1 }}
+				/>
 			</p>
 		</div>
 	</div>

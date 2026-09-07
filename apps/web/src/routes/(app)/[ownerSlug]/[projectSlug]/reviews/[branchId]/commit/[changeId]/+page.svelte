@@ -11,6 +11,7 @@
 	import { USER_SERVICE } from "$lib/user/userService";
 	import { updateFavIcon } from "$lib/utils/faviconUtils";
 	import { inject } from "@gitbutler/core/context";
+	import { useTranslations } from "@gitbutler/i18n/svelte";
 	import Minimap from "@gitbutler/shared/branches/Minimap.svelte";
 	import { getBranchReview } from "@gitbutler/shared/branches/branchesPreview.svelte";
 	import { lookupLatestBranchUuid } from "@gitbutler/shared/branches/latestBranchLookup.svelte";
@@ -25,8 +26,10 @@
 		type ProjectReviewCommitParameters,
 	} from "@gitbutler/shared/routing/webRoutes.svelte";
 	import { Button, Markdown } from "@gitbutler/ui";
+	import I18nRichMessage from "@gitbutler/ui/i18n/RichMessage.svelte";
+	const i18nMessages = useTranslations();
 
-	const DESCRIPTION_PLACE_HOLDER = "No commit message description provided";
+	const DESCRIPTION_PLACE_HOLDER = $derived($i18nMessages.t("web:detail.81400c29d8"));
 
 	interface Props {
 		data: ProjectReviewCommitParameters;
@@ -181,7 +184,7 @@
 		<meta property="og:title" content="Review: {patchCommit.current.value?.title}" />
 		<meta property="og:description" content={patchCommit.current.value?.description} />
 	{:else}
-		<title>GitButler Review</title>
+		<title>{$i18nMessages.t("web:page.gitButlerReview")}</title>
 		<meta property="og:title" content="Butler Review: {data.ownerSlug}/{data.projectSlug}" />
 		<meta property="og:description" content="GitButler code review" />
 	{/if}
@@ -196,8 +199,12 @@
 		<PrivateProjectError />
 	{:else if isError(combinedLoadable)}
 		<div class="error-container">
-			<h2 class="text-15 text-body text-bold">Error loading project data</h2>
-			<p class="text-13 text-body">{combinedLoadable.error.message}</p>
+			<h2 class="text-15 text-body text-bold">
+				{$i18nMessages.t("web:page.errorLoadingProjectData")}
+			</h2>
+			<p class="text-13 text-body">
+				{$i18nMessages.text(combinedLoadable.error.localized ?? combinedLoadable.error.message)}
+			</p>
 		</div>
 	{/if}
 {:else}
@@ -232,15 +239,21 @@
 							{/if}
 							<div class="review-main__title-wrapper">
 								<p class="text-12 review-main__title-wrapper__branch">
-									<span class="">Branch:</span>
-									<a
-										class="truncate"
-										href={routes.projectReviewBranchPath({
-											ownerSlug: data.ownerSlug,
-											projectSlug: data.projectSlug,
-											branchId: data.branchId,
-										})}>{branch.title}</a
-									>
+									{#snippet i18nSlot1(content: import("svelte").Snippet)}<span class=""
+											>{@render content()}</span
+										>{/snippet}
+									{#snippet i18nSlot2(content: import("svelte").Snippet)}<a
+											class="truncate"
+											href={routes.projectReviewBranchPath({
+												ownerSlug: data.ownerSlug,
+												projectSlug: data.projectSlug,
+												branchId: data.branchId,
+											})}>{@render content()}</a
+										>{/snippet}
+									<I18nRichMessage
+										value={{ key: "web:page.branchValue", values: { title: String(branch.title) } }}
+										components={{ slot1: i18nSlot1, slot2: i18nSlot2 }}
+									/>
 								</p>
 								<h3 class="text-18 text-bold review-main-title">{patchCommit.title}</h3>
 							</div>
@@ -264,7 +277,9 @@
 					<div class="review-main__meta">
 						<ReviewInfo projectId={repositoryId} {patchCommit} />
 						<div class="review-main-description">
-							<span class="text-12 review-main-description__caption">Commit message:</span>
+							<span class="text-12 review-main-description__caption"
+								>{$i18nMessages.t("web:page.commitMessage")}</span
+							>
 							<p class="review-main-description__markdown">
 								{#if patchCommit.description?.trim()}
 									<Markdown content={patchCommit.description} />

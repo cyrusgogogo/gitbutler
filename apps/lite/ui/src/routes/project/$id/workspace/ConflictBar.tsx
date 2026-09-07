@@ -1,3 +1,4 @@
+import { Message as I18nMessage, useTranslations } from "@gitbutler/i18n/react";
 import { useEnterEditMode } from "#ui/api/mutations.ts";
 import { headInfoQueryOptions } from "#ui/api/queries.ts";
 import { getButtonClassName } from "#ui/components/Button.tsx";
@@ -43,6 +44,7 @@ type Props = {
  * would otherwise only show in the closed-by-default files panel.
  */
 export const ConflictBar: FC<Props> = (p) => {
+	const i18nMessages = useTranslations();
 	const dispatch = useAppDispatch();
 	const checked = useAppSelector((state) =>
 		projectSlice.selectors.selectCheckedConflicts(state, p.projectId, p.commitId),
@@ -100,7 +102,9 @@ export const ConflictBar: FC<Props> = (p) => {
 					className={classes(styles.manual, "text-12")}
 					title={p.manual.map((file) => `${file.path} — ${file.reason}`).join("\n")}
 				>
-					{p.manual.length} file{p.manual.length === 1 ? "" : "s"} can only be resolved in edit mode
+					<I18nMessage
+						value={{ key: "lite:conflict.manualFiles", values: { count: p.manual.length } }}
+					/>{" "}
 				</span>
 			)}
 
@@ -108,13 +112,13 @@ export const ConflictBar: FC<Props> = (p) => {
 				type="button"
 				className={classes(getButtonClassName({ variant: "outline", size: "small" }))}
 				disabled={p.busy || stackId === null}
-				title="Check the commit out into your working directory and edit its files directly"
+				title={i18nMessages.t("lite:ConflictBar.checkTheCommitOutIntoYourWorkingDirectory")}
 				onClick={() => {
 					if (stackId !== null)
 						enterEditMode({ projectId: p.projectId, commitId: p.commitId, stackId });
 				}}
 			>
-				Open Edit Mode
+				<I18nMessage value={{ key: "lite:ConflictBar.openEditMode" }} />
 			</button>
 
 			{total > 0 && (
@@ -131,7 +135,7 @@ export const ConflictBar: FC<Props> = (p) => {
 								styles.resolve,
 							)}
 						>
-							Resolve conflicts
+							<I18nMessage value={{ key: "lite:control.Resolveconflicts" }} />
 						</button>
 					}
 				>
@@ -154,7 +158,7 @@ export const ConflictBar: FC<Props> = (p) => {
 									disabled={p.busy}
 									onClick={() => apply({ type: "theirs" })}
 								>
-									Accept incoming
+									<I18nMessage value={{ key: "lite:ConflictBar.acceptIncoming" }} />
 								</button>
 								<button
 									type="button"
@@ -162,7 +166,7 @@ export const ConflictBar: FC<Props> = (p) => {
 									disabled={p.busy}
 									onClick={() => apply({ type: "ours" })}
 								>
-									Accept current
+									<I18nMessage value={{ key: "lite:ConflictBar.acceptCurrent" }} />
 								</button>
 								<button
 									type="button"
@@ -171,13 +175,13 @@ export const ConflictBar: FC<Props> = (p) => {
 										dispatch(projectSlice.actions.clearCheckedConflicts({ projectId: p.projectId }))
 									}
 								>
-									Clear
+									<I18nMessage value={{ key: "lite:ConflictBar.clear" }} />
 								</button>
 							</div>
 						)}
 
 						<Dialog.Close
-							aria-label="Close"
+							aria-label={i18nMessages.t("lite:ConflictBar.close")}
 							className={getButtonClassName({
 								variant: "ghost",
 								size: "small",

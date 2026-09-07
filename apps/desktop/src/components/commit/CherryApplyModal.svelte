@@ -7,7 +7,10 @@
 	import { cherryPickTargets } from "$lib/stacks/stack";
 	import { STACK_SERVICE } from "$lib/stacks/stackService.svelte";
 	import { inject } from "@gitbutler/core/context";
+	import { message as i18nMessage } from "@gitbutler/i18n";
+	import { useTranslations } from "@gitbutler/i18n/svelte";
 	import { Button, CardGroup, InfoMessage, Modal, RadioButton } from "@gitbutler/ui";
+	const i18nMessages = useTranslations();
 
 	type Props = {
 		projectId: string;
@@ -57,7 +60,7 @@
 			});
 		} catch (error) {
 			// Keep the modal open so another stack can be tried.
-			showError("Cannot cherry-pick commit", error);
+			showError(i18nMessage("desktop:CherryApplyModal.cannotCherryPickCommit"), error);
 			return;
 		}
 
@@ -70,9 +73,9 @@
 
 	/** A stack whose top segment lost its branch name has nothing to place the copy against. */
 	function targetsMessage(targetCount: number, stackCount: number): string {
-		if (targetCount > 0) return "Select the stack to copy this commit into.";
-		if (stackCount > 0) return "No applied stack has a named branch to copy this commit into.";
-		return "No stacks are currently applied to the workspace.";
+		if (targetCount > 0) return $i18nMessages.t("desktop:CherryApplyModal.detail1f2bb0552");
+		if (stackCount > 0) return $i18nMessages.t("desktop:CherryApplyModal.detailad384584c");
+		return $i18nMessages.t("desktop:CherryApplyModal.detail66d952b15");
 	}
 
 	function handleStackSelectionChange(form: HTMLFormElement) {
@@ -84,7 +87,11 @@
 	}
 </script>
 
-<Modal bind:this={modalRef} title="Cherry-pick commit" width={500}>
+<Modal
+	bind:this={modalRef}
+	title={$i18nMessages.t("desktop:CherryApplyModal.cherryPickCommit")}
+	width={500}
+>
 	<ReduxResult {projectId} result={stacksResult.result}>
 		{#snippet children(stacks)}
 			{@const targets = cherryPickTargets(stacks)}
@@ -105,7 +112,9 @@
 									{/snippet}
 									{#snippet caption()}
 										{branchCount}
-										{branchCount === 1 ? "branch" : "branches"}
+										{branchCount === 1
+											? $i18nMessages.t("desktop:CherryApplyModal.branch")
+											: $i18nMessages.t("desktop:CherryApplyModal.branches")}
 									{/snippet}
 									{#snippet actions()}
 										<RadioButton
@@ -124,14 +133,16 @@
 		{/snippet}
 	</ReduxResult>
 	{#snippet controls()}
-		<Button kind="outline" onclick={close} disabled={isApplying}>Cancel</Button>
+		<Button kind="outline" onclick={close} disabled={isApplying}
+			>{$i18nMessages.t("desktop:CherryApplyModal.cancel")}</Button
+		>
 		<Button
 			style="pop"
 			onclick={handleApply}
 			disabled={!selectedBranchName || isApplying}
 			loading={isApplying}
 		>
-			Cherry-pick
+			{$i18nMessages.t("desktop:CherryApplyModal.cherryPick")}
 		</Button>
 	{/snippet}
 </Modal>

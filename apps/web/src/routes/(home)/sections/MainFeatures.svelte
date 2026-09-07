@@ -2,6 +2,8 @@
 	import Features from "$home/components/Features.svelte";
 	import contentJSON from "$home/data/content.json";
 	import { effectiveThemeStore } from "$lib/utils/theme.svelte";
+	import { useTranslations } from "@gitbutler/i18n/svelte";
+	const i18nMessages = useTranslations();
 
 	const previewContent = contentJSON["app-preview"];
 	const featuresContent = contentJSON["main-features"];
@@ -13,7 +15,7 @@
 </script>
 
 <div class="features-wrap">
-	<img class="app-preview" src={previewSrc} alt={previewContent.alt} />
+	<img class="app-preview" src={previewSrc} alt={$i18nMessages.text(previewContent.alt)} />
 
 	<Features items={featuresContent} />
 </div>

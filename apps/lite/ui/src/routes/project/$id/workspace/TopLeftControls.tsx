@@ -1,3 +1,4 @@
+import { useTranslations } from "@gitbutler/i18n/react";
 import { getButtonClassName } from "#ui/components/Button.tsx";
 import { sidebarFocusScopeOf } from "#ui/use-cursor.ts";
 import { Icon } from "#ui/components/Icon.tsx";
@@ -11,6 +12,7 @@ import { useEffect, useState, type FC } from "react";
 import styles from "./TopLeftControls.module.css";
 
 const FullWindowButton: FC = () => {
+	const i18nMessages = useTranslations();
 	const dispatch = useAppDispatch();
 	const fullWindow = useAppSelector(interfaceSlice.selectors.selectDetailsFullWindow);
 
@@ -30,7 +32,7 @@ const FullWindowButton: FC = () => {
 					<button
 						type="button"
 						className={getButtonClassName({ iconOnly: true, variant: "ghost" })}
-						aria-label={workspaceHotkeys.toggleSidebar.meta.name}
+						aria-label={i18nMessages.t(workspaceHotkeys.toggleSidebar.meta.i18nKey)}
 						onClick={toggle}
 					>
 						{fullWindow ? <Icon name="sidebar-narrow" /> : <Icon name="sidebar" />}
@@ -40,7 +42,7 @@ const FullWindowButton: FC = () => {
 			<Tooltip.Portal>
 				<Tooltip.Positioner sideOffset={4}>
 					<Tooltip.Popup render={<TooltipPopup kbd={workspaceHotkeys.toggleSidebar.hotkey} />}>
-						{workspaceHotkeys.toggleSidebar.meta.name}
+						{i18nMessages.t(workspaceHotkeys.toggleSidebar.meta.i18nKey)}
 					</Tooltip.Popup>
 				</Tooltip.Positioner>
 			</Tooltip.Portal>

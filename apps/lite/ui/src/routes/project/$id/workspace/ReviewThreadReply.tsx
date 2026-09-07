@@ -1,3 +1,4 @@
+import { Message as I18nMessage, useTranslations } from "@gitbutler/i18n/react";
 import { useCreateReviewThreadReply } from "#ui/api/mutations.ts";
 import { getButtonClassName } from "#ui/components/Button.tsx";
 import { classes } from "#ui/components/classes.ts";
@@ -18,6 +19,7 @@ type Props = {
  * a column of empty boxes.
  */
 export const ReviewThreadReply: FC<Props> = ({ projectId, reviewId, threadId }) => {
+	const i18nMessages = useTranslations();
 	const [open, setOpen] = useState(false);
 	const [body, setBody] = useState("");
 	/** One-shot: the box takes focus when unfolded, not on every re-render. */
@@ -64,7 +66,7 @@ export const ReviewThreadReply: FC<Props> = ({ projectId, reviewId, threadId }) 
 				}}
 				type="button"
 			>
-				Reply
+				<I18nMessage value={{ key: "lite:ReviewThreadReply.reply" }} />
 			</button>
 		);
 	}
@@ -72,11 +74,11 @@ export const ReviewThreadReply: FC<Props> = ({ projectId, reviewId, threadId }) 
 	return (
 		<div className={styles.composer}>
 			<FieldTextareaStyles
-				aria-label="Reply to this thread"
+				aria-label={i18nMessages.t("lite:ReviewThreadReply.replyToThisThread")}
 				className={styles.input}
 				onChange={(event) => setBody(event.currentTarget.value)}
 				onKeyDown={onKeyDown}
-				placeholder="Write a reply…"
+				placeholder={i18nMessages.t("lite:ReviewThreadReply.writeAReply")}
 				ref={(textarea) => {
 					if (textarea && wantsFocusRef.current) {
 						wantsFocusRef.current = false;
@@ -92,7 +94,7 @@ export const ReviewThreadReply: FC<Props> = ({ projectId, reviewId, threadId }) 
 					onClick={() => setOpen(false)}
 					type="button"
 				>
-					Cancel
+					<I18nMessage value={{ key: "lite:ReviewThreadReply.cancel" }} />
 				</button>
 				<button
 					className={getButtonClassName({ variant: "gray" })}
@@ -100,7 +102,7 @@ export const ReviewThreadReply: FC<Props> = ({ projectId, reviewId, threadId }) 
 					onClick={submit}
 					type="button"
 				>
-					Reply
+					<I18nMessage value={{ key: "lite:ReviewThreadReply.reply" }} />
 				</button>
 			</div>
 		</div>

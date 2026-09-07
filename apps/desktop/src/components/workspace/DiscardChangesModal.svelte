@@ -5,9 +5,12 @@
 	import { FILE_SELECTION_MANAGER } from "$lib/selection/fileSelectionManager.svelte";
 	import { STACK_SERVICE } from "$lib/stacks/stackService.svelte";
 	import { inject } from "@gitbutler/core/context";
+	import { useTranslations } from "@gitbutler/i18n/svelte";
 	import { AsyncButton, Button, FileListItem, Modal, TestId } from "@gitbutler/ui";
+	import I18nRichMessage from "@gitbutler/ui/i18n/RichMessage.svelte";
 	import type { SelectionId } from "$lib/selection/key";
 	import type { TreeChange } from "@gitbutler/but-sdk";
+	const i18nMessages = useTranslations();
 
 	type ChangedFilesItem = {
 		changes: TreeChange[];
@@ -61,7 +64,7 @@
 <Modal
 	width="small"
 	type="warning"
-	title="Discard changes"
+	title={$i18nMessages.t("desktop:DiscardChangesModal.discardChanges")}
 	testId={TestId.DiscardFileChangesConfirmationModal}
 	bind:this={modal}
 >
@@ -69,14 +72,26 @@
 		{#if isChangedFilesItem(item)}
 			{#if isChangedFolderItem(item)}
 				<p class="discard-caption">
-					Are you sure you want to discard all changes in
-					<span class="text-bold">{item.path}</span>?
+					{#snippet i18nSlot1(content: import("svelte").Snippet)}<span class="text-bold"
+							>{@render content()}</span
+						>{/snippet}
+					<I18nRichMessage
+						value={{
+							key: "desktop:DiscardChangesModal.areYouSureYouWantToDiscardAll",
+							values: { path: String(item.path) },
+						}}
+						components={{ slot1: i18nSlot1 }}
+					/>
 				</p>
 			{:else}
 				{@const changes = item.changes}
 				{#if changes.length < 10}
 					<p class="discard-caption">
-						Are you sure you want to discard the changes<br />to the following files:
+						{#snippet i18nSlot2()}<br />{/snippet}
+						<I18nRichMessage
+							value={{ key: "desktop:DiscardChangesModal.areYouSureYouWantToDiscardThe" }}
+							components={{ slot2: i18nSlot2 }}
+						/>
 					</p>
 					<ul class="file-list">
 						{#each changes as change}
@@ -90,21 +105,28 @@
 					</ul>
 				{:else}
 					<p>
-						Discard the changes to all <span class="text-bold">
-							{changes.length} files
-						</span>?
+						{#snippet i18nSlot3(content: import("svelte").Snippet)}<span class="text-bold"
+								>{@render content()}</span
+							>{/snippet}
+						<I18nRichMessage
+							value={{
+								key: "desktop:DiscardChangesModal.discardTheChangesToAllValueFiles",
+								values: { length: String(changes.length) },
+							}}
+							components={{ slot3: i18nSlot3 }}
+						/>
 					</p>
 				{/if}
 			{/if}
 		{:else}
-			<p class="text-13">Woops! Malformed data :(</p>
+			<p class="text-13">{$i18nMessages.t("desktop:DiscardChangesModal.woopsMalformedData")}</p>
 		{/if}
 	{/snippet}
 	{#snippet controls(close, item)}
 		<Button
 			testId={TestId.DiscardFileChangesConfirmationModal_Cancel}
 			kind="outline"
-			onclick={close}>Cancel</Button
+			onclick={close}>{$i18nMessages.t("desktop:DiscardChangesModal.cancel")}</Button
 		>
 		<AsyncButton
 			testId={TestId.DiscardFileChangesConfirmationModal_Discard}
@@ -114,7 +136,7 @@
 				if (isChangedFilesItem(item)) await confirmDiscard(item);
 			}}
 		>
-			Confirm
+			{$i18nMessages.t("desktop:DiscardChangesModal.confirm")}
 		</AsyncButton>
 	{/snippet}
 </Modal>

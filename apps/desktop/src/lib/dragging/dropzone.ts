@@ -1,3 +1,4 @@
+import { message as i18nMessage } from "@gitbutler/i18n";
 import type { DropResult } from "$lib/dragging/dropResult";
 import type { DropzoneHandler } from "$lib/dragging/handler";
 import type { DropzoneRegistry } from "$lib/dragging/registry";
@@ -196,7 +197,7 @@ export class Dropzone {
 		} catch (err) {
 			this.configuration.onDropResult({
 				type: "error",
-				title: "Drop operation failed",
+				title: i18nMessage("desktop:dropzone.statica0fdd069b"),
 				error: err,
 			});
 		}

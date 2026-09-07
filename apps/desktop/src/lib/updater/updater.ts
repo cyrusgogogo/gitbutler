@@ -1,5 +1,6 @@
 import { showToast } from "$lib/notifications/toasts";
 import { InjectionToken } from "@gitbutler/core/context";
+import { message as i18nMessage } from "@gitbutler/i18n";
 import { persisted } from "@gitbutler/shared/persisted";
 import { get, writable } from "svelte/store";
 import type {
@@ -246,24 +247,14 @@ function handleError(err: any, manual: boolean) {
 		// in-app remediation, the user needs to reinstall manually.
 		showToast({
 			style: "info",
-			title: "Can't update in place",
-			message: `
-                GitButler appears to be installed in a read-only location, so
-                the auto-updater can't replace it. Please reinstall or update
-                via your package manager, or download the latest release from
-                our [downloads](https://app.gitbutler.com/downloads) page.
-            `,
+			title: i18nMessage("desktop:updater.canTUpdateInPlace"),
+			message: i18nMessage("desktop:updater.gitButlerAppearsToBeInstalledInARead"),
 		});
 		return;
 	}
 	showToast({
-		title: "App update failed",
-		message: `
-            Something went wrong while updating the app.
-
-            You can download the latest release from our
-            [downloads](https://app.gitbutler.com/downloads) page.
-        `,
+		title: i18nMessage("desktop:updater.appUpdateFailed"),
+		message: i18nMessage("desktop:updater.somethingWentWrongWhileUpdatingTheAppYou"),
 		error: err,
 		style: "danger",
 	});

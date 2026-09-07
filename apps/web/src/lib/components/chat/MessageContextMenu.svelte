@@ -1,9 +1,10 @@
 <script lang="ts">
 	import RulesModal from "$lib/components/rules/RulesModal.svelte";
+	import { useTranslations } from "@gitbutler/i18n/svelte";
 	import { ContextMenu, ContextMenuItem, ContextMenuSection } from "@gitbutler/ui";
 	import { copyToClipboard } from "@gitbutler/ui/utils/clipboard";
-
 	import type { ChatMessage } from "@gitbutler/shared/chat/types";
+	const i18nMessages = useTranslations();
 
 	type Props = {
 		open: boolean;
@@ -34,10 +35,16 @@
 {#if open}
 	<ContextMenu {leftClickTrigger} target={leftClickTrigger} {onclose} {onopen}>
 		<ContextMenuSection>
-			<ContextMenuItem label="Copy link" onclick={copyLink} />
+			<ContextMenuItem
+				label={$i18nMessages.t("web:MessageContextMenu.copyLink")}
+				onclick={copyLink}
+			/>
 		</ContextMenuSection>
 		<ContextMenuSection>
-			<ContextMenuItem label="Create a rule" onclick={openRulesModal} />
+			<ContextMenuItem
+				label={$i18nMessages.t("web:MessageContextMenu.createARule")}
+				onclick={openRulesModal}
+			/>
 		</ContextMenuSection>
 	</ContextMenu>
 {/if}

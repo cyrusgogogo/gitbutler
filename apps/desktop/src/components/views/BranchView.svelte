@@ -13,8 +13,10 @@
 	import { MODE_SERVICE } from "$lib/mode/modeService";
 	import { UI_STATE } from "$lib/state/uiState.svelte";
 	import { inject } from "@gitbutler/core/context";
+	import { useTranslations } from "@gitbutler/i18n/svelte";
 	import { Icon, TestId, Tooltip, Button } from "@gitbutler/ui";
 	import type { Segment } from "@gitbutler/but-sdk";
+	const i18nMessages = useTranslations();
 
 	interface Props {
 		stackId?: string;
@@ -120,7 +122,7 @@
 				kind="ghost"
 				icon="pop-out-bottom-right"
 				size="tag"
-				tooltip="Pop out diff view"
+				tooltip={$i18nMessages.t("desktop:BranchView.popOutDiffView")}
 				onclick={onpopout}
 			/>
 		{/if}
@@ -131,7 +133,7 @@
 				<Tooltip
 					text={remoteTrackingBranch
 						? `Remote tracking branch:\n${remoteTrackingBranch}`
-						: "No remote tracking branch"}
+						: $i18nMessages.t("desktop:BranchView.inlinea4c036104")}
 				>
 					<div class="remote-tracking-branch-icon" class:disabled={!remoteTrackingBranch}>
 						<Icon name={remoteTrackingBranch ? "target-branch" : "target-cross"} />
@@ -207,10 +209,11 @@
 			<div class="branch-view__empty-state__image">
 				{@html newBranchSmolSVG}
 			</div>
-			<h3 class="text-16 text-semibold branch-view__empty-state__title">This is a new branch</h3>
+			<h3 class="text-16 text-semibold branch-view__empty-state__title">
+				{$i18nMessages.t("desktop:BranchView.thisIsANewBranch")}
+			</h3>
 			<p class="text-13 text-body branch-view__empty-state__description">
-				Commit your changes here. You can stack additional branches or apply them independently. You
-				can also drag and drop files to start a new commit.
+				{$i18nMessages.t("desktop:BranchView.commitYourChangesHereYouCanStackAdditional")}
 			</p>
 		</div>
 	{/if}

@@ -9,6 +9,7 @@ export default {
 		},
 	},
 	test: {
+		setupFiles: ["./vitest-setup.ts"],
 		include: ["src/**/*.(test|spec).?(m)[jt]s?(x)"],
 	},
 	build: {

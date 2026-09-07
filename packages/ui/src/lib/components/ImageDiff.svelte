@@ -3,6 +3,8 @@
 	import RangeInput from "$components/RangeInput.svelte";
 	import SkeletonBone from "$components/SkeletonBone.svelte";
 	import { SegmentControl } from "$components/segmentControl";
+	import { useTranslations } from "@gitbutler/i18n/svelte";
+	const i18nMessages = useTranslations();
 
 	type Props = {
 		beforeImageUrl?: string | null;
@@ -49,7 +51,7 @@
 		} else if (diff < 0) {
 			return `-${formatFileSize(absDiff)}`;
 		}
-		return "Same size";
+		return $i18nMessages.t("ui:ImageDiff.detail3e3579a13");
 	}
 
 	async function loadImageMetadata(url: string): Promise<ImageMetadata> {
@@ -183,9 +185,9 @@
 		>
 			{formatSizeDifference(beforeImageMetadata.size, afterImageMetadata.size)}
 			{#if afterImageMetadata.size < beforeImageMetadata.size}
-				<span aria-label="decreased">↘</span>
+				<span aria-label={$i18nMessages.t("ui:ImageDiff.decreased")}>↘</span>
 			{:else if afterImageMetadata.size > beforeImageMetadata.size}
-				<span aria-label="increased">↗</span>
+				<span aria-label={$i18nMessages.t("ui:ImageDiff.increased")}>↗</span>
 			{/if}
 		</span>
 	{/if}
@@ -237,19 +239,25 @@
 			onkeydown={handleKeyDown}
 			role="slider"
 			tabindex="0"
-			aria-label="Image comparison slider"
+			aria-label={$i18nMessages.t("ui:ImageDiff.imageComparisonSlider")}
 			aria-valuenow={props.controlValue}
 			aria-valuemin={0}
 			aria-valuemax={100}
 		>
 			<div class="comparison-image comparison-after">
-				<img src={afterImageUrl!} alt="{fileName} (After)" />
+				<img
+					src={afterImageUrl!}
+					alt={$i18nMessages.t("ui:ImageDiff.valueAfter", { fileName: String(fileName) })}
+				/>
 			</div>
 			<div
 				class="comparison-image comparison-before"
 				style="clip-path: inset(0 {100 - props.controlValue}% 0 0);"
 			>
-				<img src={beforeImageUrl!} alt="{fileName} (Before)" />
+				<img
+					src={beforeImageUrl!}
+					alt={$i18nMessages.t("ui:ImageDiff.valueBefore", { fileName: String(fileName) })}
+				/>
 			</div>
 			<div class="swipe-handle" style="left: {props.controlValue}%">
 				<div class="swipe-divider"></div>
@@ -264,16 +272,22 @@
 	<div class="comparison-container">
 		<div class="comparison-wrapper checkered-bg" bind:this={comparisonWrapperRef}>
 			<div class="comparison-image comparison-after">
-				<img src={afterImageUrl!} alt="{fileName} (After)" />
+				<img
+					src={afterImageUrl!}
+					alt={$i18nMessages.t("ui:ImageDiff.valueAfter", { fileName: String(fileName) })}
+				/>
 			</div>
 			<div class="comparison-image comparison-before" style="opacity: {props.controlValue / 100};">
-				<img src={beforeImageUrl!} alt="{fileName} (Before)" />
+				<img
+					src={beforeImageUrl!}
+					alt={$i18nMessages.t("ui:ImageDiff.valueBefore", { fileName: String(fileName) })}
+				/>
 			</div>
 		</div>
 		<div class="comparison-controls">
-			<Badge style="danger" kind="soft">Before</Badge>
+			<Badge style="danger" kind="soft">{$i18nMessages.t("ui:ImageDiff.before")}</Badge>
 			<RangeInput min={0} max={100} value={props.controlValue} oninput={props.onValueChange} wide />
-			<Badge style="safe" kind="soft">After</Badge>
+			<Badge style="safe" kind="soft">{$i18nMessages.t("ui:ImageDiff.after")}</Badge>
 		</div>
 		{@render comparisonFooter()}
 	</div>
@@ -287,9 +301,12 @@
 				selected={viewMode}
 				onselect={(id) => (viewMode = id as ViewMode)}
 			>
-				<SegmentControl.Item id="2-up">2-up</SegmentControl.Item>
-				<SegmentControl.Item id="swipe">Swipe</SegmentControl.Item>
-				<SegmentControl.Item id="onion-skin">Onion Skin</SegmentControl.Item>
+				<SegmentControl.Item id="2-up">{$i18nMessages.t("ui:ImageDiff.2Up")}</SegmentControl.Item>
+				<SegmentControl.Item id="swipe">{$i18nMessages.t("ui:ImageDiff.swipe")}</SegmentControl.Item
+				>
+				<SegmentControl.Item id="onion-skin"
+					>{$i18nMessages.t("ui:ImageDiff.onionSkin")}</SegmentControl.Item
+				>
 			</SegmentControl>
 		</div>
 	{/if}
@@ -308,7 +325,9 @@
 				{#if beforeImageUrl}
 					{@render imagePanel({
 						url: beforeImageUrl,
-						label: afterImageUrl ? "Before" : "Removed",
+						label: afterImageUrl
+							? $i18nMessages.t("ui:ImageDiff.inline74f39697a")
+							: $i18nMessages.t("ui:ImageDiff.inlineb5e77c5c0"),
 						isBefore: true,
 						metadata: beforeImageMetadata,
 					})}
@@ -317,7 +336,9 @@
 				{#if afterImageUrl}
 					{@render imagePanel({
 						url: afterImageUrl,
-						label: beforeImageUrl ? "After" : "Added",
+						label: beforeImageUrl
+							? $i18nMessages.t("ui:ImageDiff.inline79ba5e1b3")
+							: $i18nMessages.t("ui:ImageDiff.inlineb68734c25"),
 						metadata: afterImageMetadata,
 					})}
 				{/if}

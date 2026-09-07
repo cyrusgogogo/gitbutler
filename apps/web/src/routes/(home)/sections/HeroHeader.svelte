@@ -1,6 +1,9 @@
 <script lang="ts">
 	import { goto } from "$app/navigation";
+	import { useTranslations } from "@gitbutler/i18n/svelte";
+	import I18nRichMessage from "@gitbutler/ui/i18n/RichMessage.svelte";
 	import { onMount, type Snippet } from "svelte";
+	const i18nMessages = useTranslations();
 
 	interface Props {
 		currentPage?: "home" | "cli";
@@ -52,9 +55,13 @@
 </script>
 
 <h1 class="title">
-	Version Control <br /> for your
+	{#snippet i18nSlot1()}<br />{/snippet}
+	<I18nRichMessage
+		value={{ key: "web:HeroHeader.versionControlForYour" }}
+		components={{ slot1: i18nSlot1 }}
+	/>
 	<i class="but-text"
-		><span>Agents</span>
+		><span>{$i18nMessages.t("web:HeroHeader.agents")}</span>
 		<svg
 			class="but-text__underline"
 			width="134"
@@ -70,7 +77,11 @@
 </h1>
 
 <div class="description-wrapper">
-	<div class="toggle-switch" role="group" aria-label="View mode selection">
+	<div
+		class="toggle-switch"
+		role="group"
+		aria-label={$i18nMessages.t("web:HeroHeader.viewModeSelection")}
+	>
 		<button
 			bind:this={cliButton}
 			type="button"
@@ -83,7 +94,7 @@
 			onmouseleave={() => (hoveredOption = null)}
 			aria-pressed={currentPage === "cli"}
 		>
-			CLI
+			{$i18nMessages.t("web:HeroHeader.cLI")}
 		</button>
 		<button
 			bind:this={clientButton}
@@ -97,7 +108,7 @@
 			onmouseleave={() => (hoveredOption = null)}
 			aria-pressed={currentPage === "home"}
 		>
-			Desktop
+			{$i18nMessages.t("web:HeroHeader.desktop")}
 		</button>
 
 		<div

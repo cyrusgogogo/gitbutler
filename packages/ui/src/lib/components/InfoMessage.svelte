@@ -8,7 +8,9 @@
 	import { type IconName } from "$lib/icons/names";
 	import { copyToClipboard } from "$lib/utils/clipboard";
 	import { type ComponentColorType } from "$lib/utils/colorTypes";
+	import { useTranslations } from "@gitbutler/i18n/svelte";
 	import type { Snippet } from "svelte";
+	const i18nMessages = useTranslations();
 
 	interface Props {
 		icon?: IconName;
@@ -123,7 +125,7 @@
 			<div class="info-message__actions">
 				{#if error}
 					<Button kind="ghost" onclick={() => copyToClipboard(error)} icon="copy">
-						Copy error message
+						{$i18nMessages.t("ui:InfoMessage.copyErrorMessage")}
 					</Button>
 				{/if}
 				{#if tertiaryLabel}

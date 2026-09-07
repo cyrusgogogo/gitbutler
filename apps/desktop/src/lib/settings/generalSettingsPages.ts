@@ -1,8 +1,9 @@
+import { message, type LocalizedText } from "@gitbutler/i18n";
 import { type IconName } from "@gitbutler/ui";
 
 interface SettingsPage {
 	id: string;
-	label: string;
+	label: LocalizedText;
 	icon: IconName;
 	adminOnly?: boolean;
 }
@@ -10,47 +11,47 @@ interface SettingsPage {
 export const generalSettingsPages = [
 	{
 		id: "general",
-		label: "General",
+		label: message("desktop:settings.general"),
 		icon: "settings",
 	},
 	{
 		id: "appearance",
-		label: "Appearance",
+		label: message("desktop:settings.appearance"),
 		icon: "appearance",
 	},
 	{
 		id: "lanes-and-branches",
-		label: "Lanes & branches",
+		label: message("desktop:settings.lanes.branches"),
 		icon: "lanes",
 	},
 	{
 		id: "git",
-		label: "Git stuff",
+		label: message("desktop:settings.git.stuff"),
 		icon: "git",
 	},
 	{
 		id: "integrations",
-		label: "Integrations",
+		label: message("desktop:settings.integrations"),
 		icon: "puzzle",
 	},
 	{
 		id: "ai",
-		label: "AI Options",
+		label: message("desktop:settings.ai.options"),
 		icon: "ai",
 	},
 	{
 		id: "telemetry",
-		label: "Telemetry",
+		label: message("desktop:settings.telemetry"),
 		icon: "chart-bar-x",
 	},
 	{
 		id: "experimental",
-		label: "Experimental",
+		label: message("desktop:settings.experimental"),
 		icon: "lab",
 	},
 	{
 		id: "organizations",
-		label: "Organizations",
+		label: message("desktop:settings.organizations"),
 		icon: "factory",
 		adminOnly: true,
 	},

@@ -1,4 +1,6 @@
-export function formatDate(dateStr: string): string {
+import { formatRelativeTime } from "@gitbutler/i18n/format";
+import type { Locale } from "@gitbutler/i18n";
+export function formatDate(dateStr: string, locale: Locale = "en"): string {
 	const date = new Date(dateStr);
 	const now = new Date();
 
@@ -14,26 +16,26 @@ export function formatDate(dateStr: string): string {
 			if (diffInMinutes < 1) {
 				const diffInSeconds = diff / 1000;
 
-				return `${Math.floor(diffInSeconds)} seconds ago`;
+				return formatRelativeTime(locale, -Math.floor(diffInSeconds), "seconds");
 			}
 
-			return `${Math.floor(diffInMinutes)} minutes ago`;
+			return formatRelativeTime(locale, -Math.floor(diffInMinutes), "minutes");
 		}
 
-		return `${Math.floor(diffInHours)} hours ago`;
+		return formatRelativeTime(locale, -Math.floor(diffInHours), "hours");
 	}
 
 	if (diffInDays < 30) {
-		return `${Math.floor(diffInDays)} days ago`;
+		return formatRelativeTime(locale, -Math.floor(diffInDays), "days");
 	}
 
 	const diffInMonths = diffInDays / 30;
 
 	if (diffInMonths < 12) {
-		return `${Math.floor(diffInMonths)} months ago`;
+		return formatRelativeTime(locale, -Math.floor(diffInMonths), "months");
 	}
 
 	const diffInYears = diffInMonths / 12;
 
-	return `${Math.floor(diffInYears)} years ago`;
+	return formatRelativeTime(locale, -Math.floor(diffInYears), "years");
 }

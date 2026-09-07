@@ -1,3 +1,4 @@
+import { message as i18nMessage } from "@gitbutler/i18n";
 import {
 	useCommitDiscardChanges,
 	useCommitUncommitChanges,
@@ -10,12 +11,7 @@ import {
 	listEditorsQueryOptions,
 	listProjectsQueryOptions,
 } from "#ui/api/queries.ts";
-import {
-	diffHotkeys,
-	revealInFolderLabel,
-	selectionOperationHotkeys,
-	toElectronAccelerator,
-} from "#ui/hotkeys.ts";
+import { diffHotkeys, selectionOperationHotkeys, toElectronAccelerator } from "#ui/hotkeys.ts";
 import { diffSpecHunkHeadersForLineSelection } from "#ui/hunk.ts";
 import { type NativeMenuItem, nativeMenuItem, nativeMenuItemsFromGroups } from "#ui/native-menu.ts";
 import { hunkAddress, type HunkAddress, type Address } from "#ui/addresses.ts";
@@ -87,7 +83,9 @@ export const useHunkMenuItems = ({
 			[
 				preferredEditor
 					? nativeMenuItem({
-							label: `Open in ${preferredEditor.name}`,
+							label: i18nMessage("lite:useHunkMenuItems.openInValue", {
+								value: preferredEditor.name,
+							}),
 							enabled: !isOpenInProgramPending,
 							accelerator: toElectronAccelerator(diffHotkeys.openInEditor.hotkey),
 							onSelect: () =>
@@ -99,7 +97,7 @@ export const useHunkMenuItems = ({
 								}),
 						})
 					: nativeMenuItem({
-							label: "Open In Editor",
+							label: i18nMessage("lite:useHunkMenuItems.openInEditor"),
 							submenu:
 								editors?.map((editor) =>
 									nativeMenuItem({
@@ -116,22 +114,22 @@ export const useHunkMenuItems = ({
 								) ?? [],
 						}),
 				nativeMenuItem({
-					label: revealInFolderLabel,
+					label: i18nMessage(diffHotkeys.revealInFolder.meta.i18nKey),
 					accelerator: toElectronAccelerator(diffHotkeys.revealInFolder.hotkey),
 					onSelect: () => revealInFolder(change.path),
 				}),
 				nativeMenuItem({
-					label: "Copy Path",
+					label: i18nMessage("lite:useHunkMenuItems.copyPath"),
 					submenu: [
 						nativeMenuItem({
-							label: "Absolute Path",
+							label: i18nMessage("lite:useHunkMenuItems.absolutePath"),
 							onSelect: async () => {
 								const absolutePath = await window.lite.pathJoin(selectedProject.path, change.path);
 								await window.lite.clipboardWriteText(absolutePath);
 							},
 						}),
 						nativeMenuItem({
-							label: "Relative Path",
+							label: i18nMessage("lite:useHunkMenuItems.relativePath"),
 							onSelect: () => window.lite.clipboardWriteText(change.path),
 						}),
 					],
@@ -142,10 +140,10 @@ export const useHunkMenuItems = ({
 						[
 							nativeMenuItem({
 								label: usesCheckedLines
-									? "Cut Checked Lines"
+									? i18nMessage("lite:useHunkMenuItems.cutCheckedLines")
 									: usesSelectedLines
-										? "Cut Selected Lines"
-										: "Cut Hunk",
+										? i18nMessage("lite:useHunkMenuItems.cutSelectedLines")
+										: i18nMessage("lite:useHunkMenuItems.cutHunk"),
 								enabled: canCut,
 								onSelect: cutHunk,
 								accelerator: toElectronAccelerator(selectionOperationHotkeys.cut.hotkey),
@@ -158,7 +156,9 @@ export const useHunkMenuItems = ({
 				Match.when({ _tag: "Commit" }, ({ commitId }) => [
 					[
 						nativeMenuItem({
-							label: usesSelectedLines ? "Uncommit Selected Lines" : "Uncommit Hunk",
+							label: usesSelectedLines
+								? i18nMessage("lite:useHunkMenuItems.uncommitSelectedLines")
+								: i18nMessage("lite:useHunkMenuItems.uncommitHunk"),
 							enabled: canUseHunk && !isCommitUncommitChangesPending,
 							onSelect: () =>
 								commitUncommitChanges({
@@ -170,7 +170,9 @@ export const useHunkMenuItems = ({
 								}),
 						}),
 						nativeMenuItem({
-							label: usesSelectedLines ? "Discard Selected Lines" : "Discard Hunk",
+							label: usesSelectedLines
+								? i18nMessage("lite:useHunkMenuItems.discardSelectedLines")
+								: i18nMessage("lite:useHunkMenuItems.discardHunk"),
 							enabled: canUseHunk && !isCommitDiscardChangesPending,
 							onSelect: () =>
 								commitDiscardChanges({
@@ -185,7 +187,7 @@ export const useHunkMenuItems = ({
 				Match.when({ _tag: "UncommittedChanges" }, () => [
 					[
 						nativeMenuItem({
-							label: "Absorb Hunk",
+							label: i18nMessage("lite:useHunkMenuItems.absorbHunk"),
 							enabled: !hunk.isResultOfBinaryToTextConversion,
 							onSelect: () => {
 								startAbsorb({
@@ -203,7 +205,9 @@ export const useHunkMenuItems = ({
 							accelerator: toElectronAccelerator(diffHotkeys.absorb.hotkey),
 						}),
 						nativeMenuItem({
-							label: usesSelectedLines ? "Discard Selected Lines" : "Discard Hunk",
+							label: usesSelectedLines
+								? i18nMessage("lite:useHunkMenuItems.discardSelectedLines")
+								: i18nMessage("lite:useHunkMenuItems.discardHunk"),
 							enabled: canUseHunk && !isDiscardWorktreeChangesPending,
 							onSelect: () =>
 								discardWorktreeChanges({

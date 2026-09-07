@@ -1,3 +1,5 @@
+import { message, type LocalizedText } from "@gitbutler/i18n";
+import { Message as I18nMessage, useTranslations } from "@gitbutler/i18n/react";
 import { Dialog } from "@base-ui/react";
 import { useEffect, useRef, useState } from "react";
 import type { FC, SyntheticEvent } from "react";
@@ -10,20 +12,21 @@ const secretPromptPattern = /\b(passphrase|password|token|secret|credential)\b/i
 
 const isSecretPrompt = (prompt: string): boolean => secretPromptPattern.test(prompt);
 
-function getDescription(prompt: AskpassPromptEvent): string {
+function getDescription(prompt: AskpassPromptEvent): LocalizedText {
 	switch (prompt.context.type) {
 		case "Push":
-			return `push: ${prompt.prompt}`;
+			return message("lite:credentials.push", { prompt: prompt.prompt });
 		case "Fetch":
-			return `fetch ${prompt.prompt}`;
+			return message("lite:credentials.fetch", { prompt: prompt.prompt });
 		case "SignedCommit":
-			return `signed commit ${prompt.prompt}`;
+			return message("lite:credentials.signedcommit", { prompt: prompt.prompt });
 		case "Clone":
-			return `clone ${prompt.prompt}`;
+			return message("lite:credentials.clone", { prompt: prompt.prompt });
 	}
 }
 
 export const AskpassPromptDialog: FC = () => {
+	const i18nMessages = useTranslations();
 	const [prompts, setPrompts] = useState<Array<AskpassPromptEvent>>([]);
 	const [response, setResponse] = useState<{ promptId: string; value: string } | null>(null);
 	const [submitError, setSubmitError] = useState<{ promptId: string; message: string } | null>(
@@ -84,9 +87,11 @@ export const AskpassPromptDialog: FC = () => {
 		>
 			{currentPrompt !== undefined && (
 				<form className={styles.form} onSubmit={submit}>
-					<Dialog.Title>Git credentials required</Dialog.Title>
+					<Dialog.Title>
+						<I18nMessage value={{ key: "lite:AskpassPromptDialog.gitCredentialsRequired" }} />
+					</Dialog.Title>
 					<Dialog.Description className={styles.prompt}>
-						{getDescription(currentPrompt)}
+						<I18nMessage value={getDescription(currentPrompt)} />
 					</Dialog.Description>
 					<input
 						className={styles.input}
@@ -96,10 +101,17 @@ export const AskpassPromptDialog: FC = () => {
 							setResponse({ promptId: currentPrompt.id, value: event.target.value })
 						}
 						disabled={submitting}
-						aria-label="Credential response"
+						aria-label={i18nMessages.t("lite:AskpassPromptDialog.credentialResponse")}
 					/>
 					{currentSubmitError !== null && (
-						<p className={styles.error}>Failed to send response: {currentSubmitError}</p>
+						<p className={styles.error}>
+							<I18nMessage
+								value={{
+									key: "lite:AskpassPromptDialog.failedToSendResponseValue",
+									values: { currentSubmitError: String(currentSubmitError) },
+								}}
+							/>
+						</p>
 					)}
 					<div className={styles.actions}>
 						<button
@@ -108,14 +120,14 @@ export const AskpassPromptDialog: FC = () => {
 							disabled={submitting}
 							onClick={() => void respond(currentPrompt, null)}
 						>
-							Cancel
+							<I18nMessage value={{ key: "lite:AskpassPromptDialog.cancel" }} />
 						</button>
 						<button
 							type="submit"
 							className={getButtonClassName({ variant: "pop" })}
 							disabled={submitting}
 						>
-							Continue
+							<I18nMessage value={{ key: "lite:AskpassPromptDialog.continue" }} />
 						</button>
 					</div>
 				</form>

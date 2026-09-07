@@ -1,3 +1,4 @@
+import { RichMessage as I18nRichMessage } from "@gitbutler/i18n/react";
 import { getRowButtonClassName } from "../Row-utils.ts";
 import { RowLabel, RowLabelContainer, RowLabelFooter } from "../Row.tsx";
 import { formatForDisplaySorted } from "#ui/hotkeys.ts";
@@ -75,12 +76,22 @@ export const InlineEditor: FC<{
 			</RowLabelContainer>
 			<RowLabelFooter className={styles.help}>
 				<button type="submit" className={getRowButtonClassName({})}>
-					<kbd>{formatForDisplaySorted("Enter")}</kbd>
-					<span className={styles.shortcutLabel}> to Save</span>
+					<I18nRichMessage
+						value={{ key: "lite:InlineEditor.toSave" }}
+						components={{
+							slot1: <kbd>{formatForDisplaySorted("Enter")}</kbd>,
+							slot2: <span className={styles.shortcutLabel} />,
+						}}
+					/>
 				</button>
 				<button type="button" className={getRowButtonClassName({})} onClick={onExit}>
-					<kbd>{formatForDisplaySorted("Escape")}</kbd>
-					<span className={styles.shortcutLabel}> to Cancel</span>
+					<I18nRichMessage
+						value={{ key: "lite:InlineEditor.toCancel" }}
+						components={{
+							slot1: <kbd>{formatForDisplaySorted("Escape")}</kbd>,
+							slot2: <span className={styles.shortcutLabel} />,
+						}}
+					/>
 				</button>
 			</RowLabelFooter>
 		</form>

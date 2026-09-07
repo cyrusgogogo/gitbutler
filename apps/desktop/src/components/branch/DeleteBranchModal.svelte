@@ -9,7 +9,10 @@
 <script lang="ts">
 	import { STACK_SERVICE } from "$lib/stacks/stackService.svelte";
 	import { inject } from "@gitbutler/core/context";
+	import { useTranslations } from "@gitbutler/i18n/svelte";
 	import { Button, Modal, TestId } from "@gitbutler/ui";
+	import I18nRichMessage from "@gitbutler/ui/i18n/RichMessage.svelte";
+	const i18nMessages = useTranslations();
 
 	const { projectId, branchName }: DeleteBranchModalProps = $props();
 	const stackService = inject(STACK_SERVICE);
@@ -26,7 +29,7 @@
 	testId={TestId.BranchHeaderDeleteModal}
 	bind:this={modal}
 	width="small"
-	title="Delete branch"
+	title={$i18nMessages.t("desktop:DeleteBranchModal.deleteBranch")}
 	onSubmit={async (close) => {
 		const refName = [...new TextEncoder().encode(`refs/heads/${branchName}`)];
 		await removeBranch({
@@ -37,15 +40,22 @@
 	}}
 >
 	<p class="text-13 text-body">
-		Are you sure you want to delete <code class="code-string">{branchName}</code>?
+		{#snippet i18nSlot1()}<code class="code-string">{branchName}</code>{/snippet}
+		<I18nRichMessage
+			value={{ key: "desktop:DeleteBranchModal.areYouSureYouWantToDelete" }}
+			components={{ slot1: i18nSlot1 }}
+		/>
 	</p>
 	{#snippet controls(close)}
-		<Button kind="outline" onclick={close} autofocus>Cancel</Button>
+		<Button kind="outline" onclick={close} autofocus
+			>{$i18nMessages.t("desktop:DeleteBranchModal.cancel")}</Button
+		>
 		<Button
 			testId={TestId.BranchHeaderDeleteModal_ActionButton}
 			style="danger"
 			type="submit"
-			loading={branchRemovalOp.current.isLoading}>Delete</Button
+			loading={branchRemovalOp.current.isLoading}
+			>{$i18nMessages.t("desktop:DeleteBranchModal.delete")}</Button
 		>
 	{/snippet}
 </Modal>

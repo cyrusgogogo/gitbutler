@@ -15,6 +15,7 @@
 	import { STACK_SERVICE } from "$lib/stacks/stackService.svelte";
 	import { UI_STATE } from "$lib/state/uiState.svelte";
 	import { inject } from "@gitbutler/core/context";
+	import { useTranslations } from "@gitbutler/i18n/svelte";
 	import { FileListItem, TestId } from "@gitbutler/ui";
 	import { DRAG_STATE_SERVICE } from "@gitbutler/ui/drag/dragStateService.svelte";
 	import { type FocusableOptions } from "@gitbutler/ui/focus/focusTypes";
@@ -22,6 +23,7 @@
 	import type { ConflictEntriesObj } from "$lib/files/conflicts";
 	import type { HunkLockTarget } from "@gitbutler/but-sdk";
 	import type { TreeChange } from "@gitbutler/but-sdk";
+	const i18nMessages = useTranslations();
 
 	interface Props {
 		projectId: string;
@@ -120,14 +122,18 @@
 					stack.id &&
 					lockedTargets.some((t) => targetEqual(t, { type: "stack", subject: stack.id! })),
 			)
-			.map(getStackName);
+			.map((stack) => getStackName(stack, $i18nMessages.t("desktop:stack.unnamed")));
 
 		if (stackNames.length === 0) {
-			return "Depends on changes in an unidentified stack";
+			return $i18nMessages.t("desktop:FileListItemContainer.detail6bad26fa6");
 		} else if (stackNames.length === 1) {
-			return `Depends on changes in:\n '${stackNames[0]}'`;
+			return $i18nMessages.t("desktop:FileListItemContainer.detail3360fe937", {
+				value1: String(stackNames[0]),
+			});
 		} else {
-			return `Depends on changes in:\n ${stackNames.join(", ")}`;
+			return $i18nMessages.t("desktop:FileListItemContainer.detailc6a4dc5c1", {
+				value1: String(stackNames.join(", ")),
+			});
 		}
 	});
 

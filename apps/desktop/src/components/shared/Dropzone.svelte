@@ -7,7 +7,6 @@
 	import type { DropResult } from "$lib/dragging/dropResult";
 	import type { DropzoneHandler } from "$lib/dragging/handler";
 	import type { Snippet } from "svelte";
-
 	const dropzoneRegistry = inject(DROPZONE_REGISTRY);
 	const uiState = inject(UI_STATE);
 

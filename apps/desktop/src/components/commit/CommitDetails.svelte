@@ -7,10 +7,12 @@
 	import { useUserAvatarUrl } from "$lib/user/userAvatar.svelte";
 	import { rejoinParagraphs, truncate } from "$lib/utils/string";
 	import { inject } from "@gitbutler/core/context";
-
+	import { message as i18nMessage } from "@gitbutler/i18n";
+	import { useTranslations } from "@gitbutler/i18n/svelte";
 	import { Avatar, CopyButton, TestId, TimeAgo, Tooltip } from "@gitbutler/ui";
 	import { pxToRem } from "@gitbutler/ui/utils/pxToRem";
 	import type { Commit, UpstreamCommit } from "@gitbutler/but-sdk";
+	const i18nMessages = useTranslations();
 
 	type Props = {
 		commit: UpstreamCommit | Commit;
@@ -45,7 +47,7 @@
 
 <div class="commit">
 	<div class="metadata text-12">
-		<span>Author:</span>
+		<span>{$i18nMessages.t("desktop:CommitDetails.author")}</span>
 		<Avatar
 			size="medium"
 			username={commit.author.name}
@@ -54,14 +56,14 @@
 		<span class="divider">•</span>
 		<TimeAgo date={commitCommittedAtDate(commit)} />
 		<span class="divider">•</span>
-		<Tooltip text="Copy commit SHA">
+		<Tooltip text={$i18nMessages.t("desktop:CommitDetails.copyCommitSHA")}>
 			<CopyButton
 				class="copy-sha"
 				text={commit.id.slice(0, 7)}
 				hideIcon
 				onclick={() => {
 					clipboardService.write(commit.id, {
-						message: "Commit SHA copied",
+						message: i18nMessage("desktop:CommitDetails.inline47a28c242"),
 					});
 				}}
 			/>
@@ -69,14 +71,14 @@
 		{#if commit.changeId}
 			{@const changeId = commit.changeId}
 			<span class="divider">•</span>
-			<Tooltip text="Copy change ID">
+			<Tooltip text={$i18nMessages.t("desktop:CommitDetails.copyChangeID")}>
 				<CopyButton
 					class="copy-change-id"
 					text={changeId.slice(0, 3)}
 					hideIcon
 					onclick={() => {
 						clipboardService.write(changeId, {
-							message: "Change ID copied",
+							message: i18nMessage("desktop:CommitDetails.inline8aa92b97c"),
 						});
 					}}
 				/>
@@ -107,9 +109,9 @@
 					class="readmore underline-dotted text-bold"
 				>
 					{#if expanded}
-						less
+						{$i18nMessages.t("desktop:CommitDetails.less")}
 					{:else}
-						more
+						{$i18nMessages.t("desktop:CommitDetails.more")}
 					{/if}
 				</button>
 			{/if}

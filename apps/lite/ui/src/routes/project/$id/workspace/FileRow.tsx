@@ -1,3 +1,4 @@
+import { useTranslations } from "@gitbutler/i18n/react";
 import { ConflictIcon } from "#ui/components/ConflictIcon.tsx";
 import { FileIcon } from "#ui/components/FileIcon.tsx";
 import { FileStatusBadge } from "#ui/components/FileStatusBadge.tsx";
@@ -103,25 +104,26 @@ export const FileRowPresentational: FC<FileRowPresentationalProps> = ({
 	ageBadgeNow = null,
 	...restProps
 }) => {
+	const i18nMessages = useTranslations();
 	const relativePath = item._tag === "Change" ? item.change.path : item.path;
 
 	const modifiedAtMs = item.modifiedAtMs ?? null;
 	const ageMs =
 		ageBadgeNow !== null && modifiedAtMs !== null ? Math.max(0, ageBadgeNow - modifiedAtMs) : null;
-	const ageBadge = ageMs === null ? null : formatAgeBadge(ageMs);
+	const ageBadge = ageMs === null ? null : formatAgeBadge(ageMs, i18nMessages.locale);
 	const isFresh = ageMs !== null && ageMs <= FRESH_CHANGE_MAX_AGE_MS;
 	const agedTooltip =
 		ageBadgeNow !== null &&
 		modifiedAtMs !== null &&
 		ageMs !== null &&
 		ageMs > AGE_TOOLTIP_MIN_AGE_MS
-			? formatRelativeTime(modifiedAtMs, ageBadgeNow)
+			? formatRelativeTime(modifiedAtMs, ageBadgeNow, i18nMessages.locale)
 			: null;
 
 	const hasConflictHint = item._tag === "Conflict" && fileParent._tag === "UncommittedChanges";
 	// An uncommitted conflict is a state to get out of, so the row says how.
 	const rowTooltip = hasConflictHint
-		? `${relativePath} — Resolve the conflict, then right-click → Mark as Resolved`
+		? i18nMessages.t("lite:FileRow.labelaa72f92d4", { value0: relativePath })
 		: relativePath;
 	const lastSepIdx = relativePath.lastIndexOf("/");
 	const directoryPath = lastSepIdx !== -1 ? relativePath.slice(0, lastSepIdx) : null;
@@ -156,7 +158,7 @@ export const FileRowPresentational: FC<FileRowPresentationalProps> = ({
 				/>
 				<RowCheckbox
 					disabled={anyOperationPending || !canCheck}
-					aria-label={`Check file ${relativePath}`}
+					aria-label={i18nMessages.t("lite:FileRow.checkFileValue", { relativePath })}
 					checked={isChecked}
 					className={treeStyles.leadingCheckbox}
 					nativeButton
@@ -164,7 +166,7 @@ export const FileRowPresentational: FC<FileRowPresentationalProps> = ({
 						<Tooltip.Trigger
 							handle={tooltipHandle}
 							payload={{
-								content: changesFileHotkeys.checkFile.meta.name,
+								content: i18nMessages.t(changesFileHotkeys.checkFile.meta.i18nKey),
 								kbd: changesFileHotkeys.checkFile.hotkey,
 								kbdScope: focusScope,
 							}}
@@ -190,7 +192,7 @@ export const FileRowPresentational: FC<FileRowPresentationalProps> = ({
 					<ConflictIcon
 						variant="conflict"
 						className={styles.conflictIcon}
-						aria-label="Conflicted"
+						aria-label={i18nMessages.t("lite:FileRow.conflicted")}
 					/>
 				)}
 				<RowLabel singleLine>
@@ -205,9 +207,12 @@ export const FileRowPresentational: FC<FileRowPresentationalProps> = ({
 			</Tooltip.Trigger>
 
 			{!anyOperationPending && (
-				<Toolbar.Root aria-label="File actions" render={<RowToolbar />}>
+				<Toolbar.Root
+					aria-label={i18nMessages.t("lite:FileRow.fileActions")}
+					render={<RowToolbar />}
+				>
 					<Toolbar.Button
-						aria-label="File menu"
+						aria-label={i18nMessages.t("lite:FileRow.fileMenu")}
 						onClick={(event) => {
 							void showNativeMenuFromTrigger(
 								event.currentTarget,
@@ -235,7 +240,10 @@ export const FileRowPresentational: FC<FileRowPresentationalProps> = ({
 				item._tag === "Change" &&
 				fileParent._tag === "UncommittedChanges" &&
 				item.dependencyCommitIds.length > 0 && (
-					<Toolbar.Root aria-label="File actions" render={<RowToolbar forceVisible />}>
+					<Toolbar.Root
+						aria-label={i18nMessages.t("lite:FileRow.fileActions")}
+						render={<RowToolbar forceVisible />}
+					>
 						<Toolbar.Button
 							render={
 								<DependencyIndicator
@@ -263,7 +271,10 @@ export const FileRowPresentational: FC<FileRowPresentationalProps> = ({
 							// The tick stands in for the change type rather than joining it: a
 							// reviewed file's news is that it is done with, and the type is a
 							// hover away.
-							<span aria-label="Reviewed" className={styles.reviewedMark}>
+							<span
+								aria-label={i18nMessages.t("lite:FileRow.reviewed")}
+								className={styles.reviewedMark}
+							>
 								<Icon size={11} name="tick" />
 							</span>
 						) : (

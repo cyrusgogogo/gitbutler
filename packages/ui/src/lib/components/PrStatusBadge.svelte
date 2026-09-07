@@ -5,7 +5,9 @@
 <script lang="ts">
 	import Badge from "$components/Badge.svelte";
 	import { type IconName } from "$lib/icons/names";
+	import { useTranslations } from "@gitbutler/i18n/svelte";
 	import type { ComponentColorType } from "$lib/utils/colorTypes";
+	const i18nMessages = useTranslations();
 
 	interface Props {
 		status: PrStatusInfoType;
@@ -24,13 +26,29 @@
 			case "loading":
 				return { text: "Loading...", icon: "spinner", style: "gray" };
 			case "merged":
-				return { text: "Merged", icon: "pr-tick", style: "purple" };
+				return {
+					text: $i18nMessages.t("ui:PrStatusBadge.detail0c4455982"),
+					icon: "pr-tick",
+					style: "purple",
+				};
 			case "closed":
-				return { text: "Closed", icon: "pr-cross", style: "danger" };
+				return {
+					text: $i18nMessages.t("ui:PrStatusBadge.detail88d86b772"),
+					icon: "pr-cross",
+					style: "danger",
+				};
 			case "draft":
-				return { text: "Draft", icon: "pr-draft", style: "gray" };
+				return {
+					text: $i18nMessages.t("ui:PrStatusBadge.detail23d33e22a"),
+					icon: "pr-draft",
+					style: "gray",
+				};
 			default:
-				return { text: "Open", icon: "pr", style: "safe" };
+				return {
+					text: $i18nMessages.t("ui:PrStatusBadge.detailcf9b77061"),
+					icon: "pr",
+					style: "safe",
+				};
 		}
 	});
 </script>

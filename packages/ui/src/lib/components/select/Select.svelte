@@ -8,7 +8,9 @@
 	import { portal } from "$lib/utils/portal";
 	import { pxToRem } from "$lib/utils/pxToRem";
 	import { resizeObserver } from "$lib/utils/resizeObserver";
+	import { useTranslations } from "@gitbutler/i18n/svelte";
 	import { untrack, type Snippet } from "svelte";
+	const i18nMessages = useTranslations();
 
 	type Modifiers = { shift: boolean; ctrl: boolean; alt: boolean; meta: boolean };
 
@@ -64,7 +66,7 @@
 		flex,
 		options = [],
 		value,
-		placeholder = "Select an option...",
+		placeholder: providedPlaceholder,
 		maxHeight,
 		minHeight,
 		searchable,
@@ -78,6 +80,9 @@
 		onselect,
 		ontoggle,
 	}: SelectProps<T> = $props();
+	const placeholder = $derived(
+		providedPlaceholder ?? $i18nMessages.t("ui:Select.default42dc5ccd6"),
+	);
 
 	let selectWrapperEl: HTMLElement;
 	let selectInputEl = $state<HTMLElement>();
@@ -394,7 +399,7 @@
 					{#if groupedOptions.length === 0}
 						<OptionsGroup>
 							<div class="text-13 text-semibold option nothing-found">
-								<span class=""> Nothing found ¯\_(ツ)_/¯ </span>
+								<span class="">{$i18nMessages.t("ui:Select.nothingFound")}</span>
 							</div>
 						</OptionsGroup>
 					{:else}

@@ -1,3 +1,4 @@
+import { message as i18nMessage } from "@gitbutler/i18n";
 import type { BranchIconName } from "$lib/branches/branchIcon";
 import type { CommitStatusType } from "$lib/commits/commit";
 import type { Commit, PushStatus, UpstreamCommit } from "@gitbutler/but-sdk";
@@ -65,20 +66,20 @@ export function hasConflicts(commit: Commit): boolean {
 }
 
 export function getBranchStatusLabelAndColor(pushStatus: PushStatus): {
-	label: string;
+	label: import("@gitbutler/i18n").LocalizedText;
 	color: string;
 } {
 	switch (pushStatus) {
 		case "completelyUnpushed":
-			return { label: "Unpushed branch", color: colorMap.LocalOnly };
+			return { label: i18nMessage("desktop:lib.staticb76a79c02"), color: colorMap.LocalOnly };
 		case "nothingToPush":
-			return { label: "Nothing to push", color: colorMap.LocalAndRemote };
+			return { label: i18nMessage("desktop:lib.static20e9272b3"), color: colorMap.LocalAndRemote };
 		case "unpushedCommits":
 		case "unpushedCommitsRequiringForce":
-			return { label: "Some unpushed", color: colorMap.LocalAndRemote };
+			return { label: i18nMessage("desktop:lib.static9f054d867"), color: colorMap.LocalAndRemote };
 		case "integrated":
-			return { label: "Integrated", color: colorMap.Integrated };
+			return { label: i18nMessage("desktop:lib.static1766eae98"), color: colorMap.Integrated };
 		default:
-			return { label: "Unknown", color: colorMap.Error };
+			return { label: i18nMessage("desktop:lib.staticbc7819b34"), color: colorMap.Error };
 	}
 }

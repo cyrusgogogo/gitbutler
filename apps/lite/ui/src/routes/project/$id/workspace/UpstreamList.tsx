@@ -1,3 +1,4 @@
+import { Message as I18nMessage, useTranslations } from "@gitbutler/i18n/react";
 import rowStyles from "./Row.module.css";
 import { setCursor, useCursorWriteBack, useSelection } from "#ui/use-cursor.ts";
 import uiStyles from "#ui/components/ui.module.css";
@@ -44,8 +45,6 @@ import type {
 } from "./useUpstreamList.ts";
 import styles from "./UpstreamList.module.css";
 
-const pluralRules = new Intl.PluralRules("en");
-
 /**
  * The target branch the incoming commits below it belong to. It heads the card
  * the way a stack's own name heads a stack card, and starts the target rail
@@ -83,6 +82,7 @@ export const TargetCommitRow: FC<{
 	/** Out of its list for now, as a pending operation leaves it: not a value to move to. */
 	inert?: boolean;
 }> = ({ item, positionInSet, setSize, status, railEnds, list = "upstream", inert }) => {
+	const i18nMessages = useTranslations();
 	const { commit, review, inWorkspace } = item;
 	const address = targetCommitAddress(item);
 	const isSelected = useIsSelectedInList(address, list);
@@ -97,7 +97,7 @@ export const TargetCommitRow: FC<{
 		<Row
 			id={treeItemId(address)}
 			role="treeitem"
-			aria-label={title ?? "(no message)"}
+			aria-label={title ?? i18nMessages.t("lite:UpstreamList.noMessage")}
 			aria-level={1}
 			aria-posinset={inert ? undefined : positionInSet}
 			aria-setsize={inert ? undefined : setSize}
@@ -120,7 +120,9 @@ export const TargetCommitRow: FC<{
 					    says which side of the boundary the commit is on. */}
 					<RowLabel singleLine>
 						{title === undefined ? (
-							<span className={rowStyles.fadedText}>(no message)</span>
+							<span className={rowStyles.fadedText}>
+								<I18nMessage value={{ key: "lite:UpstreamList.noMessage" }} />
+							</span>
 						) : (
 							title
 						)}
@@ -175,7 +177,9 @@ const UpstreamBranchRow: FC<{ item: UpstreamBranchItem; glyph: GraphSegmentGlyph
 			    the state is spelled out on the second line as well. */}
 			{item.integrated && (
 				<RowLabelFooter className={classes("text-13", styles.labelMeta)}>
-					<span className={classes(rowStyles.fadedText, styles.labelMetaItem)}>integrated</span>
+					<span className={classes(rowStyles.fadedText, styles.labelMetaItem)}>
+						<I18nMessage value={{ key: "lite:UpstreamList.integrated" }} />
+					</span>
 				</RowLabelFooter>
 			)}
 		</div>
@@ -195,6 +199,7 @@ const SegmentExpanderRow: FC<{
 	/** Set when the row opens the workspace rail, so nothing is drawn above it. */
 	opensRail: boolean;
 }> = ({ projectId, segmentId, count, expanded, opensRail }) => {
+	const i18nMessages = useTranslations();
 	const dispatch = useAppDispatch();
 
 	return (
@@ -219,14 +224,16 @@ const SegmentExpanderRow: FC<{
 					getButtonClassName({ variant: expanded ? "gray" : "outline", size: "small" }),
 					styles.expanderButton,
 				)}
-				title="Target commits your workspace already has, between these two fork points."
+				title={i18nMessages.t("lite:UpstreamList.targetCommitsYourWorkspaceAlreadyHasBetweenThese")}
 				onClick={() =>
 					dispatch(projectSlice.actions.toggleUpstreamSegment({ projectId, segmentId }))
 				}
 			>
-				{expanded
-					? "hide commits"
-					: `${count} commit${pluralRules.select(count) === "one" ? "" : "s"} between`}
+				{expanded ? (
+					<I18nMessage value={{ key: "lite:UpstreamList.hideCommits" }} />
+				) : (
+					<I18nMessage value={{ key: "lite:upstream.between", values: { count } }} />
+				)}
 			</Button>
 		</div>
 	);
@@ -251,21 +258,26 @@ const UpdateBlock: FC<{
 		<div role="none" className={styles.block}>
 			{incomingCount > 0 ? (
 				<p className={messageClassName}>
-					Your workspace is {incomingCount} commit
-					{pluralRules.select(incomingCount) === "one" ? "" : "s"} behind the upstream. Rebase to
-					update all stacks at once.
+					<I18nMessage
+						value={{ key: "lite:upstream.behind", values: { count: incomingCount } }}
+					/>{" "}
 				</p>
 			) : hasIntegrated ? (
 				<p className={messageClassName}>
-					Integrated branches can be cleaned up by updating the workspace.
+					<I18nMessage
+						value={{ key: "lite:UpstreamList.integratedBranchesCanBeCleanedUpByUpdating" }}
+					/>{" "}
 				</p>
 			) : canUpdate ? (
 				<p className={messageClassName}>
-					Your stacks already contain the latest upstream commits. Update to advance the workspace
-					base.
+					<I18nMessage
+						value={{ key: "lite:UpstreamList.yourStacksAlreadyContainTheLatestUpstreamCommits" }}
+					/>{" "}
 				</p>
 			) : (
-				<p className={messageClassName}>Your workspace is up to date.</p>
+				<p className={messageClassName}>
+					<I18nMessage value={{ key: "lite:UpstreamList.yourWorkspaceIsUpToDate" }} />
+				</p>
 			)}
 			<button
 				type="button"
@@ -273,11 +285,13 @@ const UpdateBlock: FC<{
 				disabled={!canUpdate}
 				onClick={onUpdateWorkspace}
 			>
-				{isUpdatePending
-					? "Updating…"
-					: incomingCount > 0
-						? "Rebase all stacks"
-						: "Update workspace"}
+				{isUpdatePending ? (
+					<I18nMessage value={{ key: "lite:UpstreamList.updating" }} />
+				) : incomingCount > 0 ? (
+					<I18nMessage value={{ key: "lite:UpstreamList.rebaseAllStacks" }} />
+				) : (
+					<I18nMessage value={{ key: "lite:UpstreamList.updateWorkspace" }} />
+				)}
 			</button>
 		</div>
 	);
@@ -315,7 +329,7 @@ const LoadMoreOlder: FC<{ projectId: string; hasOlder: boolean }> = ({ projectId
 		<div role="none" className={styles.block}>
 			{isError && (
 				<p className={classes("text-12", "text-body", rowStyles.fadedText)}>
-					Unable to load older commits.
+					<I18nMessage value={{ key: "lite:UpstreamList.unableToLoadOlderCommits" }} />{" "}
 				</p>
 			)}
 			<button
@@ -327,7 +341,13 @@ const LoadMoreOlder: FC<{ projectId: string; hasOlder: boolean }> = ({ projectId
 				{/* Names what it pages in rather than saying "more": it closes a run
 				    nothing titles, so it is the only thing that says what is down
 				    there. */}
-				{isFetching ? <Icon name="spinner" /> : isError ? "Try again" : "Load older commits"}
+				{isFetching ? (
+					<Icon name="spinner" />
+				) : isError ? (
+					<I18nMessage value={{ key: "lite:UpstreamList.tryAgain" }} />
+				) : (
+					<I18nMessage value={{ key: "lite:UpstreamList.loadOlderCommits" }} />
+				)}
 			</button>
 		</div>
 	);
@@ -397,6 +417,7 @@ export const UpstreamList: FC<
 		onUpdateWorkspace: () => void;
 	} & ComponentProps<"div">
 > = ({ projectId, list, canUpdateWorkspace, isUpdatePending, onUpdateWorkspace, ...restProps }) => {
+	const i18nMessages = useTranslations();
 	// Derived once in WorkspacePage and passed down, so the rendered list and the
 	// address space that resolves selection are the same object.
 	const {
@@ -457,21 +478,21 @@ export const UpstreamList: FC<
 			virtualRows.push({
 				type: "message",
 				key: "error",
-				message: "Unable to load incoming commits.",
+				message: i18nMessages.t("lite:UpstreamList.label4aa9d5ace"),
 			});
 		}
 		if (!isError && isPending && items.length === 0) {
 			virtualRows.push({
 				type: "message",
 				key: "loading",
-				message: "Loading incoming commits…",
+				message: i18nMessages.t("lite:UpstreamList.label319a37fdf"),
 			});
 		}
 		if (!isError && !isPending && targetLabel === null) {
 			virtualRows.push({
 				type: "message",
 				key: "no-target",
-				message: "No target branch is configured for this project.",
+				message: i18nMessages.t("lite:UpstreamList.labelde77a0c14"),
 			});
 		}
 		for (const item of targetItems) {
@@ -548,7 +569,7 @@ export const UpstreamList: FC<
 		}
 
 		return { virtualRows, virtualIndexByAddressKey };
-	}, [incomingItemCount, isError, isPending, items, olderItems, targetLabel]);
+	}, [incomingItemCount, isError, isPending, items, olderItems, targetLabel, i18nMessages]);
 
 	const selectedAddressKey = selection === null ? undefined : addressIdentityKey(selection);
 	const selectedVirtualIndex =
@@ -613,7 +634,10 @@ export const UpstreamList: FC<
 		<div {...restProps} className={classes(restProps.className, styles.container)}>
 			{/* Headed like the other tabs: one title over the whole pane, held out
 			    of the scroller so it stays put while the listing moves. */}
-			<SectionHeaderRow className={styles.header} label="Incoming changes" />
+			<SectionHeaderRow
+				className={styles.header}
+				label={i18nMessages.t("lite:UpstreamList.incomingChanges")}
+			/>
 
 			{/* One graph across three regions: what is coming in, where the
 			    workspace's branches sit against it, and the history behind them.
@@ -623,7 +647,7 @@ export const UpstreamList: FC<
 			<div
 				tabIndex={0}
 				role="tree"
-				aria-label="Upstream"
+				aria-label={i18nMessages.t("lite:UpstreamList.upstream")}
 				aria-activedescendant={selection ? treeItemId(selection) : undefined}
 				data-focus-scope={"sidebar" satisfies FocusScope}
 				className={classes(uiStyles.scroller, styles.list)}

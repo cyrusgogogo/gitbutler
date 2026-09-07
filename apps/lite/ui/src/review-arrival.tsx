@@ -1,3 +1,4 @@
+import { Message as I18nMessage } from "@gitbutler/i18n/react";
 /**
  * @file Marking what arrived since the user last looked.
  *
@@ -95,7 +96,7 @@ export const FreshBadge: FC<{
 	if (!show) return null;
 	return (
 		<span className={classes("text-11", "text-semibold", styles.fresh)} ref={ref}>
-			New
+			<I18nMessage value={{ key: "lite:reviewarrival.new" }} />{" "}
 		</span>
 	);
 };

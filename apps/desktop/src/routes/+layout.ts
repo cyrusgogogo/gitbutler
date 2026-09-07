@@ -1,8 +1,10 @@
 import { initAnalyticsIfEnabled } from "$lib/analytics/analytics";
 import createBackend from "$lib/backend";
+import { DesktopLanguage } from "$lib/i18n";
 import { SettingsService } from "$lib/settings/appSettings";
 import { EventContext } from "$lib/telemetry/eventContext";
 import { PostHogWrapper } from "$lib/telemetry/posthog";
+import { normalizePreference } from "@gitbutler/i18n";
 import lscache from "lscache";
 import type { LayoutLoad } from "./$types";
 
@@ -25,6 +27,8 @@ export const load: LayoutLoad = async () => {
 
 	const settingsService = new SettingsService(backend);
 	const appSettings = await settingsService.fetchAppSettings();
+	const language = new DesktopLanguage(settingsService, backend);
+	await language.initialize(normalizePreference(appSettings.ui.language));
 
 	const posthog = new PostHogWrapper(settingsService, backend, eventContext);
 	initAnalyticsIfEnabled(appSettings, posthog);
@@ -34,6 +38,7 @@ export const load: LayoutLoad = async () => {
 		backend,
 		settingsService,
 		appSettings,
+		language,
 		posthog,
 		eventContext,
 	};

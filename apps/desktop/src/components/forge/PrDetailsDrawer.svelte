@@ -5,7 +5,10 @@
 	import { FORGE_INFO_SERVICE } from "$lib/forge/forgeInfo.svelte";
 	import { PR_SERVICE } from "$lib/forge/prService.svelte";
 	import { inject } from "@gitbutler/core/context";
+	import { useTranslations } from "@gitbutler/i18n/svelte";
 	import { Avatar, Link, Markdown, TestId } from "@gitbutler/ui";
+	import I18nRichMessage from "@gitbutler/ui/i18n/RichMessage.svelte";
+	const i18nMessages = useTranslations();
 
 	type Props = {
 		projectId: string;
@@ -38,30 +41,49 @@
 					<Avatar
 						size="medium"
 						srcUrl={pr.author?.gravatarUrl || ""}
-						username={pr.author?.name || "Unknown Author"}
+						username={pr.author?.name || $i18nMessages.t("desktop:PrDetailsDrawer.inlineb33211f7f")}
 					/>
 					<div class="pr-request-data__wrapper">
 						<p class="pr-request-data__sentence text-13">
-							<span class="text-bold clr-text-1">
-								{pr.author?.name}
-							</span>
-							wants to merge into
-							<span class="code-string text-semibold">
-								{pr.targetBranch}
-							</span>
-							from
-							<span class="code-string text-semibold">
-								{pr.sourceBranch}
-							</span>
+							{#snippet i18nSlot1(content: import("svelte").Snippet)}<span
+									class="text-bold clr-text-1">{@render content()}</span
+								>{/snippet}
+							{#snippet i18nSlot2(content: import("svelte").Snippet)}<span
+									class="code-string text-semibold">{@render content()}</span
+								>{/snippet}
+							{#snippet i18nSlot3(content: import("svelte").Snippet)}<span
+									class="code-string text-semibold">{@render content()}</span
+								>{/snippet}
+							<I18nRichMessage
+								value={{
+									key: "desktop:PrDetailsDrawer.valueWantsToMergeIntoValueFromValue",
+									values: {
+										value: String(pr.author?.name),
+										targetBranch: String(pr.targetBranch),
+										sourceBranch: String(pr.sourceBranch),
+									},
+								}}
+								components={{ slot1: i18nSlot1, slot2: i18nSlot2, slot3: i18nSlot3 }}
+							/>
 						</p>
 
 						<div class="pr-request-data__details text-12">
 							<PrStatusBadge {pr} />
-							<span class="pr-request-data__divider">•</span>
-							<span>No remote</span>
-
-							<span class="pr-request-data__divider">•</span>
-							<Link href={pr.htmlUrl}>Open in browser</Link>
+							{#snippet i18nSlot4(content: import("svelte").Snippet)}<span
+									class="pr-request-data__divider">{@render content()}</span
+								>{/snippet}
+							{#snippet i18nSlot5(content: import("svelte").Snippet)}<span>{@render content()}</span
+								>{/snippet}
+							{#snippet i18nSlot6(content: import("svelte").Snippet)}<span
+									class="pr-request-data__divider">{@render content()}</span
+								>{/snippet}
+							<I18nRichMessage
+								value={{ key: "desktop:PrDetailsDrawer.noRemote" }}
+								components={{ slot4: i18nSlot4, slot5: i18nSlot5, slot6: i18nSlot6 }}
+							/>
+							<Link href={pr.htmlUrl}
+								>{$i18nMessages.t("desktop:PrDetailsDrawer.openInBrowser")}</Link
+							>
 						</div>
 					</div>
 				</div>

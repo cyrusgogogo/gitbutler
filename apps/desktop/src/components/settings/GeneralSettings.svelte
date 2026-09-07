@@ -5,6 +5,7 @@
 	import { BACKEND } from "$lib/backend";
 	import { getUserErrorCode } from "$lib/backend/ipc";
 	import { CLI_MANAGER } from "$lib/config/cli";
+	import { LANGUAGE_SERVICE } from "$lib/i18n";
 	import { showToast } from "$lib/notifications/toasts";
 	import { PROJECTS_SERVICE } from "$lib/project/projectsService";
 	import { SETTINGS_SERVICE } from "$lib/settings/appSettings";
@@ -17,6 +18,8 @@
 	import { UPDATER_SERVICE } from "$lib/updater/updater";
 	import { USER_SERVICE } from "$lib/user/userService.svelte";
 	import { inject } from "@gitbutler/core/context";
+	import { message as i18nMessage } from "@gitbutler/i18n";
+	import { useTranslations } from "@gitbutler/i18n/svelte";
 	import {
 		Button,
 		CardGroup,
@@ -29,8 +32,11 @@
 		Toggle,
 		chipToasts,
 	} from "@gitbutler/ui";
+	import LanguageSelect from "@gitbutler/ui/i18n/LanguageSelect.svelte";
+	import I18nRichMessage from "@gitbutler/ui/i18n/RichMessage.svelte";
 	import { onMount } from "svelte";
 	import type { User } from "$lib/user/user";
+	const i18nMessages = useTranslations();
 
 	const userService = inject(USER_SERVICE);
 	const settingsService = inject(SETTINGS_SERVICE);
@@ -48,6 +54,7 @@
 	const terminalService = inject(TERMINAL_SERVICE);
 
 	const appSettings = settingsService.appSettings;
+	const language = inject(LANGUAGE_SERVICE);
 
 	let saving = $state(false);
 	let newName = $state("");
@@ -129,7 +136,7 @@
 				picture: selectedPictureFile,
 			});
 			userService.setUser(updatedUser);
-			chipToasts.success("Profile updated");
+			chipToasts.success(i18nMessage("desktop:GeneralSettings.profileUpdated"));
 			selectedPictureFile = undefined;
 		} finally {
 			saving = false;
@@ -147,7 +154,7 @@
 			await settingsService.deleteAllData();
 			projectsService.unsetLastOpenedProject();
 			await userService.forgetUserCredentials();
-			chipToasts.success("All data deleted");
+			chipToasts.success(i18nMessage("desktop:GeneralSettings.allDataDeleted"));
 			goto("/", { replaceState: true, invalidateAll: true });
 		} finally {
 			deleteConfirmationModal?.close();
@@ -158,22 +165,38 @@
 	let showSymlink = $state(false);
 </script>
 
+<LanguageSelect
+	value={$appSettings?.ui.language ?? "system"}
+	onchange={(value) => language.set(value)}
+/>
+
 {#if userService.user}
 	<CardGroup>
 		<form onsubmit={onSubmit} class="profile-form">
 			<ProfilePictureUpload
 				bind:picture={userPicture}
 				onFileSelect={onPictureChange}
-				onInvalidFileType={() => chipToasts.error("Please use a valid image file")}
+				onInvalidFileType={() =>
+					chipToasts.error(i18nMessage("desktop:GeneralSettings.inlinec6a2a3810"))}
 			/>
 
 			<div id="contact-info" class="contact-info">
 				<div class="contact-info__fields">
-					<Textbox label="Full name" bind:value={newName} required />
-					<Textbox label="Email" value={userService.user?.email} readonly />
+					<Textbox
+						label={$i18nMessages.t("desktop:GeneralSettings.fullName")}
+						bind:value={newName}
+						required
+					/>
+					<Textbox
+						label={$i18nMessages.t("desktop:GeneralSettings.email")}
+						value={userService.user?.email}
+						readonly
+					/>
 				</div>
 
-				<Button type="submit" style="pop" loading={saving}>Update profile</Button>
+				<Button type="submit" style="pop" loading={saving}
+					>{$i18nMessages.t("desktop:GeneralSettings.updateProfile")}</Button
+				>
 			</div>
 		</form>
 	</CardGroup>
@@ -181,10 +204,10 @@
 	<CardGroup>
 		<CardGroup.Item>
 			{#snippet title()}
-				Forget credentials and log out
+				{$i18nMessages.t("desktop:GeneralSettings.forgetCredentialsAndLogOut")}
 			{/snippet}
 			{#snippet caption()}
-				Click here to clear your credentials and unwind.
+				{$i18nMessages.t("desktop:GeneralSettings.clickHereToClearYourCredentialsAndUnwind")}
 			{/snippet}
 			{#snippet actions()}
 				<Button
@@ -192,7 +215,7 @@
 					icon="logout"
 					onclick={async () => {
 						await userService.forgetUserCredentials();
-					}}>Forget credentials</Button
+					}}>{$i18nMessages.t("desktop:GeneralSettings.forgetCredentials")}</Button
 				>
 			{/snippet}
 		</CardGroup.Item>
@@ -206,7 +229,7 @@
 <CardGroup>
 	<CardGroup.Item alignment="center">
 		{#snippet title()}
-			Default code editor
+			{$i18nMessages.t("desktop:GeneralSettings.defaultCodeEditor")}
 		{/snippet}
 		{#snippet actions()}
 			<Select
@@ -233,7 +256,7 @@
 	{#if platformName !== "web"}
 		<CardGroup.Item alignment="center">
 			{#snippet title()}
-				Default terminal
+				{$i18nMessages.t("desktop:GeneralSettings.defaultTerminal")}
 			{/snippet}
 			{#snippet actions()}
 				<Select
@@ -260,11 +283,11 @@
 <CardGroup>
 	<CardGroup.Item labelFor="disable-auto-checks">
 		{#snippet title()}
-			Automatically check for updates
+			{$i18nMessages.t("desktop:GeneralSettings.automaticallyCheckForUpdates")}
 		{/snippet}
 
 		{#snippet caption()}
-			Automatically check for updates. You can still check manually when needed.
+			{$i18nMessages.t("desktop:GeneralSettings.automaticallyCheckForUpdatesYouCanStillCheck")}
 		{/snippet}
 
 		{#snippet actions()}
@@ -280,20 +303,32 @@
 <CardGroup>
 	<CardGroup.Item>
 		{#snippet title()}
-			Install the GitButler CLI <code class="code-string">but</code>
+			{#snippet i18nSlot1()}<code class="code-string">but</code>{/snippet}
+			<I18nRichMessage
+				value={{ key: "desktop:GeneralSettings.installTheGitButlerCLI" }}
+				components={{ slot1: i18nSlot1 }}
+			/>
 		{/snippet}
 
 		{#snippet caption()}
 			{#if $appSettings?.ui.cliIsManagedByPackageManager}
-				The <code>but</code> CLI is managed by your package manager. Please use your package manager to
-				install, update, or remove it.
+				{#snippet i18nSlot2()}<code>but</code>{/snippet}
+				<I18nRichMessage
+					value={{ key: "desktop:GeneralSettings.theCLIIsManagedByYourPackageManager" }}
+					components={{ slot2: i18nSlot2 }}
+				/>
 			{:else if platformName === "windows"}
-				On Windows, you can manually copy the executable (<code>`but`</code>) to a directory in your
-				PATH. Click "Show Command" for instructions.
+				{#snippet i18nSlot3()}<code>`but`</code>{/snippet}
+				<I18nRichMessage
+					value={{ key: "desktop:GeneralSettings.onWindowsYouCanManuallyCopyTheExecutable" }}
+					components={{ slot3: i18nSlot3 }}
+				/>
 			{:else}
-				Installs the GitButler CLI (<code>`but`</code>) in your PATH, allowing you to use it from
-				the terminal. This action will request admin privileges. Alternatively, you could create a
-				symlink manually.
+				{#snippet i18nSlot4()}<code>`but`</code>{/snippet}
+				<I18nRichMessage
+					value={{ key: "desktop:GeneralSettings.installsTheGitButlerCLIInYourPATHAllowing" }}
+					components={{ slot4: i18nSlot4 }}
+				/>
 			{/if}
 		{/snippet}
 
@@ -316,7 +351,7 @@
 									if (getUserErrorCode(err) === "CliInstallCancelled") {
 										showToast({
 											style: "info",
-											message: "CLI install cancelled.",
+											message: i18nMessage("desktop:GeneralSettings.inline7b374e272"),
 										});
 										return;
 									}
@@ -325,14 +360,15 @@
 							}}
 							loading={installingCLI.current.isLoading}
 						>
-							Install But CLI</Button
+							{$i18nMessages.t("desktop:GeneralSettings.installButCLI")}</Button
 						>
 					{/if}
 					<Button
 						style="gray"
 						kind="outline"
 						disabled={showSymlink}
-						onclick={() => (showSymlink = !showSymlink)}>Show command</Button
+						onclick={() => (showSymlink = !showSymlink)}
+						>{$i18nMessages.t("desktop:GeneralSettings.showCommand")}</Button
 					>
 				</div>
 			</div>
@@ -349,17 +385,19 @@
 <CardGroup>
 	<CardGroup.Item>
 		{#snippet title()}
-			Remove all projects
+			{$i18nMessages.t("desktop:GeneralSettings.removeAllProjects")}
 		{/snippet}
 		{#snippet caption()}
-			You can delete all projects from the GitButler app.
-			<br />
-			Your code remains safe. it only clears the configuration.
+			{#snippet i18nSlot5()}<br />{/snippet}
+			<I18nRichMessage
+				value={{ key: "desktop:GeneralSettings.youCanDeleteAllProjectsFromTheGitButler" }}
+				components={{ slot5: i18nSlot5 }}
+			/>
 		{/snippet}
 
 		{#snippet actions()}
 			<Button style="danger" kind="outline" onclick={() => deleteConfirmationModal?.show()}>
-				Remove projects…
+				{$i18nMessages.t("desktop:GeneralSettings.removeProjects")}
 			</Button>
 		{/snippet}
 	</CardGroup.Item>
@@ -368,14 +406,16 @@
 <Modal
 	bind:this={deleteConfirmationModal}
 	width="small"
-	title="Remove all projects"
+	title={$i18nMessages.t("desktop:GeneralSettings.removeAllProjects")}
 	onSubmit={onDeleteClicked}
 >
-	<p>Are you sure you want to remove all GitButler projects?</p>
+	<p>{$i18nMessages.t("desktop:GeneralSettings.areYouSureYouWantToRemoveAll")}</p>
 
 	{#snippet controls(close)}
-		<Button style="danger" kind="outline" loading={isDeleting} type="submit">Remove</Button>
-		<Button style="pop" onclick={close}>Cancel</Button>
+		<Button style="danger" kind="outline" loading={isDeleting} type="submit"
+			>{$i18nMessages.t("desktop:GeneralSettings.remove")}</Button
+		>
+		<Button style="pop" onclick={close}>{$i18nMessages.t("desktop:GeneralSettings.cancel")}</Button>
 	{/snippet}
 </Modal>
 

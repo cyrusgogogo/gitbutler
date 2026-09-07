@@ -1,3 +1,4 @@
+import { useTranslations } from "@gitbutler/i18n/react";
 import { Badge } from "#ui/components/Badge.tsx";
 import { classes } from "#ui/components/classes.ts";
 import { DiffStats } from "#ui/components/DiffStats.tsx";
@@ -6,8 +7,6 @@ import { Tooltip } from "@base-ui/react";
 import type { FC } from "react";
 import styles from "./ChangeStats.module.css";
 import { describeLineStats, type LineStats } from "./lineStats.ts";
-
-const pluralRules = new Intl.PluralRules("en");
 
 /**
  * File count and added/removed line totals for a set of changes.
@@ -19,11 +18,12 @@ export const ChangeStats: FC<{
 	lineStats: LineStats;
 	className?: string;
 }> = ({ fileCount, lineStats, className }) => {
+	const i18nMessages = useTranslations();
 	// The file count is the only genuinely ambiguous number — a green +N next to a red -N reads
 	// as added/removed lines on sight — so the tooltip only explains that one. Screen readers
 	// get the full wording instead, since the colours carry no meaning for them.
-	const description = `${fileCount} file${pluralRules.select(fileCount) === "one" ? "" : "s"} changed`;
-	const spoken = [description, ...describeLineStats(lineStats)];
+	const description = i18nMessages.t("lite:files.changed", { count: fileCount });
+	const spoken = [description, ...describeLineStats(lineStats).map(i18nMessages.text)];
 
 	return (
 		<Tooltip.Root>

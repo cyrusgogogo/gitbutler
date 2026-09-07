@@ -3,8 +3,10 @@
 	import { FORGE_INFO_SERVICE } from "$lib/forge/forgeInfo.svelte";
 	import { PR_SERVICE } from "$lib/forge/prService.svelte";
 	import { inject } from "@gitbutler/core/context";
+	import { useTranslations } from "@gitbutler/i18n/svelte";
 	import { reactive } from "@gitbutler/shared/reactiveUtils.svelte";
 	import type { Commit } from "@gitbutler/but-sdk";
+	const i18nMessages = useTranslations();
 
 	type Props = {
 		projectId: string;
@@ -21,7 +23,11 @@
 
 	const forgeInfoQuery = $derived(forgeInfoService.get(projectId));
 	const forgeInfo = $derived(forgeInfoQuery.response);
-	const reviewUnitName = $derived(forgeInfo?.unit.name ?? "Pull request");
+	const reviewUnitName = $derived(
+		$i18nMessages.t(
+			forgeInfo?.unit.abbr === "MR" ? "desktop:review.mergeRequest" : "desktop:review.pullRequest",
+		),
+	);
 
 	const branchEmpty = $derived(commits.length === 0);
 	const prQuery = $derived(prNumber ? prService.get(projectId, prNumber) : undefined);
@@ -29,7 +35,11 @@
 
 	const canPublishPR = $derived(auth.authenticated.current && !pr);
 
-	const ctaLabel = $derived(`Create ${reviewUnitName}…`);
+	const ctaLabel = $derived(
+		$i18nMessages.t("desktop:CanPublishReviewPlugin.detail38283fc29", {
+			value1: String(reviewUnitName),
+		}),
+	);
 
 	export const imports = {
 		get allowedToPublishPR() {

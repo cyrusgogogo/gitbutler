@@ -1,5 +1,6 @@
 import { sleep } from "$lib/utils/sleep";
 import { InjectionToken } from "@gitbutler/core/context";
+import { message, type LocalizedText } from "@gitbutler/i18n";
 import { writable, type Writable } from "svelte/store";
 import type { IBackend } from "$lib/backend";
 
@@ -41,14 +42,14 @@ type FilterEventEntry = [filter: FilterParams, handler: PromptHandler];
 async function handleAbortSignal(
 	signal: AbortSignal,
 	promptStore: Writable<SystemPromptHandle | undefined>,
-	errorStore: Writable<any>,
+	errorStore: Writable<LocalizedText | undefined>,
 ): Promise<void> {
 	const signalHandler = new Promise<void>((resolve) => {
 		signal.addEventListener("abort", () => {
 			promptStore.set(undefined);
 			switch (signal.reason) {
 				case "timeout":
-					errorStore.set("Timed out waiting for response");
+					errorStore.set(message("desktop:prompt.timeout"));
 					break;
 				default:
 					errorStore.set(undefined);
@@ -147,9 +148,11 @@ export class PromptService {
 		};
 	}
 
-	reactToPrompt(filter: FilterParams): [Writable<SystemPromptHandle | undefined>, Writable<any>] {
+	reactToPrompt(
+		filter: FilterParams,
+	): [Writable<SystemPromptHandle | undefined>, Writable<LocalizedText | undefined>] {
 		const promptStore = writable<SystemPromptHandle | undefined>();
-		const errorStore = writable<any>();
+		const errorStore = writable<LocalizedText | undefined>();
 
 		this.onPrompt(filter, async (prompt, signal) => {
 			let resolver: (response: string | null) => void;

@@ -15,6 +15,7 @@ import {
 	uncommittedActions,
 } from "$lib/selection/uncommitted";
 import { InjectionToken } from "@gitbutler/core/context";
+import { message as i18nMessage } from "@gitbutler/i18n";
 import { reactive } from "@gitbutler/shared/reactiveUtils.svelte";
 import { type Reactive } from "@gitbutler/shared/storeUtils";
 import { isDefined } from "@gitbutler/ui/utils/typeguards";
@@ -288,8 +289,10 @@ export class UncommittedService {
 				skippedStalePaths.length === 1 ? skippedStalePaths[0] : `${skippedStalePaths.length} files`;
 			showToast({
 				style: "info",
-				title: "Some selections skipped",
-				message: `The diff for ${label} shifted since you selected it. Please reselect to commit those changes.`,
+				title: i18nMessage("desktop:uncommittedService.someSelectionsSkipped"),
+				message: i18nMessage("desktop:uncommittedService.theDiffForValueShiftedSinceYouSelected", {
+					label: String(label),
+				}),
 			});
 		}
 

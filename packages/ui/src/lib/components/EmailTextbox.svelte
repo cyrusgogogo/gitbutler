@@ -1,5 +1,7 @@
 <script lang="ts">
 	import Textbox from "$components/Textbox.svelte";
+	import { useTranslations } from "@gitbutler/i18n/svelte";
+	const i18nMessages = useTranslations();
 
 	interface Props {
 		// Email-specific props
@@ -9,15 +11,20 @@
 	}
 
 	let {
-		customValidationMessage = "Please enter a valid email address.",
+		customValidationMessage: providedCustomValidationMessage,
 		value = $bindable(),
 		oninput,
 		onchange,
 		...restProps
 	}: Props = $props();
+	const customValidationMessage = $derived(
+		providedCustomValidationMessage ?? $i18nMessages.t("ui:EmailTextbox.defaultd2306dd89"),
+	);
 
-	let emailError = $state<string | undefined>(undefined);
 	let emailTouched = $state(false);
+	const emailError = $derived(
+		emailTouched && value && !validateEmail(value) ? customValidationMessage : undefined,
+	);
 
 	function validateEmail(val: string): boolean {
 		if (!val) return true; // Empty is valid (unless required)
@@ -28,41 +35,17 @@
 	function handleInput(val: string) {
 		value = val;
 		oninput?.(val);
-
-		// Only show validation errors after the field has been touched (blurred once)
-		if (emailTouched) {
-			emailError = val && !validateEmail(val) ? customValidationMessage : undefined;
-		}
 	}
-
 	function handleChange() {
-		// Mark as touched when user leaves the field
 		emailTouched = true;
-
-		// Validate on blur
-		if (value && !validateEmail(value)) {
-			emailError = customValidationMessage;
-		} else {
-			emailError = undefined;
-		}
-
 		onchange?.(value || "");
 	}
-
-	// Export validation state for parent components
 	export function isValid(): boolean {
 		return !value || validateEmail(value);
 	}
-
 	export function validate(): boolean {
 		emailTouched = true;
-		if (value && !validateEmail(value)) {
-			emailError = customValidationMessage;
-			return false;
-		} else {
-			emailError = undefined;
-			return true;
-		}
+		return isValid();
 	}
 </script>
 

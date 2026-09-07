@@ -1,3 +1,6 @@
+import type { LocalizedText } from "@gitbutler/i18n";
+import { message as i18nMessage } from "@gitbutler/i18n";
+import { Message as I18nMessage, useTranslations } from "@gitbutler/i18n/react";
 import {
 	useAddReviewReaction,
 	useGeneratePrDescription,
@@ -112,6 +115,7 @@ export const PullRequestForm: FC<{
 	onCancel,
 	afterPublish,
 }) => {
+	const i18nMessages = useTranslations();
 	const { isPending: isPublishReviewPending, mutate: publishReview } = usePublishReview(projectId);
 	const { isPending: isUpdateReviewPending, mutate: updateReview } = useUpdateReview(projectId);
 	const formRef = useRef<HTMLFormElement | null>(null);
@@ -312,12 +316,12 @@ export const PullRequestForm: FC<{
 			<Field.Root render={<FieldRootStyles />}>
 				<Field.Control
 					render={<FieldControlStyles />}
-					aria-label="Pull request title"
+					aria-label={i18nMessages.t("lite:PullRequestForm.pullRequestTitle")}
 					data-focus-scope={"pr" satisfies FocusScope}
 					ref={useAutofocusScope()}
 					name="title"
 					onChange={(evt) => setLocalDocument({ ...localDocument, title: evt.currentTarget.value })}
-					placeholder="PR title"
+					placeholder={i18nMessages.t("lite:PullRequestForm.pRTitle")}
 					required
 					value={localDocument.title}
 				/>
@@ -332,13 +336,13 @@ export const PullRequestForm: FC<{
 				/>
 
 				<textarea
-					aria-label="Pull request description"
+					aria-label={i18nMessages.t("lite:PullRequestForm.pullRequestDescription")}
 					className={classes("text-13", "text-body", styles.descriptionInput)}
 					name="body"
 					onChange={(evt) => setLocalDocument({ ...localDocument, body: evt.currentTarget.value })}
 					// Only the flip re-renders: React bails out of an unchanged state.
 					onScroll={(evt) => setBodyScrolled(evt.currentTarget.scrollTop > 0)}
-					placeholder="PR description"
+					placeholder={i18nMessages.t("lite:PullRequestForm.pRDescription")}
 					ref={bodyRef}
 					value={localDocument.body}
 				/>
@@ -358,7 +362,7 @@ export const PullRequestForm: FC<{
 								{/* Disabled buttons swallow hover, so the wrapper span carries the tooltip. */}
 								<Tooltip.Trigger render={<span className={styles.disabledActionWrap} />}>
 									<button
-										aria-label="Generate title and description"
+										aria-label={i18nMessages.t("lite:PullRequestForm.generateTitleAndDescription")}
 										className={getButtonClassName({ variant: "ghost", iconOnly: true })}
 										disabled={generationButton.disabled}
 										onClick={generateDescription}
@@ -370,7 +374,13 @@ export const PullRequestForm: FC<{
 								<Tooltip.Portal>
 									<Tooltip.Positioner sideOffset={4}>
 										<Tooltip.Popup render={<TooltipPopup />}>
-											{generationButton.hint ?? "Generate title and description"}
+											<I18nMessage
+												value={
+													generationButton.hint ?? {
+														key: "lite:PullRequestForm.generateTitleAndDescription",
+													}
+												}
+											/>
 										</Tooltip.Popup>
 									</Tooltip.Positioner>
 								</Tooltip.Portal>
@@ -381,7 +391,7 @@ export const PullRequestForm: FC<{
 							{isNew && (
 								<>
 									<SwitchButton
-										label="Draft"
+										label={i18nMessages.t("lite:PullRequestForm.draft")}
 										checked={localDocument.isDraft}
 										disabled={isAnyPending}
 										name="isDraft"
@@ -405,7 +415,7 @@ export const PullRequestForm: FC<{
 										}}
 										type="button"
 									>
-										Cancel
+										<I18nMessage value={{ key: "lite:PullRequestForm.cancel" }} />
 									</button>
 								)}
 
@@ -414,7 +424,11 @@ export const PullRequestForm: FC<{
 									disabled={!canSubmit || isAnyPending || !hasChanges}
 									type="submit"
 								>
-									{isNew ? "Create a PR" : "Save changes"}
+									{isNew ? (
+										<I18nMessage value={{ key: "lite:PullRequestForm.createAPR" }} />
+									) : (
+										<I18nMessage value={{ key: "lite:PullRequestForm.saveChanges" }} />
+									)}
 									{/* Creating opens a PR; saving only confirms an edit. */}
 									<Icon name={isAnyPending ? "spinner" : isNew ? "pr" : "tick"} />
 								</button>
@@ -492,7 +506,9 @@ export const PullRequestDescription: FC<{
 					<Markdown>{body}</Markdown>
 				</Clamped>
 			) : (
-				<p className={classes("text-13", styles.prViewEmptyBody)}>No description provided.</p>
+				<p className={classes("text-13", styles.prViewEmptyBody)}>
+					<I18nMessage value={{ key: "lite:PullRequestForm.noDescriptionProvided" }} />
+				</p>
 			)}
 
 			{reviewReactions !== undefined && (
@@ -508,24 +524,24 @@ export const PullRequestDescription: FC<{
 };
 
 /** Why the Merge button is disabled, or null when merging is possible. */
-const mergeBlockedReason = (mergeStatus: ReviewMergeStatus | undefined): string | null => {
-	if (mergeStatus === undefined) return "Checking mergeability…";
+const mergeBlockedReason = (mergeStatus: ReviewMergeStatus | undefined): LocalizedText | null => {
+	if (mergeStatus === undefined) return i18nMessage("lite:merge.Checkingmergeability");
 	if (mergeStatus.isMergeable) return null;
 
 	switch (mergeStatus.mergeableState) {
 		case "blocked":
-			return "Blocked: required approvals or checks are not satisfied";
+			return i18nMessage("lite:merge.Blockedrequiredapprovalsorchecksarenotsatisfied");
 		case "behind":
-			return "Behind the base branch; update the branch first";
+			return i18nMessage("lite:merge.Behindthebasebranchupdatethebranchfirst");
 		case "dirty":
-			return "Merge conflicts with the base branch";
+			return i18nMessage("lite:merge.Mergeconflictswiththebasebranch");
 		case "draft":
-			return "Draft pull requests cannot be merged";
+			return i18nMessage("lite:merge.Draftpullrequestscannotbemerged");
 		case "unknown":
 		case null:
-			return "Mergeability not yet determined by the forge";
+			return i18nMessage("lite:merge.Mergeabilitynotyetdeterminedbytheforge");
 		default:
-			return `Not mergeable (state: ${mergeStatus.mergeableState})`;
+			return i18nMessage("lite:merge.unavailable", { state: mergeStatus.mergeableState });
 	}
 };
 
@@ -536,10 +552,10 @@ const mergeMethods = [
 	"rebase",
 ] as const satisfies ReadonlyArray<ReviewMergeMethod>;
 
-const mergeMethodLabels: Record<ReviewMergeMethod, string> = {
-	merge: "Merge",
-	squash: "Squash and merge",
-	rebase: "Rebase and merge",
+const mergeMethodLabels: Record<ReviewMergeMethod, LocalizedText> = {
+	merge: i18nMessage("lite:merge.method.merge"),
+	squash: i18nMessage("lite:merge.method.squash"),
+	rebase: i18nMessage("lite:merge.method.rebase"),
 };
 
 /**
@@ -554,6 +570,7 @@ export const PullRequestPrimaryAction: FC<{
 	isEditing: boolean;
 	onStartEdit: () => void;
 }> = ({ projectId, review, isEditing, onStartEdit }) => {
+	const i18nMessages = useTranslations();
 	const { number: reviewId, draft: isDraft, autoMergeEnabled } = review;
 	// A merged review is closed too, so merge wins when both timestamps are set.
 	const isMerged = review.mergedAt !== null;
@@ -593,12 +610,16 @@ export const PullRequestPrimaryAction: FC<{
 					? []
 					: [
 							nativeMenuItem({
-								label: isDraft ? "Mark as ready for review" : "Convert to draft",
+								label: isDraft
+									? i18nMessage("lite:PullRequestForm.markAsReadyForReview")
+									: i18nMessage("lite:PullRequestForm.convertToDraft"),
 								onSelect: () => setReviewDraftiness({ projectId, reviewId, draft: !isDraft }),
 							}),
 						]),
 				nativeMenuItem({
-					label: isClosed ? "Reopen pull request" : "Close pull request",
+					label: isClosed
+						? i18nMessage("lite:PullRequestForm.reopenPullRequest")
+						: i18nMessage("lite:PullRequestForm.closePullRequest"),
 					onSelect: () =>
 						updateReview({
 							projectId,
@@ -615,7 +636,7 @@ export const PullRequestPrimaryAction: FC<{
 		[
 			[
 				nativeMenuItem({
-					label: "Open pull request in browser",
+					label: i18nMessage("lite:PullRequestForm.openPullRequestInBrowser"),
 					onSelect: () => window.lite.openInWebBrowser(review.htmlUrl),
 				}),
 			],
@@ -632,8 +653,7 @@ export const PullRequestPrimaryAction: FC<{
 				onClick={onStartEdit}
 				type="button"
 			>
-				Edit
-				<Icon name="edit" />
+				<I18nMessage value={{ key: "lite:PullRequestForm.edit" }} /> <Icon name="edit" />
 			</button>
 
 			{!isDraft && (
@@ -642,7 +662,7 @@ export const PullRequestPrimaryAction: FC<{
 					    spinner — but like its neighbors it locks while any of the
 					    row's mutations are in flight. */}
 					<SwitchButton
-						label="Auto-merge"
+						label={i18nMessages.t("lite:PullRequestForm.autoMerge")}
 						variant="outline"
 						checked={autoMergeEnabled}
 						disabled={isAnyPending}
@@ -653,8 +673,10 @@ export const PullRequestPrimaryAction: FC<{
 						variant="pop"
 						disabled={isAnyPending || blockedReason !== null}
 						onClick={() => mergeReview({ projectId, reviewId, mergeMethod })}
-						actionTooltip={!isAnyPending && blockedReason !== null ? blockedReason : undefined}
-						menuLabel="Merge method"
+						actionTooltip={
+							!isAnyPending && blockedReason !== null ? i18nMessages.text(blockedReason) : undefined
+						}
+						menuLabel={i18nMessages.t("lite:PullRequestForm.mergeMethod")}
 						menuDisabled={isAnyPending}
 						onMenuTrigger={(trigger) =>
 							void showNativeMenuFromTrigger(
@@ -670,13 +692,13 @@ export const PullRequestPrimaryAction: FC<{
 						}
 					>
 						{isMergeReviewPending && <Icon name="spinner" />}
-						{mergeMethodLabels[mergeMethod]}
+						<I18nMessage value={mergeMethodLabels[mergeMethod]} />
 					</DropdownButton>
 				</>
 			)}
 
 			<button
-				aria-label="More pull request actions"
+				aria-label={i18nMessages.t("lite:PullRequestForm.morePullRequestActions")}
 				className={getButtonClassName({ variant: "ghost", iconOnly: true })}
 				disabled={isAnyPending}
 				onClick={(evt) => void showNativeMenuFromTrigger(evt.currentTarget, menuItems)}

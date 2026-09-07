@@ -1,7 +1,9 @@
 <script lang="ts">
 	import { SETTINGS_SERVICE } from "$lib/settings/appSettings";
 	import { inject } from "@gitbutler/core/context";
+	import { useTranslations } from "@gitbutler/i18n/svelte";
 	import { CardGroup, Link, TestId, Toggle } from "@gitbutler/ui";
+	const i18nMessages = useTranslations();
 
 	const settingsService = inject(SETTINGS_SERVICE);
 	const appSettings = $derived(settingsService.appSettings);
@@ -11,28 +13,24 @@
 
 <div class="analytics-settings__content">
 	<p class="text-13 text-body analytics-settings__text">
-		GitButler uses telemetry strictly to help us improve the client. We do not collect any personal
-		information, unless explicitly allowed below. <Link href="https://gitbutler.com/privacy">
-			Privacy policy
+		{$i18nMessages.t("desktop:AnalyticsSettings.gitButlerUsesTelemetryStrictlyToHelpUsImprove")}
+		<Link href="https://gitbutler.com/privacy">
+			{$i18nMessages.t("desktop:AnalyticsSettings.privacyPolicy")}
 		</Link>
 	</p>
 	<p class="text-13 text-body analytics-settings__text">
-		We kindly ask you to consider keeping these settings enabled as it helps us catch issues more
-		quickly. If you choose to disable them, please feel free to share your feedback on our <Link
-			href="https://discord.gg/MmFkmaJ42D"
-		>
-			Discord
-		</Link>.
+		{$i18nMessages.t("desktop:AnalyticsSettings.weKindlyAskYouToConsiderKeepingThese")}
+		<Link href="https://discord.gg/MmFkmaJ42D">Discord</Link>.
 	</p>
 </div>
 
 <CardGroup testId={TestId.OnboardingPageAnalyticsSettings}>
 	<CardGroup.Item labelFor="errorReportingToggle">
 		{#snippet title()}
-			Error reporting
+			{$i18nMessages.t("desktop:AnalyticsSettings.errorReporting")}
 		{/snippet}
 		{#snippet caption()}
-			Toggle reporting of application crashes and errors.
+			{$i18nMessages.t("desktop:AnalyticsSettings.toggleReportingOfApplicationCrashesAndErrors")}
 		{/snippet}
 		{#snippet actions()}
 			<Toggle
@@ -49,10 +47,10 @@
 
 	<CardGroup.Item labelFor="metricsEnabledToggle">
 		{#snippet title()}
-			Usage metrics
+			{$i18nMessages.t("desktop:AnalyticsSettings.usageMetrics")}
 		{/snippet}
 		{#snippet caption()}
-			Toggle sharing of usage statistics.
+			{$i18nMessages.t("desktop:AnalyticsSettings.toggleSharingOfUsageStatistics")}
 		{/snippet}
 		{#snippet actions()}
 			<Toggle

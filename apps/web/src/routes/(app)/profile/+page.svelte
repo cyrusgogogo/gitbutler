@@ -7,6 +7,8 @@
 	import { USER_SERVICE } from "$lib/user/userService";
 	import { getOS } from "$lib/utils/getOS";
 	import { inject } from "@gitbutler/core/context";
+	import { message as i18nMessage } from "@gitbutler/i18n";
+	import { useTranslations } from "@gitbutler/i18n/svelte";
 	import { LOGIN_SERVICE } from "@gitbutler/shared/login/loginService";
 	import Loading from "@gitbutler/shared/network/Loading.svelte";
 	import { getRecentlyPushedProjects } from "@gitbutler/shared/organizations/projectsPreview.svelte";
@@ -14,8 +16,10 @@
 	import { NOTIFICATION_SETTINGS_SERVICE } from "@gitbutler/shared/settings/notificationSettingsService";
 	import { getNotificationSettingsInterest } from "@gitbutler/shared/settings/notificationSetttingsPreview.svelte";
 	import { Button, CardGroup, chipToasts, Icon, Modal, Spacer } from "@gitbutler/ui";
+	import I18nRichMessage from "@gitbutler/ui/i18n/RichMessage.svelte";
 	import { copyToClipboard } from "@gitbutler/ui/utils/clipboard";
 	import { env } from "$env/dynamic/public";
+	const i18nMessages = useTranslations();
 
 	const userService = inject(USER_SERVICE);
 	const appState = inject(APP_STATE);
@@ -35,7 +39,9 @@
 		return os === "unknown" ? "macOS" : os;
 	});
 
-	const downloadButtonText = $derived(`Download GitButler for ${detectedOS}`);
+	const downloadButtonText = $derived(
+		$i18nMessages.t("web:detail.629c268d33", { value1: String(detectedOS) }),
+	);
 
 	const downloadLink = $derived.by(() => {
 		switch (detectedOS) {
@@ -51,7 +57,7 @@
 
 	async function refreshAccessToken() {
 		await userService.refreshAccessToken();
-		chipToasts.success("Access token refreshed successfully");
+		chipToasts.success(i18nMessage("web:page.accessTokenRefreshedSuccessfully"));
 	}
 
 	function logout() {
@@ -74,20 +80,26 @@
 		if (response.type === "success" && response.data) {
 			copyToClipboard(response.data);
 		} else {
-			chipToasts.error("Failed to get token");
+			chipToasts.error(i18nMessage("web:page.failedToGetToken"));
 		}
 	}
 </script>
 
 <svelte:head>
-	<title>GitButler | User</title>
+	<title>{$i18nMessages.t("web:page.gitButlerUser")}</title>
 </svelte:head>
 
 {#if !$user?.id}
 	<div class="not-logged-in">
-		<h3 class="text-18 text-bold">It looks like you're not logged in</h3>
+		<h3 class="text-18 text-bold">{$i18nMessages.t("web:page.itLooksLikeYouReNotLoggedIn")}</h3>
 		<p class="text-14 text-body clr-text-2">
-			Please <a class="underline" href="/login">log in</a> to access your profile
+			{#snippet i18nSlot1(content: import("svelte").Snippet)}<a class="underline" href="/login"
+					>{@render content()}</a
+				>{/snippet}
+			<I18nRichMessage
+				value={{ key: "web:page.pleaseLogInToAccessYourProfile" }}
+				components={{ slot1: i18nSlot1 }}
+			/>
 		</p>
 	</div>
 {:else}
@@ -110,44 +122,52 @@
 			{#if $user}
 				<CardGroup.Item standalone>
 					{#snippet title()}
-						Signing out
+						{$i18nMessages.t("web:page.signingOut")}
 					{/snippet}
 					{#snippet caption()}
-						Ready to take a break? Click here to log out and unwind.
+						{$i18nMessages.t("web:page.readyToTakeABreakClickHereTo")}
 					{/snippet}
 					{#snippet actions()}
-						<Button kind="outline" icon="logout" onclick={logout}>Log out</Button>
+						<Button kind="outline" icon="logout" onclick={logout}
+							>{$i18nMessages.t("web:page.logOut")}</Button
+						>
 					{/snippet}
 				</CardGroup.Item>
 
 				<CardGroup>
 					<CardGroup.Item>
 						{#snippet title()}
-							Access token
+							{$i18nMessages.t("web:page.accessToken")}
 						{/snippet}
 						{#snippet caption()}
-							Your access token is used to authenticate the GitButler clients with our API.
-							<br />
-							Keep it secure and refresh it periodically for enhanced security.
+							{#snippet i18nSlot2()}<br />{/snippet}
+							<I18nRichMessage
+								value={{ key: "web:page.yourAccessTokenIsUsedToAuthenticateThe" }}
+								components={{ slot2: i18nSlot2 }}
+							/>
 						{/snippet}
 					</CardGroup.Item>
 					<CardGroup.Item alignment="center">
 						{#snippet caption()}
-							Copy your token to use with the desktop app or CLI.
+							{$i18nMessages.t("web:page.copyYourTokenToUseWithTheDesktop")}
 						{/snippet}
 						{#snippet actions()}
-							<Button kind="outline" icon="copy" onclick={copyAccessToken}>Copy token</Button>
+							<Button kind="outline" icon="copy" onclick={copyAccessToken}
+								>{$i18nMessages.t("web:page.copyToken")}</Button
+							>
 						{/snippet}
 					</CardGroup.Item>
 					<CardGroup.Item>
 						{#snippet caption()}
-							Refresh your token if you notice unusual activity.
-							<br />
-							This logs you out everywhere, including the desktop app.
+							{#snippet i18nSlot3()}<br />{/snippet}
+							<I18nRichMessage
+								value={{ key: "web:page.refreshYourTokenIfYouNoticeUnusualActivity" }}
+								components={{ slot3: i18nSlot3 }}
+							/>
 						{/snippet}
 						{#snippet actions()}
 							<Button kind="outline" icon="refresh" onclick={refreshAccessToken}
-								>Refresh token</Button
+								>{$i18nMessages.t("web:page.refreshToken")}</Button
 							>
 						{/snippet}
 					</CardGroup.Item>
@@ -158,17 +178,21 @@
 				<CardGroup>
 					<CardGroup.Item>
 						{#snippet title()}
-							Danger zone
+							{$i18nMessages.t("web:page.dangerZone")}
 						{/snippet}
 					</CardGroup.Item>
 					<CardGroup.Item>
 						{#snippet caption()}
-							Permanently delete your account and all data.
-							<br />
-							This action cannot be undone.
+							{#snippet i18nSlot4()}<br />{/snippet}
+							<I18nRichMessage
+								value={{ key: "web:page.permanentlyDeleteYourAccountAndAllDataThis" }}
+								components={{ slot4: i18nSlot4 }}
+							/>
 						{/snippet}
 						{#snippet actions()}
-							<Button style="danger" onclick={initiateDeleteAccount}>Delete my account…</Button>
+							<Button style="danger" onclick={initiateDeleteAccount}
+								>{$i18nMessages.t("web:page.deleteMyAccount")}</Button
+							>
 						{/snippet}
 					</CardGroup.Item>
 				</CardGroup>
@@ -186,7 +210,7 @@
 						<img class="download-card__icon" src="/images/app-icon.svg" alt="" />
 
 						<p class="text-12 text-body clr-text-2 text-balance">
-							Get the desktop app for Mac, Windows, and Linux.
+							{$i18nMessages.t("web:page.getTheDesktopAppForMacWindowsAnd")}
 						</p>
 					</div>
 
@@ -197,11 +221,15 @@
 					<hr class="download-card__divider" />
 
 					<p class="download-card__other-text text-12">
-						Get the app for
-						<a href={linksJson.resources.downloads.url} target="_self" rel="noopener noreferrer">
-							other platforms
-						</a>
-						↗
+						{#snippet i18nSlot5(content: import("svelte").Snippet)}<a
+								href={linksJson.resources.downloads.url}
+								target="_self"
+								rel="noopener noreferrer">{@render content()}</a
+							>{/snippet}
+						<I18nRichMessage
+							value={{ key: "web:page.getTheAppForOtherPlatforms" }}
+							components={{ slot5: i18nSlot5 }}
+						/>
 					</p>
 				</div>
 			</div>
@@ -219,10 +247,10 @@
 				>
 					<div class="tip-link__title">
 						<Icon name="docs" color="var(--text-2)" />
-						<h3 class="text-14 text-semibold">Get Started</h3>
+						<h3 class="text-14 text-semibold">{$i18nMessages.t("web:page.getStarted")}</h3>
 					</div>
 					<p class="text-12 text-body clr-text-2">
-						Explore comprehensive guides and best practices.
+						{$i18nMessages.t("web:page.exploreComprehensiveGuidesAndBestPractices")}
 					</p>
 
 					<span class="tip-link__arrow-icon">↗</span>
@@ -235,19 +263,21 @@
 				>
 					<div class="tip-link__title">
 						<Icon name="discord" color="var(--text-2)" />
-						<h3 class="text-14 text-semibold">Join the Community</h3>
+						<h3 class="text-14 text-semibold">{$i18nMessages.t("web:page.joinTheCommunity")}</h3>
 					</div>
-					<p class="text-12 text-body clr-text-2">Join our Discord for help and discussion.</p>
+					<p class="text-12 text-body clr-text-2">
+						{$i18nMessages.t("web:page.joinOurDiscordForHelpAndDiscussion")}
+					</p>
 
 					<span class="tip-link__arrow-icon">↗</span>
 				</a>
 				<a class="tip-link" href={linksJson.other.support.url}>
 					<div class="tip-link__title">
 						<Icon name="chat" color="var(--text-2)" />
-						<h3 class="text-14 text-semibold">Need Help?</h3>
+						<h3 class="text-14 text-semibold">{$i18nMessages.t("web:page.needHelp")}</h3>
 					</div>
 					<p class="text-12 text-body clr-text-2">
-						Create an issue on GitHub. We're here to assist!
+						{$i18nMessages.t("web:page.createAnIssueOnGitHubWeReHere")}
 					</p>
 
 					<span class="tip-link__arrow-icon">↗</span>
@@ -257,17 +287,24 @@
 	</div>
 {/if}
 
-<Modal bind:this={deleteAccountConfirmationModal} title="Confirm account deletion" width="small">
+<Modal
+	bind:this={deleteAccountConfirmationModal}
+	title={$i18nMessages.t("web:page.confirmAccountDeletion")}
+	width="small"
+>
 	<p class="text-13 text-body">
-		Are you sure you want to delete your account?
-		<br />
-		This action is <b>irreversible</b> and will permanently remove all your data from our servers.
+		{#snippet i18nSlot6()}<br />{/snippet}
+		{#snippet i18nSlot7(content: import("svelte").Snippet)}<b>{@render content()}</b>{/snippet}
+		<I18nRichMessage
+			value={{ key: "web:page.areYouSureYouWantToDeleteYour" }}
+			components={{ slot6: i18nSlot6, slot7: i18nSlot7 }}
+		/>
 	</p>
 	{#snippet controls(close)}
 		<div class="flex flex-row gap-8 justify-end">
-			<Button style="pop" onclick={close}>Cancel</Button>
+			<Button style="pop" onclick={close}>{$i18nMessages.t("web:page.cancel")}</Button>
 			<Button style="danger" icon="bin" kind="outline" onclick={deleteAccount}
-				>Delete permanently</Button
+				>{$i18nMessages.t("web:page.deletePermanently")}</Button
 			>
 		</div>
 	{/snippet}

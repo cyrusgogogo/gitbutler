@@ -1,3 +1,4 @@
+import { message as i18nMessage } from "@gitbutler/i18n";
 import { useUnapplyStack, useWorkspaceIntegrateUpstream } from "#ui/api/mutations.ts";
 import { decodeBytes } from "#ui/api/bytes.ts";
 import { operatingModeQueryOptions } from "#ui/api/queries.ts";
@@ -58,7 +59,9 @@ export const useStackMenuItems = (projectId: string, stack: Stack): Array<Native
 		// The fold items stay reachable outside the default mode: folding is a
 		// view operation, and the items that mutate the stack gate themselves.
 		nativeMenuItem({
-			label: anyFolded ? "Unfold All Branches In Stack" : "Fold All Branches In Stack",
+			label: anyFolded
+				? i18nMessage("lite:useStackMenuItems.unfoldAllBranchesInStack")
+				: i18nMessage("lite:useStackMenuItems.foldAllBranchesInStack"),
 			enabled: branchCount > 1 && foldableRefs.length > 0,
 			onSelect: () => {
 				dispatch(
@@ -71,7 +74,7 @@ export const useStackMenuItems = (projectId: string, stack: Stack): Array<Native
 			},
 		}),
 		nativeMenuItem({
-			label: "Update Stack (Rebases)",
+			label: i18nMessage("lite:useStackMenuItems.updateStackRebases"),
 			enabled: noOperationPending && !!rebaseUpdate,
 			accelerator: toElectronAccelerator(sidebarHotkeys.updateStack.hotkey),
 			onSelect: () => {
@@ -85,7 +88,7 @@ export const useStackMenuItems = (projectId: string, stack: Stack): Array<Native
 			},
 		}),
 		nativeMenuItem({
-			label: "Unapply Stack",
+			label: i18nMessage("lite:useStackMenuItems.unapplyStack"),
 			enabled: isOpenWorkspace === true && noOperationPending && !isUnapplyStackPending,
 			onSelect: () => {
 				// In the future we should have an unapply API that doesn't require an ID.

@@ -10,7 +10,16 @@
 		getFallbackThumbnail,
 		type YouTubePlaylist,
 	} from "$lib/youtube";
+	import {
+		errorText,
+		message as i18nMessage,
+		type LocalizedText,
+		LocalizedError,
+	} from "@gitbutler/i18n";
+	import { useTranslations } from "@gitbutler/i18n/svelte";
+	import I18nRichMessage from "@gitbutler/ui/i18n/RichMessage.svelte";
 	import { onMount } from "svelte";
+	const i18nMessages = useTranslations();
 
 	// Constants
 	const PLAYLIST_URL =
@@ -21,7 +30,7 @@
 	// State
 	let playlist: YouTubePlaylist | null = $state(null);
 	let isLoading = $state(true);
-	let error = $state("");
+	let error = $state<LocalizedText>("");
 	let carousel: HTMLElement | undefined = $state();
 	let canScrollLeft = $state(false);
 	let canScrollRight = $state(false);
@@ -144,12 +153,12 @@
 		try {
 			const playlistId = extractPlaylistId(PLAYLIST_URL);
 			if (!playlistId) {
-				throw new Error("Invalid playlist URL");
+				throw new LocalizedError(i18nMessage("web:videos.invalidUrl"), "Invalid playlist URL");
 			}
 
 			playlist = await fetchPlaylistVideos(playlistId);
 		} catch (err) {
-			error = err instanceof Error ? err.message : "Failed to load videos";
+			error = errorText(err, i18nMessage("web:videos.loadFailed"));
 			console.error("Error loading playlist:", err);
 		} finally {
 			isLoading = false;
@@ -158,12 +167,20 @@
 </script>
 
 <section class="feature-updates">
+	{#snippet i18nHeadingSlot(content: import("svelte").Snippet)}<i>{@render content()}</i>{/snippet}
 	<SectionHeader>
-		<i>Feature</i> updates
+		<I18nRichMessage
+			value={{ key: "web:FeatureUpdates.featureUpdates" }}
+			components={{ slot1: i18nHeadingSlot }}
+		/>
 
 		{#snippet buttons()}
 			<div class="feature-updates__all-demos">
-				<ArrowButton showArrow={false} label="All demos" onclick={openPlaylist} />
+				<ArrowButton
+					showArrow={false}
+					label={$i18nMessages.t("web:FeatureUpdates.allDemos")}
+					onclick={openPlaylist}
+				/>
 			</div>
 			<ArrowButton onclick={() => scroll("left")} reverseDirection disabled={!canScrollLeft} />
 			<ArrowButton onclick={() => scroll("right")} disabled={!canScrollRight} />
@@ -172,15 +189,22 @@
 
 	{#if isLoading}
 		<div class="loading-state">
-			<p>Loading videos...</p>
+			<p>{$i18nMessages.t("web:FeatureUpdates.loadingVideos")}</p>
 		</div>
 	{:else if error}
 		<div class="loading-state">
 			<h3>¯\_(ツ)_/¯</h3>
-			<p>Unable to load videos: {error}</p>
+			<p>{$i18nMessages.t("web:FeatureUpdates.unableToLoadVideosValue", { error })}</p>
 			<p>
-				Please check our <a href={PLAYLIST_URL} target="_blank" rel="noopener">YouTube playlist</a>
-				directly.
+				{#snippet i18nSlot2(content: import("svelte").Snippet)}<a
+						href={PLAYLIST_URL}
+						target="_blank"
+						rel="noopener">{@render content()}</a
+					>{/snippet}
+				<I18nRichMessage
+					value={{ key: "web:FeatureUpdates.pleaseCheckOurYouTubePlaylistDirectly" }}
+					components={{ slot2: i18nSlot2 }}
+				/>
 			</p>
 		</div>
 	{:else if playlist && playlist.videos.length > 0}
@@ -188,7 +212,7 @@
 			<div class="video-carousel__container">
 				<div
 					role="region"
-					aria-label="Video carousel"
+					aria-label={$i18nMessages.t("web:FeatureUpdates.videoCarousel")}
 					class="video-carousel__scroll"
 					bind:this={carousel}
 					ontouchstart={handleTouchStart}

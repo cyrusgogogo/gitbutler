@@ -100,6 +100,9 @@ but_schemars::register_sdk_type!(Reviews);
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq, schemars::JsonSchema)]
 #[serde(rename_all = "camelCase")]
 pub struct UiSettings {
+    /// Preferred GUI language. Older settings follow the operating system.
+    #[serde(default)]
+    pub language: LanguagePreference,
     /// Whether to use the native system title bar.
     pub use_native_title_bar: bool,
     /// When `true`, app windows are drawn without a drop shadow (macOS only).
@@ -120,3 +123,19 @@ pub struct UiSettings {
     pub check_for_updates_interval_in_seconds: u64,
 }
 but_schemars::register_sdk_type!(UiSettings);
+
+/// A GUI language preference, independent of Git data and CLI output.
+#[derive(
+    Copy, Clone, Debug, Default, Serialize, Deserialize, PartialEq, Eq, schemars::JsonSchema,
+)]
+pub enum LanguagePreference {
+    #[serde(rename = "en")]
+    English,
+    #[serde(rename = "zh-CN")]
+    SimplifiedChinese,
+    /// Unknown future language choices degrade without discarding other settings.
+    #[default]
+    #[serde(rename = "system", other)]
+    System,
+}
+but_schemars::register_sdk_type!(LanguagePreference);

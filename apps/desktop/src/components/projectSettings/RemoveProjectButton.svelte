@@ -1,5 +1,8 @@
 <script lang="ts">
+	import { useTranslations } from "@gitbutler/i18n/svelte";
 	import { Button, Modal, TestId } from "@gitbutler/ui";
+	import I18nRichMessage from "@gitbutler/ui/i18n/RichMessage.svelte";
+	const i18nMessages = useTranslations();
 
 	interface Props {
 		projectTitle?: string;
@@ -43,7 +46,7 @@
 	reversedDirection
 	onclick={handleClick}
 >
-	Remove project…
+	{$i18nMessages.t("desktop:RemoveProjectButton.removeProject")}
 </Button>
 
 <Modal
@@ -55,13 +58,20 @@
 >
 	<div class="remove-project-description">
 		<p class="text-14 text-body">
-			Are you sure you want to remove
-			<span class="text-bold">{projectTitle}</span> from GitButler?
+			{#snippet i18nSlot1(content: import("svelte").Snippet)}<span class="text-bold"
+					>{@render content()}</span
+				>{/snippet}
+			<I18nRichMessage
+				value={{
+					key: "desktop:RemoveProjectButton.areYouSureYouWantToRemoveValue",
+					values: { projectTitle: String(projectTitle) },
+				}}
+				components={{ slot1: i18nSlot1 }}
+			/>
 		</p>
 
 		<p class="text-12 text-body details-text">
-			When you delete your project from GitButler, your repository doesn't get deleted. It just
-			removes the project from the list, keeping your repository safe and easy to access.
+			{$i18nMessages.t("desktop:RemoveProjectButton.whenYouDeleteYourProjectFromGitButlerYour")}
 		</p>
 	</div>
 
@@ -75,9 +85,11 @@
 			icon="bin"
 			type="submit"
 		>
-			Remove
+			{$i18nMessages.t("desktop:RemoveProjectButton.remove")}
 		</Button>
-		<Button style="pop" onclick={close}>Cancel</Button>
+		<Button style="pop" onclick={close}
+			>{$i18nMessages.t("desktop:RemoveProjectButton.cancel")}</Button
+		>
 	{/snippet}
 </Modal>
 

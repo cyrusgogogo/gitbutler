@@ -4,36 +4,39 @@
 	import PasswordConfirmation from "$lib/components/auth/PasswordConfirmation.svelte";
 	import FullscreenUtilityCard from "$lib/components/service/FullscreenUtilityCard.svelte";
 	import { inject } from "@gitbutler/core/context";
+	import { message as i18nMessage, type LocalizedText } from "@gitbutler/i18n";
+	import { useTranslations } from "@gitbutler/i18n/svelte";
 	import { LOGIN_SERVICE } from "@gitbutler/shared/login/loginService";
 	import { WEB_ROUTES_SERVICE } from "@gitbutler/shared/routing/webRoutes.svelte";
 	import { Button, InfoMessage } from "@gitbutler/ui";
 	import { env } from "$env/dynamic/public";
+	const i18nMessages = useTranslations();
 
 	const loginService = inject(LOGIN_SERVICE);
 	const routesService = inject(WEB_ROUTES_SERVICE);
 
 	let password = $state<string>();
 	let passwordConfirmation = $state<string>();
-	let error = $state<string>();
-	let message = $state<string>();
+	let error = $state<LocalizedText>();
+	let message = $state<LocalizedText>();
 	let passwordComponent: PasswordConfirmation | undefined;
 
 	async function handleSubmit() {
 		const token = page.url.searchParams.get("t");
 
 		if (!token) {
-			error = "Invalid or missing token";
+			error = i18nMessage("web:detail.d836a60449");
 			// TODO: Probably redirect to the login page or show a more user-friendly error
 			return;
 		}
 
 		if (!passwordComponent?.isValid()) {
-			error = "Please check your password and confirmation";
+			error = i18nMessage("web:detail.618966893b");
 			return;
 		}
 
 		if (!password || !passwordConfirmation) {
-			error = "Password are required";
+			error = i18nMessage("web:detail.da16feed3b");
 			return;
 		}
 
@@ -55,14 +58,14 @@
 </script>
 
 <svelte:head>
-	<title>GitButler | Confirm Password</title>
+	<title>{$i18nMessages.t("web:page.gitButlerConfirmPassword")}</title>
 </svelte:head>
 
 <RedirectIfLoggedIn />
 
 <FullscreenUtilityCard
-	title="Confirm new password"
-	backlink={{ label: "Login", href: routesService.loginPath() }}
+	title={$i18nMessages.t("web:page.confirmNewPassword")}
+	backlink={{ label: $i18nMessages.t("web:nav.login"), href: routesService.loginPath() }}
 >
 	<div class="form-content">
 		<PasswordConfirmation
@@ -75,7 +78,7 @@
 		{#if error}
 			<InfoMessage filled outlined={false} style="danger">
 				{#snippet content()}
-					{error}
+					{$i18nMessages.text(error ?? "")}
 				{/snippet}
 			</InfoMessage>
 		{/if}
@@ -83,12 +86,13 @@
 		{#if message}
 			<InfoMessage filled outlined={false} style="success">
 				{#snippet content()}
-					{message}
+					{$i18nMessages.text(message ?? "")}
 				{/snippet}
 			</InfoMessage>
 		{/if}
 
-		<Button style="pop" onclick={handleSubmit}>Confirm Password</Button>
+		<Button style="pop" onclick={handleSubmit}>{$i18nMessages.t("web:page.confirmPassword")}</Button
+		>
 	</div>
 </FullscreenUtilityCard>
 

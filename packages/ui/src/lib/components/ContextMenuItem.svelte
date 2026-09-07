@@ -4,7 +4,6 @@
 	import { keysStringToArr } from "$lib/utils/hotkeys";
 	import { getContext } from "svelte";
 	import type { Snippet } from "svelte";
-
 	// Context key for submenu coordination
 	const SUBMENU_CONTEXT_KEY = "contextmenu-submenu-coordination";
 

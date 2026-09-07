@@ -2,8 +2,10 @@
 	import Badge from "$components/Badge.svelte";
 	import Icon from "$components/Icon.svelte";
 	import Tooltip from "$components/Tooltip.svelte";
+	import { useTranslations } from "@gitbutler/i18n/svelte";
 	import type { FileStatus } from "$components/file/types";
 	import type { ComponentColorType } from "$lib/utils/colorTypes";
+	const i18nMessages = useTranslations();
 
 	interface Props {
 		status: FileStatus;
@@ -19,13 +21,13 @@
 	function getFullStatusText(status: FileStatus): string {
 		switch (status) {
 			case "addition":
-				return "Added";
+				return $i18nMessages.t("ui:FileStatusBadge.detailb68734c25");
 			case "modification":
-				return "Modified";
+				return $i18nMessages.t("ui:FileStatusBadge.detail19a532c8b");
 			case "deletion":
-				return "Deleted";
+				return $i18nMessages.t("ui:FileStatusBadge.detail441bda6cd");
 			case "rename":
-				return "Renamed";
+				return $i18nMessages.t("ui:FileStatusBadge.detaile5ad1c6b9");
 			default:
 				return status;
 		}

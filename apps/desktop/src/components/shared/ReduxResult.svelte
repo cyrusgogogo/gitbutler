@@ -6,11 +6,12 @@
 
 <script lang="ts" generics="A, B extends string | undefined, C extends string | undefined">
 	import { isNormalizedError } from "$lib/error/normalizedError";
-
+	import { useTranslations } from "@gitbutler/i18n/svelte";
 	import { Icon, InfoMessage } from "@gitbutler/ui";
 	import { QueryStatus } from "@reduxjs/toolkit/query";
 	import type { Result } from "$lib/state/helpers";
 	import type { Snippet } from "svelte";
+	const i18nMessages = useTranslations();
 
 	type Env<B, C> = {
 		projectId: C;
@@ -77,7 +78,7 @@
 					{error.name}
 				{/snippet}
 				{#snippet content()}
-					An asynchronous operation failed.
+					{$i18nMessages.t("desktop:ReduxResult.anAsynchronousOperationFailed")}
 				{/snippet}
 			</InfoMessage>
 		</div>

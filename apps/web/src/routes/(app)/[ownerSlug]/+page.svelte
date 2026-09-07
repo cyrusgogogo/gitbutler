@@ -5,8 +5,10 @@
 	import { featureShowProjectPage } from "$lib/featureFlags";
 	import { OWNER_SERVICE } from "$lib/owner/ownerService";
 	import { inject } from "@gitbutler/core/context";
+	import { useTranslations } from "@gitbutler/i18n/svelte";
 	import { WEB_ROUTES_SERVICE } from "@gitbutler/shared/routing/webRoutes.svelte";
 	import type { OwnerParameters } from "@gitbutler/shared/routing/webRoutes.svelte";
+	const i18nMessages = useTranslations();
 
 	const routes = inject(WEB_ROUTES_SERVICE);
 
@@ -36,11 +38,11 @@
 
 {#if loading}
 	<div class="loading">
-		<p>Loading owner information...</p>
+		<p>{$i18nMessages.t("web:page.loadingOwnerInformation")}</p>
 	</div>
 {:else if error}
 	<div class="error">
-		<p>Error: {error}</p>
+		<p>{$i18nMessages.t("web:page.errorValue", { error: String(error) })}</p>
 	</div>
 {:else if ownerData}
 	{#if ownerData.type === "user"}
@@ -49,14 +51,22 @@
 		<OrganizationProfile organization={ownerData.data} ownerSlug={data.ownerSlug} />
 	{:else if ownerData.type === "not_found"}
 		<div class="not-found">
-			<h2>Not Found</h2>
-			<p>The owner "{data.ownerSlug}" could not be found.</p>
+			<h2>{$i18nMessages.t("web:page.notFound")}</h2>
+			<p>
+				{$i18nMessages.t("web:page.theOwnerValueCouldNotBeFound", {
+					ownerSlug: String(data.ownerSlug),
+				})}
+			</p>
 		</div>
 	{/if}
 {:else}
 	<div class="not-found">
-		<h2>Not Found</h2>
-		<p>The owner "{data.ownerSlug}" could not be found.</p>
+		<h2>{$i18nMessages.t("web:page.notFound")}</h2>
+		<p>
+			{$i18nMessages.t("web:page.theOwnerValueCouldNotBeFound", {
+				ownerSlug: String(data.ownerSlug),
+			})}
+		</p>
 	</div>
 {/if}
 

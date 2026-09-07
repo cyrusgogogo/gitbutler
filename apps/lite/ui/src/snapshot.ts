@@ -1,127 +1,128 @@
+import { message, type LocalizedText } from "@gitbutler/i18n";
 import type { IconName } from "#ui/components/iconNames.ts";
 import type { SnapshotDetails } from "@gitbutler/but-sdk";
 
 export const presentableOperation = (
 	snapshotDetails: SnapshotDetails | null,
-): { text: string; icon: IconName } => {
+): { text: LocalizedText; icon: IconName } => {
 	switch (snapshotDetails?.operation) {
 		case "Absorb":
-			return { text: "Absorb changes into commit", icon: "absorb" };
+			return { text: message("lite:snapshot.Absorbchangesintocommit"), icon: "absorb" };
 		case "AmendCommit":
-			return { text: "Amend commit", icon: "edit" };
+			return { text: message("lite:snapshot.Amendcommit"), icon: "edit" };
 		case "ApplyBranch":
-			return { text: "Apply branch", icon: "branch" };
+			return { text: message("lite:snapshot.Applybranch"), icon: "branch" };
 		case "SwitchBranch":
-			return { text: "Switch branch", icon: "branch" };
+			return { text: message("lite:snapshot.Switchbranch"), icon: "branch" };
 		case "SwitchToWorkspace":
-			return { text: "Switch to workspace", icon: "branch" };
+			return { text: message("lite:snapshot.Switchtoworkspace"), icon: "branch" };
 		case "AutoCommit":
-			return { text: "Auto commit changes", icon: "ai" };
+			return { text: message("lite:snapshot.Autocommitchanges"), icon: "ai" };
 		case "AutoHandleChangesAfter":
-			return { text: "Handle changes after action", icon: "refresh" };
+			return { text: message("lite:snapshot.Handlechangesafteraction"), icon: "refresh" };
 		case "AutoHandleChangesBefore":
-			return { text: "Handle changes before action", icon: "refresh" };
+			return { text: message("lite:snapshot.Handlechangesbeforeaction"), icon: "refresh" };
 		case "CherryPick":
-			return { text: "Cherry-pick commit", icon: "commit" };
+			return { text: message("lite:snapshot.Cherrypickcommit"), icon: "commit" };
 		case "CleanWorkspace":
-			return { text: "Clean workspace", icon: "cross" };
+			return { text: message("lite:snapshot.Cleanworkspace"), icon: "cross" };
 		case "CreateBranch":
-			return { text: "Create branch", icon: "plus" };
+			return { text: message("lite:snapshot.Createbranch"), icon: "plus" };
 		case "CreateCommit":
-			return { text: "Create commit", icon: "plus" };
+			return { text: message("lite:snapshot.Createcommit"), icon: "plus" };
 		case "CreateDependentBranch":
-			return { text: "Create branch", icon: "plus" };
+			return { text: message("lite:snapshot.Createbranch"), icon: "plus" };
 		case "DeleteBranch":
-			return { text: "Delete branch", icon: "cross" };
+			return { text: message("lite:snapshot.Deletebranch"), icon: "cross" };
 		case "Discard":
-			return { text: "Discard changes", icon: "cross" };
+			return { text: message("lite:snapshot.Discardchanges"), icon: "cross" };
 		case "DiscardChanges":
-			return { text: "Discard changes", icon: "cross" };
+			return { text: message("lite:snapshot.Discardchanges"), icon: "cross" };
 		case "DiscardCommit":
-			return { text: "Discard commit", icon: "cross" };
+			return { text: message("lite:snapshot.Discardcommit"), icon: "cross" };
 		case "DiscardFile":
-			return { text: "Discard file", icon: "cross" };
+			return { text: message("lite:snapshot.Discardfile"), icon: "cross" };
 		case "DiscardHunk":
-			return { text: "Discard hunk", icon: "cross" };
+			return { text: message("lite:snapshot.Discardhunk"), icon: "cross" };
 		case "DiscardLines":
-			return { text: "Discard lines", icon: "cross" };
+			return { text: message("lite:snapshot.Discardlines"), icon: "cross" };
 		case "EnterEditMode":
-			return { text: "Enter Edit Mode", icon: "edit" };
+			return { text: message("lite:snapshot.EnterEditMode"), icon: "edit" };
 		case "FileChanges":
-			return { text: "File changes", icon: "file" };
+			return { text: message("lite:snapshot.Filechanges"), icon: "file" };
 		case "GenericBranchUpdate":
-			return { text: "Generic branch update", icon: "branch" };
+			return { text: message("lite:snapshot.Genericbranchupdate"), icon: "branch" };
 		case "InsertBlankCommit":
-			return { text: "Insert blank commit", icon: "plus" };
+			return { text: message("lite:snapshot.Insertblankcommit"), icon: "plus" };
 		case "MergeUpstream":
-			return { text: "Merge upstream", icon: "pr" };
+			return { text: message("lite:snapshot.Mergeupstream"), icon: "pr" };
 		case "MoveBranch":
-			return { text: "Move branch", icon: "branch" };
+			return { text: message("lite:snapshot.Movebranch"), icon: "branch" };
 		case "MoveCommit":
-			return { text: "Move commit", icon: "commit" };
+			return { text: message("lite:snapshot.Movecommit"), icon: "commit" };
 		case "MoveCommitFile":
-			return { text: "Move commit file", icon: "commit" };
+			return { text: message("lite:snapshot.Movecommitfile"), icon: "commit" };
 		case "MoveHunk":
-			return { text: "Move hunk", icon: "file" };
+			return { text: message("lite:snapshot.Movehunk"), icon: "file" };
 		case "OnDemandSnapshot":
 			return {
 				text:
 					snapshotDetails.body !== null && snapshotDetails.body !== ""
-						? `Manual snapshot: ${snapshotDetails.body}`
-						: "Manual snapshot",
+						? message("lite:snapshot.manualNamed", { name: snapshotDetails.body })
+						: message("lite:snapshot.manual"),
 				icon: "commit",
 			};
 		case "RemoveDependentBranch":
-			return { text: "Remove branch", icon: "branch" };
+			return { text: message("lite:snapshot.Removebranch"), icon: "branch" };
 		case "ReorderBranches":
-			return { text: "Reorder branches", icon: "branch" };
+			return { text: message("lite:snapshot.Reorderbranches"), icon: "branch" };
 		case "ReorderCommit":
-			return { text: "Reorder commit", icon: "commit" };
+			return { text: message("lite:snapshot.Reordercommit"), icon: "commit" };
 		case "ResolveConflicts":
-			return { text: "Resolve conflicts", icon: "tick" };
+			return { text: message("lite:snapshot.Resolveconflicts"), icon: "tick" };
 		case "ResolveConflictsAi":
-			return { text: "Resolve conflicts with AI", icon: "ai" };
+			return { text: message("lite:snapshot.ResolveconflictswithAI"), icon: "ai" };
 		case "RestoreFromSnapshot":
-			return { text: "Revert snapshot", icon: "undo" };
+			return { text: message("lite:snapshot.Revertsnapshot"), icon: "undo" };
 		case "RestoreFromSnapshotViaRedo":
-			return { text: "Revert snapshot", icon: "undo" };
+			return { text: message("lite:snapshot.Revertsnapshot"), icon: "undo" };
 		case "RestoreFromSnapshotViaUndo":
-			return { text: "Revert snapshot", icon: "undo" };
+			return { text: message("lite:snapshot.Revertsnapshot"), icon: "undo" };
 		case "SetBaseBranch":
-			return { text: "Set base branch", icon: "branch" };
+			return { text: message("lite:snapshot.Setbasebranch"), icon: "branch" };
 		case "SplitBranch":
-			return { text: "Split branch", icon: "branch" };
+			return { text: message("lite:snapshot.Splitbranch"), icon: "branch" };
 		case "SquashCommit":
-			return { text: "Squash commit", icon: "commit" };
+			return { text: message("lite:snapshot.Squashcommit"), icon: "commit" };
 		case "StashIntoBranch":
-			return { text: "Stash into branch", icon: "branch" };
+			return { text: message("lite:snapshot.Stashintobranch"), icon: "branch" };
 		case "SyncWorkspace":
-			return { text: "Sync workspace", icon: "refresh" };
+			return { text: message("lite:snapshot.Syncworkspace"), icon: "refresh" };
 		case "TearOffBranch":
-			return { text: "Tear off branch", icon: "branch" };
+			return { text: message("lite:snapshot.Tearoffbranch"), icon: "branch" };
 		case "UnapplyBranch":
-			return { text: "Unapply branch", icon: "branch" };
+			return { text: message("lite:snapshot.Unapplybranch"), icon: "branch" };
 		case "UndoCommit":
-			return { text: "Undo commit", icon: "undo" };
+			return { text: message("lite:snapshot.Undocommit"), icon: "undo" };
 		case "Unknown":
-			return { text: "Unknown operation", icon: "commit" };
+			return { text: message("lite:snapshot.Unknownoperation"), icon: "commit" };
 		case "UpdateBranchName":
-			return { text: "Rename branch", icon: "edit" };
+			return { text: message("lite:snapshot.Renamebranch"), icon: "edit" };
 		case "UpdateBranchNotes":
-			return { text: "Update branch notes", icon: "edit" };
+			return { text: message("lite:snapshot.Updatebranchnotes"), icon: "edit" };
 		case "UpdateBranchRemoteName":
-			return { text: "Update branch remote name", icon: "edit" };
+			return { text: message("lite:snapshot.Updatebranchremotename"), icon: "edit" };
 		case "UpdateCommitMessage":
-			return { text: "Update commit message", icon: "edit" };
+			return { text: message("lite:snapshot.Updatecommitmessage"), icon: "edit" };
 		case "UpdateDependentBranchDescription":
-			return { text: "Update branch description", icon: "edit" };
+			return { text: message("lite:snapshot.Updatebranchdescription"), icon: "edit" };
 		case "UpdateDependentBranchName":
-			return { text: "Update branch name", icon: "edit" };
+			return { text: message("lite:snapshot.Updatebranchname"), icon: "edit" };
 		case "UpdateDependentBranchPrNumber":
-			return { text: "Update branch pull request number", icon: "edit" };
+			return { text: message("lite:snapshot.Updatebranchpullrequestnumber"), icon: "edit" };
 		case "UpdateWorkspaceBase":
-			return { text: "Update workspace base", icon: "refresh" };
+			return { text: message("lite:snapshot.Updateworkspacebase"), icon: "refresh" };
 		case undefined:
-			return { text: "Unknown operation", icon: "question" };
+			return { text: message("lite:snapshot.Unknownoperation"), icon: "question" };
 	}
 };

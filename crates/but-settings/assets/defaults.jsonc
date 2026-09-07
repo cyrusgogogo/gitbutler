@@ -65,6 +65,8 @@
 	},
 	// UI settings.
 	"ui": {
+		// Follow the system unless the user explicitly selects a GUI language.
+		"language": "system",
 		// Whether to use the native system title bar.
 		"useNativeTitleBar": false,
 		// When true, skip the macOS window drop shadow for app windows (requires restart).

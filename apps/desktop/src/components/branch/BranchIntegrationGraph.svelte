@@ -1,5 +1,6 @@
 <script lang="ts">
 	import BranchHeaderIcon from "$components/branch/BranchHeaderIcon.svelte";
+	import { useTranslations } from "@gitbutler/i18n/svelte";
 	import { Avatar, Badge, ScrollableContainer } from "@gitbutler/ui";
 	import { getTimeAgo } from "@gitbutler/ui/utils/timeAgo";
 	import type { BranchIconName } from "$lib/branches/branchIcon";
@@ -13,6 +14,7 @@
 		IntegrationGraphRow,
 		IntegrationGraphRowCommit,
 	} from "$lib/upstream/branchIntegrationView";
+	const i18nMessages = useTranslations();
 
 	type BranchIntegrationGraphRow = BranchIntegrationDisplayRow | IntegrationGraphRow;
 	type BranchIntegrationGraphCommitRow = Extract<BranchIntegrationGraphRow, { kind: "commit" }>;
@@ -144,7 +146,7 @@
 					<div class="graph-content">
 						{#if row.content.subject === ""}
 							<div class="graph-subject text-13 text-semibold truncate clr-text-3">
-								No commit message
+								{$i18nMessages.t("desktop:BranchIntegrationGraph.noCommitMessage")}
 							</div>
 						{:else}
 							<div class="graph-subject text-13 text-semibold truncate">{row.content.subject}</div>
@@ -161,7 +163,7 @@
 								</div>
 							{/if}
 							{#if !isPreview && row.content.createdAt > 0}
-								<span>{getTimeAgo(row.content.createdAt)}</span>
+								<span>{getTimeAgo(row.content.createdAt, true, $i18nMessages.locale)}</span>
 							{/if}
 							<span>{row.content.commitId.slice(0, 7)}</span>
 							{#if row.content.changeId}
@@ -170,7 +172,9 @@
 							{/if}
 							{#if row.content.hasConflicts}
 								<span class="metadata-separator">•</span>
-								<Badge style="danger" kind="soft">Conflict</Badge>
+								<Badge style="danger" kind="soft"
+									>{$i18nMessages.t("desktop:BranchIntegrationGraph.conflict")}</Badge
+								>
 							{/if}
 						</div>
 					</div>
@@ -234,9 +238,12 @@
 		{@render commitNode("integrated", row.showTopConnector, row.topConnectorKind)}
 		<div class="graph-content">
 			<div class="graph-subject truncate">
-				{showIntegratedLocalCommits ? "Hide" : "Show"}
-				{row.hiddenCount} integrated
-				{row.hiddenCount === 1 ? " commit" : " commits"}
+				{$i18nMessages.t(
+					showIntegratedLocalCommits
+						? "desktop:branch.hideIntegrated"
+						: "desktop:branch.showIntegrated",
+					{ count: row.hiddenCount },
+				)}
 			</div>
 		</div>
 	</button>

@@ -10,6 +10,9 @@ import { Toasts } from "#ui/components/Toasts.tsx";
 import { AskpassPromptDialog } from "#ui/AskpassPromptDialog.tsx";
 import { guiSettingsQueryOptions } from "./api/queries.ts";
 import { defaultSettings } from "./settings.ts";
+import { I18nProvider } from "@gitbutler/i18n/react";
+import { i18n } from "#ui/i18n.ts";
+import { LanguageSync } from "#ui/LanguageSync.tsx";
 
 const workerFactory = (): Worker =>
 	new Worker(new URL("@pierre/diffs/worker/worker.js", import.meta.url), {
@@ -42,23 +45,26 @@ export const App: FC<{
 	router: RegisteredRouter;
 }> = ({ queryClient, toastManager, router }) => (
 	<StrictMode>
-		<Provider store={store}>
-			<QueryClientProvider client={queryClient}>
-				<Toast.Provider toastManager={toastManager}>
-					<Tooltip.Provider>
-						<WorkerPoolContextProvider
-							poolOptions={{ workerFactory }}
-							highlighterOptions={{ preferredHighlighter: "shiki-wasm" }}
-						>
-							<SyntaxThemeSync />
-							<RouterProvider router={router} />
-							<AskpassPromptDialog />
-							<Toasts />
-						</WorkerPoolContextProvider>
-					</Tooltip.Provider>
-				</Toast.Provider>
-				<ReactQueryDevtools />
-			</QueryClientProvider>
-		</Provider>
+		<I18nProvider i18n={i18n}>
+			<Provider store={store}>
+				<QueryClientProvider client={queryClient}>
+					<LanguageSync />
+					<Toast.Provider toastManager={toastManager}>
+						<Tooltip.Provider>
+							<WorkerPoolContextProvider
+								poolOptions={{ workerFactory }}
+								highlighterOptions={{ preferredHighlighter: "shiki-wasm" }}
+							>
+								<SyntaxThemeSync />
+								<RouterProvider router={router} />
+								<AskpassPromptDialog />
+								<Toasts />
+							</WorkerPoolContextProvider>
+						</Tooltip.Provider>
+					</Toast.Provider>
+					<ReactQueryDevtools />
+				</QueryClientProvider>
+			</Provider>
+		</I18nProvider>
 	</StrictMode>
 );

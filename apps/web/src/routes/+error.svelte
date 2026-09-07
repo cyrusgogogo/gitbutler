@@ -1,13 +1,15 @@
 <script lang="ts">
 	import { page } from "$app/state";
 	import Footer from "$lib/components/marketing/Footer.svelte";
+	import { useTranslations } from "@gitbutler/i18n/svelte";
+	const i18nMessages = useTranslations();
 </script>
 
 <section class="wrapper">
 	<div class="title">
 		{page.status}
 	</div>
-	<div class="subtitle">Error</div>
+	<div class="subtitle">{$i18nMessages.t("web:error.error")}</div>
 </section>
 
 <Footer />

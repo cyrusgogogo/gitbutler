@@ -32,10 +32,10 @@
 	import { debounce } from "$lib/utils/debounce";
 	import { WORKTREE_SERVICE } from "$lib/worktree/worktreeService.svelte";
 	import { inject } from "@gitbutler/core/context";
+	import { message as i18nMessage } from "@gitbutler/i18n";
 	import { mergeUnlisten } from "@gitbutler/ui/utils/mergeUnlisten";
 	import { onDestroy, untrack, type Snippet } from "svelte";
 	import type { LayoutData } from "./$types";
-
 	const { data, children: pageChildren }: { data: LayoutData; children: Snippet } = $props();
 
 	// =============================================================================
@@ -323,18 +323,18 @@
 
 			if (!info.is_exclusive) {
 				showInfo(
-					"Just FYI, this project is already open in another window",
-					"There might be some unexpected behavior if you open it in multiple windows",
+					i18nMessage("desktop:layout.justFYIThisProjectIsAlreadyOpenIn"),
+					i18nMessage("desktop:layout.thereMightBeSomeUnexpectedBehaviorIfYou"),
 				);
 			}
 
 			if (info.db_error) {
-				showError("The database was corrupted", info.db_error);
+				showError(i18nMessage("desktop:layout.theDatabaseWasCorrupted"), info.db_error);
 			}
 
 			if (info.headsup && localStorage.getItem(dontShowAgainKey) !== "1") {
-				showWarning("Important PSA", info.headsup, {
-					label: "Don't show again",
+				showWarning(i18nMessage("desktop:layout.importantPSA"), info.headsup, {
+					label: i18nMessage("desktop:layout.donTShowAgain"),
 					onClick: (dismiss) => {
 						localStorage.setItem(dontShowAgainKey, "1");
 						dismiss();
@@ -343,7 +343,7 @@
 			}
 		} catch (error: unknown) {
 			posthog.captureOnboarding(OnboardingEvent.SetProjectActiveFailed, error);
-			showError("Failed to set the project active", error);
+			showError(i18nMessage("desktop:layout.failedToSetTheProjectActive"), error);
 		}
 	}
 

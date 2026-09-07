@@ -1,6 +1,8 @@
 <script lang="ts">
 	import { inject } from "@gitbutler/core/context";
+	import { useTranslations } from "@gitbutler/i18n/svelte";
 	import { WEB_ROUTES_SERVICE } from "@gitbutler/shared/routing/webRoutes.svelte";
+	const i18nMessages = useTranslations();
 
 	interface Props {
 		markOnly?: boolean;
@@ -30,11 +32,16 @@
 {/snippet}
 
 {#if disabled}
-	<div class="logo" aria-label="main nav">
+	<div class="logo" aria-label={$i18nMessages.t("web:GitbutlerLogoLink.mainNav")}>
 		{@render logoContent()}
 	</div>
 {:else}
-	<a href={routes.homePath()} class="logo" aria-label="main nav" title="Go to Home">
+	<a
+		href={routes.homePath()}
+		class="logo"
+		aria-label={$i18nMessages.t("web:GitbutlerLogoLink.mainNav")}
+		title={$i18nMessages.t("web:GitbutlerLogoLink.goToHome")}
+	>
 		{@render logoContent()}
 	</a>
 {/if}

@@ -4,16 +4,18 @@
 	import { dashboardSidebarSetTab, type SidebarTab } from "$lib/dashboard/sidebar.svelte";
 	import { WEB_STATE } from "$lib/redux/store.svelte";
 	import { inject } from "@gitbutler/core/context";
+	import { useTranslations } from "@gitbutler/i18n/svelte";
+	const i18nMessages = useTranslations();
 
 	const webState = inject(WEB_STATE);
 	const webDispatch = webState.appDispatch;
 
 	const currentTab = $derived(webState.dashboardSidebar.currentTab);
 
-	const tabs = [
-		{ label: "My projects", key: "projects" as SidebarTab },
-		{ label: "My reviews", key: "reviews" as SidebarTab },
-	];
+	const tabs = $derived([
+		{ label: $i18nMessages.t("web:DashboardSidebar.myProjects"), key: "projects" as SidebarTab },
+		{ label: $i18nMessages.t("web:DashboardSidebar.myReviews"), key: "reviews" as SidebarTab },
+	]);
 </script>
 
 <div class="sidebar">
@@ -21,7 +23,7 @@
 		{#each tabs as tab}
 			<button
 				type="button"
-				aria-label="tab"
+				aria-label={$i18nMessages.t("web:DashboardSidebar.tab")}
 				class="text-13 text-bold tab"
 				class:current={currentTab === tab.key}
 				onclick={() => {

@@ -1,3 +1,4 @@
+import { useTranslations } from "@gitbutler/i18n/react";
 import {
 	useCommitDiscard,
 	useCommitDiscardChanges,
@@ -52,6 +53,7 @@ export const useCheckedActions = ({
 	projectId: string;
 	appliedAddressSpace: AddressSpace<Address>;
 }): Array<CheckedAction> => {
+	const i18nMessages = useTranslations();
 	const queryClient = useQueryClient();
 	const checkedAddresses = useAppSelector((state) =>
 		projectSlice.selectors.selectCheckedAddresses(state, projectId),
@@ -78,7 +80,7 @@ export const useCheckedActions = ({
 		useDiscardWorktreeChanges();
 
 	const cut = (sources: Array<Address>): CheckedAction => ({
-		label: "Cut",
+		label: i18nMessages.t("lite:useCheckedActions.cut"),
 		hotkey: selectionOperationHotkeys.cut.hotkey,
 		enabled: true,
 		run: () => {
@@ -99,7 +101,7 @@ export const useCheckedActions = ({
 
 				return [
 					{
-						label: "Copy",
+						label: i18nMessages.t("lite:useCheckedActions.copy"),
 						hotkey: sidebarHotkeys.copy.hotkey,
 						enabled: true,
 						run: () => {
@@ -113,14 +115,14 @@ export const useCheckedActions = ({
 					},
 					cut(checkedAddresses),
 					{
-						label: "Uncommit",
+						label: i18nMessages.t("lite:useCheckedActions.uncommit"),
 						hotkey: sidebarHotkeys.uncommitCommit.hotkey,
 						enabled: !isCommitUncommitPending,
 						run: () =>
 							commitUncommit({ projectId, assignTo: null, subjectCommitIds, dryRun: false }),
 					},
 					{
-						label: "Delete",
+						label: i18nMessages.t("lite:useCheckedActions.delete"),
 						hotkey: sidebarHotkeys.deleteCommit.hotkey,
 						variant: "danger",
 						enabled: !isCommitDiscardPending,
@@ -184,7 +186,7 @@ export const useCheckedActions = ({
 
 				const cutLines: CheckedAction = { ...cut(checkedAddresses), enabled: canUseHunks };
 				const discardLines: CheckedAction = {
-					label: "Discard",
+					label: i18nMessages.t("lite:useCheckedActions.discard"),
 					variant: "danger",
 					enabled:
 						canUseHunks &&
@@ -210,7 +212,7 @@ export const useCheckedActions = ({
 					return [
 						cutLines,
 						{
-							label: "Uncommit",
+							label: i18nMessages.t("lite:useCheckedActions.uncommit"),
 							enabled: canUseHunks && !isUncommitChangesPending,
 							run: () =>
 								void resolveForRemoval().then((changes) => {
@@ -231,7 +233,7 @@ export const useCheckedActions = ({
 
 				return [
 					{
-						label: "Absorb",
+						label: i18nMessages.t("lite:useCheckedActions.absorb"),
 						hotkey: diffHotkeys.absorb.hotkey,
 						enabled: canUseHunks,
 						run: () => {
@@ -271,7 +273,7 @@ export const useCheckedActions = ({
 					return [];
 
 				const discardChanges: CheckedAction = {
-					label: "Discard",
+					label: i18nMessages.t("lite:useCheckedActions.discard"),
 					hotkey: changesFileHotkeys.discard.hotkey,
 					variant: "danger",
 					enabled: canDiscard,
@@ -283,7 +285,7 @@ export const useCheckedActions = ({
 					Match.tagsExhaustive({
 						UncommittedChanges: () => [
 							{
-								label: "Absorb",
+								label: i18nMessages.t("lite:useCheckedActions.absorb"),
 								hotkey: changesFileHotkeys.absorb.hotkey,
 								enabled: true,
 								run: () => {
@@ -311,7 +313,7 @@ export const useCheckedActions = ({
 						Commit: ({ commitId }) => [
 							cut(checkedAddresses),
 							{
-								label: "Uncommit",
+								label: i18nMessages.t("lite:useCheckedActions.uncommit"),
 								hotkey: changesFileHotkeys.uncommit.hotkey,
 								enabled: !isUncommitChangesPending,
 								run: () => {

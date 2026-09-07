@@ -3,7 +3,9 @@
 	import ContextMenu from "$components/ContextMenu.svelte";
 	import ContextMenuItem from "$components/ContextMenuItem.svelte";
 	import ContextMenuSection from "$components/ContextMenuSection.svelte";
+	import { useTranslations } from "@gitbutler/i18n/svelte";
 	import type { IconName } from "$lib/icons/names";
+	const i18nMessages = useTranslations();
 
 	interface MenuItem {
 		label: string;
@@ -23,7 +25,11 @@
 	let addProfileButtonRef = $state<HTMLElement>();
 	let menuOpen = $state(false);
 
-	const buttonText = $derived(noAccounts ? "Add account" : "Add another account");
+	const buttonText = $derived(
+		noAccounts
+			? $i18nMessages.t("ui:AddForgeAccountButton.detail98b0ed858")
+			: $i18nMessages.t("ui:AddForgeAccountButton.detail5dcc79136"),
+	);
 </script>
 
 <Button

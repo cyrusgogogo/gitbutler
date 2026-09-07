@@ -2,7 +2,11 @@
 	import { showError } from "$lib/error/showError";
 	import { STACK_SERVICE } from "$lib/stacks/stackService.svelte";
 	import { inject } from "@gitbutler/core/context";
+	import { message as i18nMessage } from "@gitbutler/i18n";
+	import { useTranslations } from "@gitbutler/i18n/svelte";
 	import { AsyncButton, Button, Modal, chipToasts } from "@gitbutler/ui";
+	import I18nRichMessage from "@gitbutler/ui/i18n/RichMessage.svelte";
+	const i18nMessages = useTranslations();
 
 	type Props = {
 		projectId: string;
@@ -18,9 +22,13 @@
 	let wholeStack = $state(false);
 	let lowerBranches = $state<string[]>([]);
 
-	const targetLabel = $derived(targetBranchName ?? "the target branch");
+	const targetLabel = $derived(
+		targetBranchName ?? $i18nMessages.t("desktop:LandBranchModal.detail96e6d6c96"),
+	);
 	const landedLabel = $derived(
-		wholeStack ? `"${branchName}" and the branches below it` : `"${branchName}"`,
+		wholeStack
+			? $i18nMessages.t("desktop:LandBranchModal.detailcf7101ef5", { value1: String(branchName) })
+			: `"${branchName}"`,
 	);
 	const lowerListLabel = $derived(lowerBranches.length > 0 ? ` (${lowerBranches.join(", ")})` : "");
 
@@ -46,37 +54,76 @@
 				wholeStack,
 			});
 			if (result.landed.type === "alreadyIntegrated") {
-				chipToasts.success(`${landedLabel} is already integrated into ${targetLabel}`);
+				chipToasts.success(
+					i18nMessage("desktop:LandBranchModal.valueIsAlreadyIntegratedIntoValue", {
+						landedLabel: String(landedLabel),
+						targetLabel: String(targetLabel),
+					}),
+				);
 			} else {
-				chipToasts.success(`Landed ${landedLabel} into ${targetLabel}`);
+				chipToasts.success(
+					i18nMessage("desktop:LandBranchModal.landedValueIntoValue", {
+						landedLabel: String(landedLabel),
+						targetLabel: String(targetLabel),
+					}),
+				);
 			}
 			if (result.reconcileSkipped) {
-				chipToasts.warning("Other branches were left un-reconciled. Run `but pull` to finish.");
+				chipToasts.warning(
+					i18nMessage("desktop:LandBranchModal.otherBranchesWereLeftUnReconciledRunBut"),
+				);
 			}
 			return true;
 		} catch (error) {
-			showError("Failed to land branch", error);
+			showError(i18nMessage("desktop:LandBranchModal.failedToLandBranch"), error);
 			return false;
 		}
 	}
 </script>
 
-<Modal bind:this={modalEl} width="small" title={wholeStack ? "Land stack" : "Land branch"}>
+<Modal
+	bind:this={modalEl}
+	width="small"
+	title={wholeStack
+		? $i18nMessages.t("desktop:LandBranchModal.inlined105e59c6")
+		: $i18nMessages.t("desktop:LandBranchModal.inlineadaf37272")}
+>
 	<p>
 		{#if wholeStack}
-			This lands <strong>{branchName}</strong> and everything below it in its stack{lowerListLabel}
-			directly onto {targetLabel}. It cannot be undone.
+			{#snippet i18nSlot1(content: import("svelte").Snippet)}<strong>{@render content()}</strong
+				>{/snippet}
+			<I18nRichMessage
+				value={{
+					key: "desktop:LandBranchModal.thisLandsValueAndEverythingBelowItIn",
+					values: {
+						branchName: String(branchName),
+						lowerListLabel: String(lowerListLabel),
+						targetLabel: String(targetLabel),
+					},
+				}}
+				components={{ slot1: i18nSlot1 }}
+			/>
 		{:else}
-			This lands <strong>{branchName}</strong> directly onto {targetLabel}. It cannot be undone.
+			{#snippet i18nSlot2(content: import("svelte").Snippet)}<strong>{@render content()}</strong
+				>{/snippet}
+			<I18nRichMessage
+				value={{
+					key: "desktop:LandBranchModal.thisLandsValueDirectlyOntoValueItCannot",
+					values: { branchName: String(branchName), targetLabel: String(targetLabel) },
+				}}
+				components={{ slot2: i18nSlot2 }}
+			/>
 		{/if}
 	</p>
 	{#snippet controls(close)}
-		<Button kind="outline" type="reset" onclick={close}>Cancel</Button>
+		<Button kind="outline" type="reset" onclick={close}
+			>{$i18nMessages.t("desktop:LandBranchModal.cancel")}</Button
+		>
 		<AsyncButton
 			style="pop"
 			action={async () => {
 				if (await land()) close();
-			}}>Land</AsyncButton
+			}}>{$i18nMessages.t("desktop:LandBranchModal.land")}</AsyncButton
 		>
 	{/snippet}
 </Modal>

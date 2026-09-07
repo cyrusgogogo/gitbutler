@@ -7,9 +7,12 @@
 	import { MODE_SERVICE } from "$lib/mode/modeService";
 	import { WORKTREE_SERVICE } from "$lib/worktree/worktreeService.svelte";
 	import { inject } from "@gitbutler/core/context";
+	import { useTranslations } from "@gitbutler/i18n/svelte";
 	import { AsyncButton, RadioButton, FileListItem, Link, TestId } from "@gitbutler/ui";
+	import I18nRichMessage from "@gitbutler/ui/i18n/RichMessage.svelte";
 	import type { BaseBranch } from "@gitbutler/but-sdk";
 	import type { Snippet } from "svelte";
+	const i18nMessages = useTranslations();
 
 	type OptionsType = "stash" | "bring-to-workspace";
 
@@ -48,12 +51,12 @@
 
 	let handlingOptions: { label: string; value: OptionsType; selectable: boolean }[] = $derived([
 		{
-			label: "Stash",
+			label: $i18nMessages.t("desktop:NotOnGitButlerBranch.static82f2f5176"),
 			value: "stash",
 			selectable: true,
 		},
 		{
-			label: "Bring to Workspace",
+			label: $i18nMessages.t("desktop:NotOnGitButlerBranch.static8e3e4b76d"),
 			value: "bring-to-workspace",
 			selectable: !conflicts, // TODO: Reactivity??
 		},
@@ -78,14 +81,21 @@
 
 			<div class="switchrepo__content" data-testid={TestId.NotOnGitButlerBranchView}>
 				<p class="switchrepo__title text-18 text-body text-bold">
-					You've switched away from <span class="code-string"> gitbutler/workspace </span>
+					{#snippet i18nSlot1(content: import("svelte").Snippet)}<span class="code-string"
+							>{@render content()}</span
+						>{/snippet}
+					<I18nRichMessage
+						value={{ key: "desktop:NotOnGitButlerBranch.youVeSwitchedAwayFromGitbutlerWorkspace" }}
+						components={{ slot1: i18nSlot1 }}
+					/>
 				</p>
 
 				<p class="switchrepo__message text-13 text-body">
-					Due to GitButler managing multiple virtual branches, you cannot switch back and forth
-					between git branches and virtual branches easily.
+					{$i18nMessages.t(
+						"desktop:NotOnGitButlerBranch.dueToGitButlerManagingMultipleVirtualBranchesYou",
+					)}
 					<Link href="https://docs.gitbutler.com/features/branch-management/integration-branch">
-						Learn more
+						{$i18nMessages.t("desktop:NotOnGitButlerBranch.learnMore")}
 					</Link>
 				</p>
 
@@ -93,7 +103,7 @@
 					<div class="switchrepo__uncommited-changes">
 						<div class="switchrepo__uncommited-changes__section">
 							<p class="switchrepo__label text-13 text-body text-bold">
-								You have uncommitted changes:
+								{$i18nMessages.t("desktop:NotOnGitButlerBranch.youHaveUncommittedChanges")}
 							</p>
 							<div class="switchrepo__file-list">
 								{#each uncommittedChanges as change, i}
@@ -106,7 +116,7 @@
 							</div>
 							{#if conflicts}
 								<p class="switchrepo__label text-13 text-body clr-text-2">
-									Some files can’t be applied due to conflicts:
+									{$i18nMessages.t("desktop:NotOnGitButlerBranch.someFilesCanTBeAppliedDueTo")}
 								</p>
 								<div class="switchrepo__file-list">
 									<ReduxResult result={mode.result} {projectId}>
@@ -117,7 +127,9 @@
 														filePath={path}
 														clickable={false}
 														conflicted
-														conflictHint="Resolve to apply"
+														conflictHint={$i18nMessages.t(
+															"desktop:NotOnGitButlerBranch.resolveToApply",
+														)}
 														isLast={i === (mode.subject.worktreeConflicts?.length ?? 0) - 1}
 													/>
 												{/each}
@@ -131,7 +143,9 @@
 						<hr class="switchrepo__divider" />
 
 						<p class="switchrepo__label text-13 text-body text-bold">
-							What should we do with your uncommitted changes?
+							{$i18nMessages.t(
+								"desktop:NotOnGitButlerBranch.whatShouldWeDoWithYourUncommittedChanges",
+							)}
 						</p>
 
 						<div class="switchrepo__handling-options">
@@ -161,7 +175,7 @@
 						loading={targetBranchSwitch.current.isLoading}
 						action={initSwithToWorkspace}
 					>
-						Switch back
+						{$i18nMessages.t("desktop:NotOnGitButlerBranch.switchBack")}
 					</AsyncButton>
 				</div>
 			</div>

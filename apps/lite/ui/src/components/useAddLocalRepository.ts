@@ -1,3 +1,7 @@
+import type { LocalizedText } from "@gitbutler/i18n";
+import { message as i18nMessage } from "@gitbutler/i18n";
+import { createElement as createI18nElement } from "react";
+import { Message as I18nMessage } from "@gitbutler/i18n/react";
 import { Toast } from "@base-ui/react";
 import { useNavigate } from "@tanstack/react-router";
 import { useAddProject } from "#ui/api/mutations.ts";
@@ -7,24 +11,24 @@ import { writeLastOpenedProject } from "#ui/project.ts";
 type AddProjectOutcome = Awaited<ReturnType<typeof window.lite.addProject>>;
 type AddProjectFailure = Exclude<AddProjectOutcome, { type: "added" | "alreadyExists" }>;
 
-const failureMessage = (failure: AddProjectFailure): string => {
+const failureMessage = (failure: AddProjectFailure): LocalizedText => {
 	switch (failure.type) {
 		case "pathNotFound":
-			return "The selected path no longer exists.";
+			return i18nMessage("lite:addRepository.pathNotFound");
 		case "notADirectory":
-			return "The selected path is not a directory.";
+			return i18nMessage("lite:addRepository.notADirectory");
 		case "bareRepository":
-			return "Bare repositories are not supported.";
+			return i18nMessage("lite:addRepository.bareRepository");
 		case "nonMainWorktree":
-			return "Only a repository's main worktree can be added.";
+			return i18nMessage("lite:addRepository.nonMainWorktree");
 		case "noWorkdir":
-			return "The selected repository has no working directory.";
+			return i18nMessage("lite:addRepository.noWorkdir");
 		case "noDotGitDirectory":
-			return "The selected directory has no .git directory.";
+			return i18nMessage("lite:addRepository.noDotGitDirectory");
 		case "reftableRefFormatUnsupported":
-			return "Repositories using reftable references are not supported.";
+			return i18nMessage("lite:addRepository.reftableRefFormatUnsupported");
 		case "notAGitRepository":
-			return "The selected directory is not a Git repository.";
+			return i18nMessage("lite:addRepository.notAGitRepository");
 	}
 };
 
@@ -43,8 +47,10 @@ export const useAddLocalRepository = () => {
 		} catch (error) {
 			toastManager.add({
 				type: "error",
-				title: "Failed to open repository picker",
-				description: errorMessageForToast(error),
+				title: createI18nElement(I18nMessage, {
+					value: i18nMessage("lite:useAddLocalRepository.failedToOpenRepositoryPicker"),
+				}),
+				description: createI18nElement(I18nMessage, { value: errorMessageForToast(error) }),
 			});
 			return;
 		}
@@ -69,8 +75,10 @@ export const useAddLocalRepository = () => {
 
 		toastManager.add({
 			type: "error",
-			title: "Could not add project",
-			description: failureMessage(outcome),
+			title: createI18nElement(I18nMessage, {
+				value: i18nMessage("lite:useAddLocalRepository.couldNotAddProject"),
+			}),
+			description: createI18nElement(I18nMessage, { value: failureMessage(outcome) }),
 		});
 	};
 

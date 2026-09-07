@@ -3,7 +3,6 @@
 	import { focusable } from "@gitbutler/ui/focus/focusable";
 	import { onMount } from "svelte";
 	import type { Snippet } from "svelte";
-
 	interface Props {
 		content: Snippet;
 		actions?: Snippet<[element: HTMLElement]>;

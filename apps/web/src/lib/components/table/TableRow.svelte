@@ -1,4 +1,5 @@
 <script lang="ts">
+	import "dayjs/locale/zh-cn";
 	import { goto } from "$app/navigation";
 	import Factoid from "$lib/components/infoFlexRow//Factoid.svelte";
 	import InfoFlexRow from "$lib/components/infoFlexRow/InfoFlexRow.svelte";
@@ -9,10 +10,11 @@
 	} from "$lib/components/table/types";
 	import { USER_SERVICE } from "$lib/user/userService";
 	import { inject } from "@gitbutler/core/context";
+	import { useTranslations } from "@gitbutler/i18n/svelte";
 	import Minimap from "@gitbutler/shared/branches/Minimap.svelte";
 	import { AvatarGroup, CommitStatusBadge, Icon, type CommitStatusType } from "@gitbutler/ui";
-
 	import dayjs from "dayjs";
+	const i18nMessages = useTranslations();
 
 	type Props = {
 		columns: {
@@ -103,11 +105,13 @@
 									iconColor="warning"
 								/>
 							{:else}
-								<span class="dynclmn-placeholder">No reviews</span>
+								<span class="dynclmn-placeholder">{$i18nMessages.t("web:TableRow.noReviews")}</span>
 							{/if}
 						</div>
 					{:else if key === "date"}
-						{dayjs(value as Date).fromNow()}
+						{dayjs(value as Date)
+							.locale($i18nMessages.locale.toLowerCase())
+							.fromNow()}
 					{:else if key === "status"}
 						<CommitStatusBadge
 							status={value as CommitStatusType}
@@ -152,7 +156,7 @@
 
 				<InfoFlexRow>
 					{#if columns.find((col) => col.key === "changes")}
-						<Factoid label="Changes">
+						<Factoid label={$i18nMessages.t("web:TableRow.changes")}>
 							<div class="dynclmn-changes">
 								<span class="dynclmn-changes_additions">
 									+{(columns.find((col) => col.key === "changes")?.value as ChangesType).additions}
@@ -165,13 +169,13 @@
 					{/if}
 
 					{#if columns.find((col) => col.key === "comments")}
-						<Factoid label="Comments" placeholderText="No comments">
+						<Factoid label={$i18nMessages.t("web:TableRow.comments")} placeholderText="No comments">
 							{columns.find((col) => col.key === "comments")?.value}
 						</Factoid>
 					{/if}
 
 					{#if columns.find((col) => col.key === "reviewers")}
-						<Factoid label="Reviewers" placeholderText="No reviews">
+						<Factoid label={$i18nMessages.t("web:TableRow.reviewers")} placeholderText="No reviews">
 							{@const reviewers = columns.find((col) => col.key === "reviewers")?.value as {
 								approvers: AvatarsType[];
 								rejectors: AvatarsType[];
@@ -196,19 +200,21 @@
 					{/if}
 
 					{#if columns.find((col) => col.key === "date")}
-						<Factoid label="Date">
-							{dayjs(columns.find((col) => col.key === "date")?.value as Date).fromNow()}
+						<Factoid label={$i18nMessages.t("web:TableRow.date")}>
+							{dayjs(columns.find((col) => col.key === "date")?.value as Date)
+								.locale($i18nMessages.locale.toLowerCase())
+								.fromNow()}
 						</Factoid>
 					{/if}
 
 					{#if columns.find((col) => col.key === "number")}
-						<Factoid label="Number">
+						<Factoid label={$i18nMessages.t("web:TableRow.number")}>
 							{columns.find((col) => col.key === "number")?.value}
 						</Factoid>
 					{/if}
 
 					{#if columns.find((col) => col.key === "commitGraph")}
-						<Factoid label="Commits">
+						<Factoid label={$i18nMessages.t("web:TableRow.commits")}>
 							{@const params = columns.find((col) => col.key === "commitGraph")
 								?.value as ColumnTypes["commitGraph"]}
 
@@ -225,7 +231,7 @@
 					{/if}
 
 					{#if columns.find((col) => col.key === "avatars")}
-						<Factoid label="Authors">
+						<Factoid label={$i18nMessages.t("web:TableRow.authors")}>
 							<AvatarGroup
 								avatars={columns.find((col) => col.key === "avatars")?.value as AvatarsType[]}
 							/>

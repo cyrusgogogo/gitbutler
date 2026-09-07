@@ -1,4 +1,5 @@
 <script lang="ts">
+	import "dayjs/locale/zh-cn";
 	import { goto } from "$app/navigation";
 	import BranchCommitsTable from "$lib/components/changes/BranchCommitsTable.svelte";
 	import PrivateProjectError from "$lib/components/errors/PrivateProjectError.svelte";
@@ -7,6 +8,8 @@
 	import { USER_SERVICE } from "$lib/user/userService";
 	import { updateFavIcon } from "$lib/utils/faviconUtils";
 	import { inject } from "@gitbutler/core/context";
+	import { message as i18nMessage } from "@gitbutler/i18n";
+	import { useTranslations } from "@gitbutler/i18n/svelte";
 	import BranchStatusBadge from "@gitbutler/shared/branches/BranchStatusBadge.svelte";
 	import Minimap from "@gitbutler/shared/branches/Minimap.svelte";
 	import { BRANCH_SERVICE } from "@gitbutler/shared/branches/branchService";
@@ -23,7 +26,6 @@
 		type ProjectReviewParameters,
 	} from "@gitbutler/shared/routing/webRoutes.svelte";
 	import { UPLOADS_SERVICE } from "@gitbutler/shared/uploads/uploadsService";
-
 	import {
 		AsyncButton,
 		AvatarGroup,
@@ -40,6 +42,7 @@
 	import { copyToClipboard } from "@gitbutler/ui/utils/clipboard";
 	import dayjs from "dayjs";
 	import relativeTime from "dayjs/plugin/relativeTime";
+	const i18nMessages = useTranslations();
 
 	const ACCEPTED_FILE_TYPES = ["image/*", "application/*", "text/*", "audio/*", "video/*"];
 
@@ -132,7 +135,7 @@
 	}
 
 	function abortEditingSummary() {
-		if (!confirm("Canceling will lose any changes made")) {
+		if (!confirm($i18nMessages.t("web:detail.5a86e82069"))) {
 			return;
 		}
 
@@ -147,7 +150,7 @@
 				title: title,
 				description: summary,
 			});
-			chipToasts.success("Updated review status");
+			chipToasts.success(i18nMessage("web:page.updatedReviewStatus"));
 		} finally {
 			editingSummary = false;
 		}
@@ -159,7 +162,7 @@
 		await branchService.updateBranch(branch.current.value.uuid, {
 			status,
 		});
-		chipToasts.success("Saved review summary");
+		chipToasts.success(i18nMessage("web:page.savedReviewSummary"));
 	}
 
 	function copyLocation() {
@@ -193,7 +196,9 @@
 
 {#snippet startReview(branch: Branch)}
 	{#if (branch.stackSize || 0) > 0 && isBranchAuthor === false}
-		<Button style="pop" icon="play" onclick={() => visitFirstCommit(branch)}>Start review</Button>
+		<Button style="pop" icon="play" onclick={() => visitFirstCommit(branch)}
+			>{$i18nMessages.t("web:page.startReview")}</Button
+		>
 	{/if}
 {/snippet}
 
@@ -216,8 +221,12 @@
 		<PrivateProjectError />
 	{:else if isError(combinedLoadable)}
 		<div class="error-container">
-			<h2 class="text-15 text-body text-bold">Error loading project data</h2>
-			<p class="text-13 text-body">{combinedLoadable.error.message}</p>
+			<h2 class="text-15 text-body text-bold">
+				{$i18nMessages.t("web:page.errorLoadingProjectData")}
+			</h2>
+			<p class="text-13 text-body">
+				{$i18nMessages.text(combinedLoadable.error.localized ?? combinedLoadable.error.message)}
+			</p>
 		</div>
 	{/if}
 {:else}
@@ -232,24 +241,29 @@
 							<p class="text-15 text-bold">{branch.title}</p>
 						{/if}
 						<div class="actions">
-							<Button icon="copy" kind="outline" onclick={copyLocation}>Share link</Button>
+							<Button icon="copy" kind="outline" onclick={copyLocation}
+								>{$i18nMessages.t("web:page.shareLink")}</Button
+							>
 							{@render startReview(branch)}
 							{#if branch.status === BranchStatus.Closed}
 								<AsyncButton action={async () => updateStatus(BranchStatus.Active)} kind="outline"
-									>Re-open review</AsyncButton
+									>{$i18nMessages.t("web:page.reOpenReview")}</AsyncButton
 								>
 							{:else}
 								<AsyncButton
 									style="danger"
 									kind="outline"
-									action={async () => updateStatus(BranchStatus.Closed)}>Close review</AsyncButton
+									action={async () => updateStatus(BranchStatus.Closed)}
+									>{$i18nMessages.t("web:page.closeReview")}</AsyncButton
 								>
 							{/if}
 						</div>
 					</div>
 					<InfoFlexRow>
-						<Factoid label="Status"><BranchStatusBadge {branch} /></Factoid>
-						<Factoid label="Commits">
+						<Factoid label={$i18nMessages.t("web:page.status")}
+							><BranchStatusBadge {branch} /></Factoid
+						>
+						<Factoid label={$i18nMessages.t("web:page.commits")}>
 							{#if $user}
 								<Minimap
 									branchUuid={branch.uuid}
@@ -261,20 +275,22 @@
 							{/if}
 						</Factoid>
 						{#if branch.forgeUrl}
-							<Factoid label="PR"
-								><Link href={branch.forgeUrl}>{branch.forgeDescription || "#unknown"}</Link
+							<Factoid label={$i18nMessages.t("web:page.pR")}
+								><Link href={branch.forgeUrl}
+									>{branch.forgeDescription ||
+										$i18nMessages.t("web:review.unknownDescription")}</Link
 								></Factoid
 							>
 						{/if}
-						<Factoid label="Authors">
+						<Factoid label={$i18nMessages.t("web:page.authors")}>
 							{#await contributors then contributors}
 								<AvatarGroup avatars={contributors}></AvatarGroup>
 							{/await}
 						</Factoid>
-						<Factoid label="Updated">
-							{dayjs(branch.updatedAt).fromNow()}
+						<Factoid label={$i18nMessages.t("web:page.updated")}>
+							{dayjs(branch.updatedAt).locale($i18nMessages.locale.toLowerCase()).fromNow()}
 						</Factoid>
-						<Factoid label="Version">
+						<Factoid label={$i18nMessages.t("web:page.version")}>
 							{branch.version}
 						</Factoid>
 					</InfoFlexRow>
@@ -295,8 +311,12 @@
 							</div>
 
 							<div class="summary-actions">
-								<Button kind="outline" onclick={abortEditingSummary}>Cancel</Button>
-								<AsyncButton style="pop" action={saveSummary}>Save</AsyncButton>
+								<Button kind="outline" onclick={abortEditingSummary}
+									>{$i18nMessages.t("web:page.cancel")}</Button
+								>
+								<AsyncButton style="pop" action={saveSummary}
+									>{$i18nMessages.t("web:page.save")}</AsyncButton
+								>
 							</div>
 						{:else if branch.description}
 							<div class="text-13 summary-text">
@@ -304,20 +324,22 @@
 							</div>
 							{#if branch.permissions.canWrite}
 								<div>
-									<Button kind="outline" onclick={editSummary}>Change details</Button>
+									<Button kind="outline" onclick={editSummary}
+										>{$i18nMessages.t("web:page.changeDetails")}</Button
+									>
 								</div>
 							{/if}
 						{:else}
 							<div class="summary-placeholder">
-								<p class="text-13 clr-text-2">No summary provided.</p>
+								<p class="text-13 clr-text-2">{$i18nMessages.t("web:page.noSummaryProvided")}</p>
 								{#if branch.permissions.canWrite}
 									<p class="text-12 text-body clr-text-2">
-										<em>
-											Summaries provide context on the branch's purpose and helps team members
-											understand it's changes.
-										</em>
+										<em>{$i18nMessages.t("web:page.summariesProvideContextOnTheBranchSPurpose")}</em
+										>
 									</p>
-									<Button icon="plus" kind="outline" onclick={editSummary}>Add summary</Button>
+									<Button icon="plus" kind="outline" onclick={editSummary}
+										>{$i18nMessages.t("web:page.addSummary")}</Button
+									>
 								{/if}
 							</div>
 						{/if}

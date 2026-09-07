@@ -2,6 +2,7 @@ import GithubIntegration from "$components/settings/GithubIntegration.svelte";
 import { CLIPBOARD_SERVICE } from "$lib/backend/clipboard";
 import { URL_SERVICE } from "$lib/backend/url";
 import { GITHUB_USER_SERVICE } from "$lib/forge/github/githubUserService.svelte";
+import { canonicalMessages } from "$lib/notifications/toasts";
 import { OnboardingEvent, POSTHOG_WRAPPER } from "$lib/telemetry/posthog";
 import { chipToasts } from "@gitbutler/ui";
 import { render, screen, waitFor } from "@testing-library/svelte";
@@ -123,7 +124,7 @@ describe("GithubIntegration device OAuth failure", () => {
 		expect(posthog.captureOnboarding).toHaveBeenCalledTimes(2);
 		// A denied request is a user state, so it toasts as a warning.
 		expect(warningToast).toHaveBeenCalledTimes(1);
-		expect(warningToast).toHaveBeenCalledWith(payload.message);
+		expect(canonicalMessages.text(warningToast.mock.calls[0]![0])).toBe(payload.message);
 		expect(errorToast).not.toHaveBeenCalled();
 		expect(errorLog).toHaveBeenCalledTimes(1);
 		expect(errorLog.mock.calls.flat()).not.toContain(rejection);
@@ -171,7 +172,7 @@ describe("GithubIntegration device OAuth failure", () => {
 			[OnboardingEvent.GitHubOAuthFailed, payload],
 		]);
 		expect(errorToast).toHaveBeenCalledTimes(1);
-		expect(errorToast).toHaveBeenCalledWith(payload.message);
+		expect(canonicalMessages.text(errorToast.mock.calls[0]![0])).toBe(payload.message);
 		expect(warningToast).not.toHaveBeenCalled();
 		expect(errorLog).toHaveBeenCalledTimes(1);
 		const serialized = JSON.stringify([
@@ -192,7 +193,7 @@ describe("GithubIntegration device OAuth failure", () => {
 		await driveDeviceFlowToStatusCheck();
 
 		await waitFor(() => expectFlowClosed());
-		expect(successToast).toHaveBeenCalledWith("GitHub authenticated");
+		expect(canonicalMessages.text(successToast.mock.calls[0]![0])).toBe("GitHub authenticated");
 		expect(errorToast).not.toHaveBeenCalled();
 		expect(posthog.captureOnboarding).toHaveBeenCalledTimes(1);
 		expect(posthog.captureOnboarding).toHaveBeenCalledWith(OnboardingEvent.GitHubInitiateOAuth);

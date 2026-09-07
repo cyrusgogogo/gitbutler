@@ -1,15 +1,28 @@
 <script lang="ts">
 	import CtaButtons from "../components/CtaButtons.svelte";
+	import { useTranslations } from "@gitbutler/i18n/svelte";
+	import I18nRichMessage from "@gitbutler/ui/i18n/RichMessage.svelte";
+	const i18nMessages = useTranslations();
 </script>
 
 <section class="cta-section">
 	<div class="cta-section__content">
-		<div class="chip-free-opensource text-15 text-semibold">>_ Free and Open Source</div>
-		<h2 class="cta-section__header">Ready to <i>Level Up Your</i> Workflow?</h2>
+		<div class="chip-free-opensource text-15 text-semibold">
+			{$i18nMessages.t("web:CtaSection.freeAndOpenSource")}
+		</div>
+		<h2 class="cta-section__header">
+			{#snippet i18nSlot1(content: import("svelte").Snippet)}<i>{@render content()}</i>{/snippet}
+			<I18nRichMessage
+				value={{ key: "web:CtaSection.readyToLevelUpYourWorkflow" }}
+				components={{ slot1: i18nSlot1 }}
+			/>
+		</h2>
 		<p class="cta-section__description text-16 text-body">
-			Join thousands of developers who've already made the switch.
-			<br />
-			GitButler is compatible with your existing Git repositories.
+			{#snippet i18nSlot2()}<br />{/snippet}
+			<I18nRichMessage
+				value={{ key: "web:CtaSection.joinThousandsOfDevelopersWhoVeAlreadyMade" }}
+				components={{ slot2: i18nSlot2 }}
+			/>
 		</p>
 
 		<CtaButtons darkMode />

@@ -3,6 +3,7 @@ import {
 	gitlabAccountIdentifierToString,
 	stringToGitLabAccountIdentifier,
 } from "$lib/forge/gitlab/gitlabUserService.svelte";
+import { canonicalMessages } from "$lib/notifications/toasts";
 import { describe, expect, test } from "vitest";
 import type { GitlabAccountIdentifier } from "@gitbutler/but-sdk";
 
@@ -21,7 +22,9 @@ describe("GitLab Enterprise PAT errors", () => {
 		["NetworkError", "Invalid token or host"],
 		["Unknown", "Invalid token or host"],
 	])("maps %s to cautious guidance", (code, expected) => {
-		expect(gitLabEnterprisePatError({ code, message: "backend detail" })).toBe(expected);
+		expect(
+			canonicalMessages.text(gitLabEnterprisePatError({ code, message: "backend detail" })),
+		).toBe(expected);
 	});
 });
 

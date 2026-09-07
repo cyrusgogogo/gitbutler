@@ -1,4 +1,11 @@
 /* CSS VARIABLES */
+:root:lang(zh-CN) {
+	--text-fontfamily-default:
+		Inter, "PingFang SC", "Microsoft YaHei", "Noto Sans CJK SC", sans-serif;
+	--text-fontfamily-accent:
+		"But Head", "PingFang SC", "Microsoft YaHei", "Noto Sans CJK SC", sans-serif;
+}
+
 :root {
 	--transition-fast: 0.05s ease;
 	--transition-medium: 0.15s ease;

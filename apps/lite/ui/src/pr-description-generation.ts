@@ -1,3 +1,5 @@
+import type { LocalizedText } from "@gitbutler/i18n";
+import { message as i18nMessage } from "@gitbutler/i18n";
 /**
  * Generating a pull request description from the branch's commits.
  *
@@ -34,13 +36,16 @@ export const prDescriptionGenerationButtonState = ({
 	busy: boolean;
 	/** `undefined` while the branch's commits are still loading. */
 	commitCount: number | undefined;
-}): { disabled: boolean; hint: string | null } => {
-	if (!configured) return { disabled: true, hint: "Set up AI in Settings → Application → AI" };
-	if (!enabled) return { disabled: true, hint: "Enable AI in Settings → Project → AI" };
+}): { disabled: boolean; hint: LocalizedText | null } => {
+	if (!configured)
+		return { disabled: true, hint: i18nMessage("lite:prdescriptiongeneration.static557c1c515") };
+	if (!enabled)
+		return { disabled: true, hint: i18nMessage("lite:prdescriptiongeneration.staticac25c4634") };
 	// Not yet known is not the same as none: claiming "no commits" while the
 	// branch is still loading reads as a verdict rather than a wait.
 	if (commitCount === undefined) return { disabled: true, hint: null };
-	if (commitCount === 0) return { disabled: true, hint: "No commits to describe" };
+	if (commitCount === 0)
+		return { disabled: true, hint: i18nMessage("lite:prdescriptiongeneration.staticf7f1cfae0") };
 
 	return { disabled: busy, hint: null };
 };

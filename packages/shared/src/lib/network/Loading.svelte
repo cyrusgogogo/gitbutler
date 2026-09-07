@@ -1,7 +1,9 @@
 <script lang="ts" generics="A">
 	import LoadingState from "$lib/network/LoadingState.svelte";
+	import { useTranslations } from "@gitbutler/i18n/svelte";
 	import type { Loadable } from "$lib/network/types";
 	import type { Snippet } from "svelte";
+	const i18nMessages = useTranslations();
 
 	type Props<A> = {
 		loadable?: Loadable<A>;
@@ -12,16 +14,16 @@
 </script>
 
 {#if loadable === undefined}
-	<span>Uninitialized...</span>
+	<span>{$i18nMessages.t("shared:Loading.uninitialized")}</span>
 {:else if loadable.status === "found"}
 	{@render children(loadable.value)}
 {:else if loadable.status === "loading"}
 	<LoadingState />
 {:else if loadable.status === "not-found"}
-	<span>Not found</span>
+	<span>{$i18nMessages.t("shared:Loading.notFound")}</span>
 {:else if loadable.status === "error"}
 	<span>{loadable.error.name}</span>
 	<span>{loadable.error.message}</span>
 {:else}
-	<span>Unknown state</span>
+	<span>{$i18nMessages.t("shared:Loading.unknownState")}</span>
 {/if}

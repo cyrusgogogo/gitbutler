@@ -2,7 +2,10 @@
 	import ArrowButton from "$home/components/ArrowButton.svelte";
 	import SectionHeader from "$home/components/SectionHeader.svelte";
 	import quotesJson from "$home/data/social-quotes.json";
+	import { useTranslations } from "@gitbutler/i18n/svelte";
+	import I18nRichMessage from "@gitbutler/ui/i18n/RichMessage.svelte";
 	import { onMount } from "svelte";
+	const i18nMessages = useTranslations();
 
 	type Quote = {
 		social: string;
@@ -165,8 +168,12 @@
 </script>
 
 <section class="social-quotes">
+	{#snippet i18nHeadingSlot(content: import("svelte").Snippet)}<i>{@render content()}</i>{/snippet}
 	<SectionHeader>
-		<i>Community</i> voices
+		<I18nRichMessage
+			value={{ key: "web:SocialQuotes.communityVoices" }}
+			components={{ slot1: i18nHeadingSlot }}
+		/>
 
 		{#snippet buttons()}
 			<ArrowButton reverseDirection onclick={prevSlide} />
@@ -188,7 +195,9 @@
 							<p class="text-15 text-body quote__text">
 								{quote.quote}
 								<a
-									title="View post on {quote.social}"
+									title={$i18nMessages.t("web:SocialQuotes.viewPostOnValue", {
+										social: String(quote.social),
+									})}
 									class="quote__source"
 									href={quote.source}
 									target="_blank"
@@ -199,7 +208,9 @@
 								<img
 									class="quote__author-avatar"
 									src={quote.avatar}
-									alt="image of {quote.author}"
+									alt={$i18nMessages.t("web:SocialQuotes.imageOfValue", {
+										author: String(quote.author),
+									})}
 								/>
 								<div class="stack-v gap-4">
 									<p class="text-15 text-bold quote__author">{quote.author}</p>
@@ -219,7 +230,9 @@
 					<p class="text-15 text-body quote__text">
 						{quote.quote}
 						<a
-							title="View post on {quote.social}"
+							title={$i18nMessages.t("web:SocialQuotes.viewPostOnValue", {
+								social: String(quote.social),
+							})}
 							class="quote__source"
 							href={quote.source}
 							target="_blank"
@@ -227,7 +240,13 @@
 						>
 					</p>
 					<div class="quote__author-info">
-						<img class="quote__author-avatar" src={quote.avatar} alt="image of {quote.author}" />
+						<img
+							class="quote__author-avatar"
+							src={quote.avatar}
+							alt={$i18nMessages.t("web:SocialQuotes.imageOfValue", {
+								author: String(quote.author),
+							})}
+						/>
 						<div class="stack-v gap-4">
 							<p class="text-15 text-bold quote__author">{quote.author}</p>
 							<p class="text-13 quote__job-title">{quote.occupation}</p>

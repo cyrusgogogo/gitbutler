@@ -1,5 +1,6 @@
 import { apiToUpload, type ApiUpload, type Upload } from "$lib/uploads/types";
 import { InjectionToken } from "@gitbutler/core/context";
+import { LocalizedError, message } from "@gitbutler/i18n";
 import type { HttpClient } from "$lib/network/httpClient";
 
 const FILE_SIZE_LIMIT = 10 * 1024 * 1024;
@@ -11,7 +12,7 @@ export class UploadsService {
 
 	async uploadFile(file: File): Promise<Upload> {
 		if (file.size > FILE_SIZE_LIMIT) {
-			return await Promise.reject("File size limit exceeded");
+			throw new LocalizedError(message("shared:upload.tooLarge"), "File size limit exceeded");
 		}
 
 		const formData = new FormData();

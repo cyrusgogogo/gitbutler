@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { inject } from "@gitbutler/core/context";
+	import { useTranslations } from "@gitbutler/i18n/svelte";
 	import RegisterInterest from "@gitbutler/shared/interest/RegisterInterest.svelte";
 	import Loading from "@gitbutler/shared/network/Loading.svelte";
 	import { ORGANIZATION_SERVICE } from "@gitbutler/shared/organizations/organizationService";
@@ -8,6 +9,7 @@
 	import { projectTable } from "@gitbutler/shared/organizations/projectsSlice";
 	import { APP_STATE } from "@gitbutler/shared/redux/store.svelte";
 	import { Button, CardGroup, Modal } from "@gitbutler/ui";
+	const i18nMessages = useTranslations();
 
 	type Props = {
 		organizationSlug: string;
@@ -55,7 +57,10 @@
 	const title = $derived.by(() => {
 		if (targetProject?.status !== "found" || chosenOrganization?.status !== "found") return;
 
-		return `Join ${targetProject.value.name} into ${chosenOrganization.value.name}`;
+		return $i18nMessages.t("desktop:ProjectConnectModal.detailaab914346", {
+			value1: String(targetProject.value.name),
+			value2: String(chosenOrganization.value.name),
+		});
 	});
 
 	let modal = $state<Modal>();
@@ -74,14 +79,20 @@
 					{#snippet children(organizationProject)}
 						<h5>{organizationProject.name}</h5>
 
-						<Button onclick={() => connectToOrganization(organizationProject.slug)}>Connect</Button>
+						<Button onclick={() => connectToOrganization(organizationProject.slug)}
+							>{$i18nMessages.t("desktop:ProjectConnectModal.connect")}</Button
+						>
 					{/snippet}
 				</Loading>
 			</CardGroup.Item>
 		{/each}
 	</CardGroup>
 
-	<Button onclick={() => connectToOrganization()}>Create organization project</Button>
+	<Button onclick={() => connectToOrganization()}
+		>{$i18nMessages.t("desktop:ProjectConnectModal.createOrganizationProject")}</Button
+	>
 </Modal>
 
-<Button onclick={() => modal?.show()}>Connect</Button>
+<Button onclick={() => modal?.show()}
+	>{$i18nMessages.t("desktop:ProjectConnectModal.connect")}</Button
+>

@@ -6,7 +6,9 @@
 	import ExecutableLabel from "$components/file/ExecutableLabel.svelte";
 	import FileName from "$components/file/FileName.svelte";
 	import FileStatusBadge from "$components/file/FileStatusBadge.svelte";
+	import { useTranslations } from "@gitbutler/i18n/svelte";
 	import type { FileStatus } from "$components/file/types";
+	const i18nMessages = useTranslations();
 
 	interface Props {
 		id?: string;
@@ -81,7 +83,7 @@
 		{/if}
 
 		{#if conflicted}
-			<Badge size="icon" style="danger">Has conflicts</Badge>
+			<Badge size="icon" style="danger">{$i18nMessages.t("ui:FileViewHeader.hasConflicts")}</Badge>
 		{/if}
 	</div>
 

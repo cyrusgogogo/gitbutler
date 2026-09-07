@@ -1,3 +1,4 @@
+import type { LocalizedText } from "@gitbutler/i18n";
 import {
 	branchFileParent,
 	branchAddress,
@@ -96,7 +97,7 @@ type WorkspaceState = {
 	 * controls stood. An operation that cannot run must not hold the workspace open waiting to be
 	 * aimed, so it clears itself and leaves this behind to say why.
 	 */
-	notice: string | null;
+	notice: LocalizedText | null;
 	selectedBranchTabs: Record<string, BranchTab>;
 	/**
 	 * The diff cursor. Its five siblings live in the URL (use-cursor.ts); this
@@ -374,7 +375,7 @@ export const projectReducers = {
 		state.workspace.pendingOperation = noPendingOperation;
 	},
 	/** Ends the pending operation and says why in its place. */
-	refusePendingOperation: (state: ProjectState, { notice }: { notice: string }) => {
+	refusePendingOperation: (state: ProjectState, { notice }: { notice: LocalizedText }) => {
 		state.workspace.pendingOperation = noPendingOperation;
 		state.workspace.notice = notice;
 	},

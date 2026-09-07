@@ -1,6 +1,8 @@
 <script lang="ts">
 	import { getBranchStatusLabelAndColor } from "$components/lib";
+	import { useTranslations } from "@gitbutler/i18n/svelte";
 	import type { PushStatus } from "@gitbutler/but-sdk";
+	const i18nMessages = useTranslations();
 
 	type Props = {
 		pushStatus: PushStatus;
@@ -11,7 +13,7 @@
 
 	const [label, bgColor] = $derived.by((): [string, string] => {
 		const { label, color } = getBranchStatusLabelAndColor(pushStatus);
-		return [label, color];
+		return [$i18nMessages.text(label), color];
 	});
 </script>
 

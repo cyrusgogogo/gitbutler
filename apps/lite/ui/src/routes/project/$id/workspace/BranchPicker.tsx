@@ -1,3 +1,4 @@
+import { useTranslations } from "@gitbutler/i18n/react";
 import { headInfoQueryOptions } from "#ui/api/queries.ts";
 import { PickerDialog } from "#ui/components/PickerDialog.tsx";
 import type { BranchAddress } from "#ui/addresses.ts";
@@ -40,6 +41,7 @@ const stackToBranchPickerOptions = (stack: Stack): IteratorObject<BranchPickerOp
 		.filter((x) => x != null);
 
 export const BranchPicker: FC<Props> = ({ projectId, open, onOpenChange, onSelectBranch }) => {
+	const i18nMessages = useTranslations();
 	const { data: headInfo } = useQuery(headInfoQueryOptions(projectId));
 	const selectBranch = (option: BranchPickerOption) => {
 		onOpenChange(false);
@@ -48,24 +50,25 @@ export const BranchPicker: FC<Props> = ({ projectId, open, onOpenChange, onSelec
 
 	return (
 		<PickerDialog
-			ariaLabel="Select branch"
-			closeLabel="Close branch picker"
-			emptyLabel="No results found."
+			ariaLabel={i18nMessages.t("lite:BranchPicker.selectBranch")}
+			closeLabel={i18nMessages.t("lite:BranchPicker.closeBranchPicker")}
+			emptyLabel={i18nMessages.t("lite:BranchPicker.noResultsFound")}
 			getItemKey={(x) => x.id}
 			getItemLabel={(x) => x.label}
-			getItemType={() => "Branch"}
+			getItemType={() => i18nMessages.t("lite:BranchPicker.label1627510b2")}
 			itemToStringValue={(x) => x.label}
 			items={[
 				{
 					value: "Branches",
+					label: i18nMessages.t("lite:picker.Branches"),
 					items: headInfo?.stacks.values().flatMap(stackToBranchPickerOptions).toArray() ?? [],
 				},
 			]}
 			open={open}
 			onOpenChange={onOpenChange}
 			onSelectItem={selectBranch}
-			placeholder="Search for branches…"
-			selectLabel="Go to branch"
+			placeholder={i18nMessages.t("lite:BranchPicker.searchForBranches")}
+			selectLabel={i18nMessages.t("lite:BranchPicker.goToBranch")}
 		/>
 	);
 };

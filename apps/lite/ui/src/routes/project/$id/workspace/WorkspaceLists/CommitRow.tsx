@@ -1,3 +1,6 @@
+import { message as i18nMessage } from "@gitbutler/i18n";
+import { createElement as createI18nElement } from "react";
+import { Message as I18nMessage, useTranslations } from "@gitbutler/i18n/react";
 import rowStyles from "../Row.module.css";
 import { useAddressSpace } from "./context.tsx";
 import { startKeyboardTransfer, setCursor, startInlineEdit } from "#ui/use-cursor.ts";
@@ -72,6 +75,7 @@ export const CommitRow: FC<
 	below,
 	...restProps
 }) => {
+	const i18nMessages = useTranslations();
 	const { data: forgeInfo } = useQuery(forgeInfoOptions(projectId));
 	const mforgeUrl = forgeInfo && commitForgeUrl(commit, forgeInfo);
 	const commitAddressV: CommitAddress = {
@@ -260,8 +264,10 @@ export const CommitRow: FC<
 
 				toastManager.add({
 					type: "error",
-					title: "Failed to reword commit",
-					description: errorMessageForToast(error),
+					title: createI18nElement(I18nMessage, {
+						value: i18nMessage("lite:CommitRow.failedToRewordCommit"),
+					}),
+					description: createI18nElement(I18nMessage, { value: errorMessageForToast(error) }),
 					priority: "high",
 				});
 			}
@@ -279,61 +285,64 @@ export const CommitRow: FC<
 
 	const menuItems: Array<NativeMenuItem> = [
 		nativeMenuItem({
-			label: "Reword Commit",
+			label: i18nMessage("lite:CommitRow.rewordCommit"),
 			enabled: !isCommitMessagePending,
 			// Advertising a hotkey defined elsewhere.
 			accelerator: toElectronAccelerator(sidebarHotkeys.rewordCommit.hotkey),
 			onSelect: startEditing,
 		}),
 		nativeMenuItem({
-			label: "Amend Commit",
+			label: i18nMessage("lite:CommitRow.amendCommit"),
 			accelerator: toElectronAccelerator(changesHotkeys.amendCommit.hotkey),
 			enabled: noOperationPending && canAmendCommit,
 			onSelect: amendCommit,
 		}),
 		nativeMenuItem({
-			label: "Edit Commit",
+			label: i18nMessage("lite:CommitRow.editCommit"),
 			enabled: noOperationPending && stackId !== null,
 			onSelect: () => {
 				if (stackId !== null) enterEditMode({ projectId, commitId: commit.id, stackId });
 			},
 		}),
 		nativeMenuItem({
-			label: "Copy Commit",
+			label: i18nMessage("lite:CommitRow.copyCommit"),
 			onSelect: copyCommit,
 			accelerator: toElectronAccelerator(sidebarHotkeys.copy.hotkey),
 		}),
 		nativeMenuItem({
-			label: "Cut Commit",
+			label: i18nMessage("lite:CommitRow.cutCommit"),
 			onSelect: cutCommit,
 			accelerator: toElectronAccelerator(selectionOperationHotkeys.cut.hotkey),
 		}),
 		nativeMenuSeparator,
 		nativeMenuItem({
-			label: "Copy",
+			label: i18nMessage("lite:CommitRow.copy"),
 			submenu: [
 				nativeMenuItem({
-					label: "Change ID",
+					label: i18nMessage("lite:CommitRow.changeID"),
 					onSelect: () => window.lite.clipboardWriteText(commit.changeId),
 				}),
 				nativeMenuItem({
-					label: "Commit ID",
+					label: i18nMessage("lite:CommitRow.commitID"),
 					onSelect: () => window.lite.clipboardWriteText(commit.id),
 				}),
 				nativeMenuItem({
-					label: "Commit Title",
+					label: i18nMessage("lite:CommitRow.commitTitle"),
 					enabled: title !== undefined,
 					onSelect: () => window.lite.clipboardWriteText(title ?? ""),
 				}),
 				nativeMenuItem({
-					label: "Commit Body",
+					label: i18nMessage("lite:CommitRow.commitBody"),
 					enabled: body !== undefined,
 					onSelect: () => window.lite.clipboardWriteText(body ?? ""),
 				}),
 			],
 		}),
 		nativeMenuItem({
-			label: mforgeUrl?.freshness === "stale" ? "Open In Browser (stale)" : "Open In Browser",
+			label:
+				mforgeUrl?.freshness === "stale"
+					? i18nMessage("lite:CommitRow.openInBrowserStale")
+					: i18nMessage("lite:CommitRow.openInBrowser"),
 			enabled: mforgeUrl != null,
 			accelerator: toElectronAccelerator(sidebarHotkeys.openCommitInBrowser.hotkey),
 			onSelect: openCommitInBrowser,
@@ -341,28 +350,28 @@ export const CommitRow: FC<
 		insertBlankCommitMenuItem(insertBlankCommit, "above"),
 		nativeMenuSeparator,
 		nativeMenuItem({
-			label: "Create Branch",
+			label: i18nMessage("lite:CommitRow.createBranch"),
 			submenu: [
 				nativeMenuItem({
-					label: "Above",
+					label: i18nMessage("lite:CommitRow.above"),
 					accelerator: toElectronAccelerator(sidebarHotkeys.createDependentBranchAbove.hotkey),
 					onSelect: () => createDependentBranch("above"),
 				}),
 				nativeMenuItem({
-					label: "Below",
+					label: i18nMessage("lite:CommitRow.below"),
 					onSelect: () => createDependentBranch("below"),
 				}),
 			],
 		}),
 		nativeMenuSeparator,
 		nativeMenuItem({
-			label: "Delete Commit",
+			label: i18nMessage("lite:CommitRow.deleteCommit"),
 			enabled: !isCommitDiscardPending,
 			accelerator: toElectronAccelerator(sidebarHotkeys.deleteCommit.hotkey),
 			onSelect: deleteCommit,
 		}),
 		nativeMenuItem({
-			label: "Uncommit",
+			label: i18nMessage("lite:CommitRow.uncommit"),
 			enabled: !isCommitUncommitPending,
 			accelerator: toElectronAccelerator(sidebarHotkeys.uncommitCommit.hotkey),
 			onSelect: uncommitCommit,
@@ -399,7 +408,9 @@ export const CommitRow: FC<
 				>
 					<RowCheckbox
 						disabled={!noOperationPending || !canCheck}
-						aria-label={`Check commit ${title ?? "(no message)"}`}
+						aria-label={i18nMessages.t("lite:CommitRow.checkCommitValue", {
+							value: title ?? "(no message)",
+						})}
 						checked={isChecked}
 						className={styles.checkbox}
 						nativeButton
@@ -416,7 +427,7 @@ export const CommitRow: FC<
 							<Tooltip.Popup
 								render={<TooltipPopup kbd={sidebarHotkeys.checkCommit.hotkey} kbdScope="sidebar" />}
 							>
-								{sidebarHotkeys.checkCommit.meta.name}
+								{i18nMessages.t(sidebarHotkeys.checkCommit.meta.i18nKey)}
 							</Tooltip.Popup>
 						</Tooltip.Positioner>
 					</Tooltip.Portal>
@@ -427,7 +438,7 @@ export const CommitRow: FC<
 				<InlineEditor
 					multiline
 					value={optimisticMessage.trim()}
-					label="Commit message"
+					label={i18nMessages.t("lite:CommitRow.commitMessage")}
 					onMount={(el) => {
 						const firstNewline = el.value.indexOf("\n");
 						const caretPosition = firstNewline !== -1 ? firstNewline : el.value.length;
@@ -442,12 +453,14 @@ export const CommitRow: FC<
 						<ConflictIcon
 							variant="conflict"
 							className={styles.conflictIcon}
-							aria-label="Conflicted"
+							aria-label={i18nMessages.t("lite:CommitRow.conflicted")}
 						/>
 					)}
 					<RowLabel singleLine>
 						{title === undefined ? (
-							<span className={rowStyles.fadedText}>(no message)</span>
+							<span className={rowStyles.fadedText}>
+								<I18nMessage value={{ key: "lite:CommitRow.noMessage" }} />
+							</span>
 						) : (
 							title
 						)}
@@ -456,9 +469,12 @@ export const CommitRow: FC<
 			)}
 
 			{noOperationPending && (
-				<Toolbar.Root aria-label="Commit actions" render={<RowToolbar />}>
+				<Toolbar.Root
+					aria-label={i18nMessages.t("lite:CommitRow.commitActions")}
+					render={<RowToolbar />}
+				>
 					<Toolbar.Button
-						aria-label="Commit menu"
+						aria-label={i18nMessages.t("lite:CommitRow.commitMenu")}
 						onClick={(event) => {
 							void showNativeMenuFromTrigger(event.currentTarget, menuItems);
 						}}

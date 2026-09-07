@@ -1,3 +1,5 @@
+import { useTranslations } from "@gitbutler/i18n/react";
+import type { MessageKey } from "@gitbutler/i18n";
 import { Kbd } from "#ui/components/Kbd.tsx";
 import { PickerDialog, type PickerDialogGroup } from "#ui/components/PickerDialog.tsx";
 import type { CommandGroup } from "#ui/hotkeys.ts";
@@ -18,6 +20,7 @@ type CommandPaletteItem = {
 	group: CommandGroup;
 	id: string;
 	name: string;
+	i18nKey?: MessageKey;
 	hotkey: Hotkey | HotkeySequence;
 	type: "hotkey" | "sequence";
 };
@@ -27,15 +30,29 @@ type Props = {
 	onOpenChange: (open: boolean) => void;
 };
 
+type CommandPaletteGroup = PickerDialogGroup<CommandPaletteItem> & { value: CommandGroup };
+const groupLabels: Record<CommandGroup, MessageKey> = {
+	Branch: "lite:commandGroup.branch",
+	Commit: "lite:commandGroup.commit",
+	Diff: "lite:commandGroup.diff",
+	File: "lite:commandGroup.file",
+	Global: "lite:commandGroup.global",
+	"Operations log": "lite:commandGroup.operationsLog",
+	Stack: "lite:commandGroup.stack",
+	"Uncommitted changes": "lite:commandGroup.uncommittedChanges",
+	Sidebar: "lite:commandGroup.sidebar",
+	Workspace: "lite:commandGroup.workspace",
+};
+
 const groupCommandPaletteItems = (
 	items: Iterable<CommandPaletteItem>,
-): Array<PickerDialogGroup<CommandPaletteItem>> => {
+): Array<CommandPaletteGroup> => {
 	const grouped = Map.groupBy(items, (item) => item.group);
 
 	return Array.from(grouped.entries())
 		.toSorted(([a], [b]) => a.localeCompare(b))
 		.map(
-			([group, items]): PickerDialogGroup<CommandPaletteItem> => ({
+			([group, items]): CommandPaletteGroup => ({
 				value: group,
 				items: items.toSorted((a, b) => a.name.localeCompare(b.name)),
 			}),
@@ -64,6 +81,7 @@ const getCommandPaletteItems = (activeElement: Element | null) => {
 							group: hotkey.options.meta.group,
 							id: hotkey.id,
 							name: hotkey.options.meta.name,
+							i18nKey: hotkey.options.meta.i18nKey,
 							hotkey: hotkey.hotkey,
 							type: "hotkey",
 						}
@@ -78,6 +96,7 @@ const getCommandPaletteItems = (activeElement: Element | null) => {
 							group: sequence.options.meta.group,
 							id: sequence.id,
 							name: sequence.options.meta.name,
+							i18nKey: sequence.options.meta.i18nKey,
 							hotkey: sequence.sequence,
 							type: "sequence",
 						}
@@ -90,7 +109,14 @@ const getCommandPaletteItems = (activeElement: Element | null) => {
 };
 
 export const CommandPalette: FC<Props> = ({ open, onOpenChange }) => {
+	const i18nMessages = useTranslations();
 	const [items] = useState(() => getCommandPaletteItems(document.activeElement));
+	const itemLabel = (item: CommandPaletteItem) =>
+		item.i18nKey !== undefined ? i18nMessages.t(item.i18nKey) : item.name;
+	const localizedItems = items.map((group) => ({
+		...group,
+		label: i18nMessages.t(groupLabels[group.value]),
+	}));
 
 	const runHotkey = (item: CommandPaletteItem) => {
 		onOpenChange(false);
@@ -100,19 +126,19 @@ export const CommandPalette: FC<Props> = ({ open, onOpenChange }) => {
 
 	return (
 		<PickerDialog
-			ariaLabel="Command palette"
-			closeLabel="Close command palette"
-			emptyLabel="No hotkeys found."
+			ariaLabel={i18nMessages.t("lite:CommandPalette.commandPalette")}
+			closeLabel={i18nMessages.t("lite:CommandPalette.closeCommandPalette")}
+			emptyLabel={i18nMessages.t("lite:CommandPalette.noHotkeysFound")}
 			getItemKey={(x) => x.id}
-			getItemLabel={(x) => x.name}
+			getItemLabel={itemLabel}
 			getItemType={(x) => <Kbd hotkey={x.hotkey} />}
-			itemToStringValue={(x) => `${x.group}: ${x.name}`}
-			items={items}
+			itemToStringValue={(x) => `${itemLabel(x)} ${x.name}`}
+			items={localizedItems}
 			open={open}
 			onOpenChange={onOpenChange}
 			onSelectItem={runHotkey}
-			placeholder="Search hotkeys…"
-			selectLabel="Run"
+			placeholder={i18nMessages.t("lite:CommandPalette.searchHotkeys")}
+			selectLabel={i18nMessages.t("lite:CommandPalette.run")}
 		/>
 	);
 };

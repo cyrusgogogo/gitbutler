@@ -1,3 +1,6 @@
+import type { LocalizedText } from "@gitbutler/i18n";
+import { message as i18nMessage } from "@gitbutler/i18n";
+import { Message as I18nMessage, useTranslations } from "@gitbutler/i18n/react";
 import { useQuery, useSuspenseQuery } from "@tanstack/react-query";
 import { useState, type FC } from "react";
 import type { GitConfigSettings } from "@gitbutler/but-sdk";
@@ -27,17 +30,17 @@ const signingFormats = [
 	{
 		value: "openpgp",
 		label: "GPG",
-		keyPlaceholder: "ex: 723CCA3AC13CF28D",
-		programPlaceholder: "ex: /usr/local/bin/gpg",
+		keyPlaceholder: i18nMessage("lite:ProjectGit.staticd74e3fab2"),
+		programPlaceholder: i18nMessage("lite:ProjectGit.static58ad627fb"),
 	},
 	{
 		value: "ssh",
 		label: "SSH",
-		keyPlaceholder: "ex: /Users/bob/.ssh/id_rsa.pub",
-		programPlaceholder: "ex: /Applications/1Password.app/Contents/MacOS/op-ssh-sign",
+		keyPlaceholder: i18nMessage("lite:ProjectGit.static9dd81922f"),
+		programPlaceholder: i18nMessage("lite:ProjectGit.static9d4686fd4"),
 	},
 ] as const satisfies ReadonlyArray<
-	{ value: SigningFormat; label: string } & Record<string, string>
+	{ value: SigningFormat; label: string } & Record<string, LocalizedText>
 >;
 
 /** The program field writes to whichever of the two git keys the format selects. */
@@ -45,6 +48,7 @@ const programOf = (config: GitConfigSettings, format: SigningFormat): string =>
 	(format === "openpgp" ? config.gpgProgram : config.gpgSshProgram) ?? "";
 
 export const ProjectGit: FC<{ projectId: string }> = ({ projectId }) => {
+	const i18nMessages = useTranslations();
 	const { data: config } = useSuspenseQuery(gbConfigQueryOptions(projectId));
 	const { data: projects } = useSuspenseQuery(listProjectsQueryOptions);
 	// Credentials are tested against the target's remote, the same pair a push uses.
@@ -124,9 +128,9 @@ export const ProjectGit: FC<{ projectId: string }> = ({ projectId }) => {
 		<>
 			<Section>
 				<Row
-					label="Force push protection"
+					label={i18nMessages.t("lite:ProjectGit.forcePushProtection")}
 					labelId="force-push-protection"
-					hint="Uses git's safer force-push flags so remote commits are not overwritten."
+					hint={i18nMessages.t("lite:ProjectGit.usesGitSSaferForcePushFlagsSo")}
 				>
 					<Switch
 						aria-labelledby="force-push-protection"
@@ -141,9 +145,9 @@ export const ProjectGit: FC<{ projectId: string }> = ({ projectId }) => {
 				</Row>
 
 				<Row
-					label="Sign commits"
+					label={i18nMessages.t("lite:ProjectGit.signCommits")}
 					labelId="sign-commits"
-					hint="GitButler signs as your git configuration says, but gitbutler.signCommits wins."
+					hint={i18nMessages.t("lite:ProjectGit.gitButlerSignsAsYourGitConfigurationSaysBut")}
 				>
 					<Switch
 						aria-labelledby="sign-commits"
@@ -154,8 +158,8 @@ export const ProjectGit: FC<{ projectId: string }> = ({ projectId }) => {
 			</Section>
 
 			{signCommits && (
-				<Section heading="Signing">
-					<Row label="Format" htmlFor="signing-format">
+				<Section heading={i18nMessages.t("lite:ProjectGit.signing")}>
+					<Row label={i18nMessages.t("lite:ProjectGit.format")} htmlFor="signing-format">
 						<select
 							id="signing-format"
 							value={format}
@@ -169,11 +173,11 @@ export const ProjectGit: FC<{ projectId: string }> = ({ projectId }) => {
 						</select>
 					</Row>
 
-					<Row label="Signing key" htmlFor="signing-key">
+					<Row label={i18nMessages.t("lite:ProjectGit.signingKey")} htmlFor="signing-key">
 						<input
 							id="signing-key"
 							type="text"
-							placeholder={selected?.keyPlaceholder}
+							placeholder={selected ? i18nMessages.text(selected.keyPlaceholder) : undefined}
 							value={key}
 							onChange={(evt) => setKey(evt.currentTarget.value)}
 							onBlur={() => save({ signingKey: key })}
@@ -181,11 +185,11 @@ export const ProjectGit: FC<{ projectId: string }> = ({ projectId }) => {
 						/>
 					</Row>
 
-					<Row label="Signing program" htmlFor="signing-program">
+					<Row label={i18nMessages.t("lite:ProjectGit.signingProgram")} htmlFor="signing-program">
 						<input
 							id="signing-program"
 							type="text"
-							placeholder={selected?.programPlaceholder}
+							placeholder={selected ? i18nMessages.text(selected.programPlaceholder) : undefined}
 							value={program}
 							onChange={(evt) => setProgram(evt.currentTarget.value)}
 							onBlur={saveProgram}
@@ -193,7 +197,10 @@ export const ProjectGit: FC<{ projectId: string }> = ({ projectId }) => {
 						/>
 					</Row>
 
-					<Row label="Check signing" hint="Signs a throwaway commit to prove the settings work.">
+					<Row
+						label={i18nMessages.t("lite:ProjectGit.checkSigning")}
+						hint={i18nMessages.t("lite:ProjectGit.signsAThrowawayCommitToProveTheSettings")}
+					>
 						<div className={styles.check}>
 							{signingError !== null && (
 								<span className={classes("text-12", styles.failed)}>
@@ -201,7 +208,9 @@ export const ProjectGit: FC<{ projectId: string }> = ({ projectId }) => {
 								</span>
 							)}
 							{signingError === null && signingWorks === true && (
-								<span className={classes("text-12", styles.passed)}>Signing works</span>
+								<span className={classes("text-12", styles.passed)}>
+									<I18nMessage value={{ key: "lite:ProjectGit.signingWorks" }} />
+								</span>
 							)}
 							<button
 								type="button"
@@ -209,20 +218,26 @@ export const ProjectGit: FC<{ projectId: string }> = ({ projectId }) => {
 								disabled={isCheckingSigning}
 								onClick={() => void checkSigning()}
 							>
-								{isCheckingSigning ? "Checking…" : "Check"}
+								{isCheckingSigning ? (
+									<I18nMessage value={{ key: "lite:ProjectGit.checking" }} />
+								) : (
+									<I18nMessage value={{ key: "lite:ProjectGit.check" }} />
+								)}
 							</button>
 						</div>
 					</Row>
 				</Section>
 			)}
 
-			<Section heading="Git authentication">
+			<Section heading={i18nMessages.t("lite:ProjectGit.gitAuthentication")}>
 				<Row
-					label="Credentials"
+					label={i18nMessages.t("lite:ProjectGit.credentials")}
 					hint={
 						target === null || target === undefined
-							? "Needs a target branch with a remote to test against."
-							: `Fetches from ${target.remoteName}, then pushes an empty branch and removes it again.`
+							? i18nMessages.t("lite:ProjectGit.needsATargetBranchWithARemoteTo")
+							: i18nMessages.t("lite:ProjectGit.fetchesFromValueThenPushesAnEmptyBranch", {
+									value: target.remoteName,
+								})
 					}
 				>
 					<button
@@ -231,13 +246,17 @@ export const ProjectGit: FC<{ projectId: string }> = ({ projectId }) => {
 						disabled={credentials._tag === "Running" || target === null || target === undefined}
 						onClick={() => void checkCredentials()}
 					>
-						{credentials._tag === "Running" ? "Testing…" : "Re-test credentials"}
+						{credentials._tag === "Running" ? (
+							<I18nMessage value={{ key: "lite:ProjectGit.testing" }} />
+						) : (
+							<I18nMessage value={{ key: "lite:ProjectGit.reTestCredentials" }} />
+						)}
 					</button>
 				</Row>
 
 				{credentials._tag !== "Idle" &&
 					credentials.checks.map((check) => (
-						<Row key={check.name} label={check.name}>
+						<Row key={check.name} label={i18nMessages.t(`lite:credentialCheck.${check.name}`)}>
 							<span
 								className={classes(
 									"text-12",
@@ -254,8 +273,10 @@ export const ProjectGit: FC<{ projectId: string }> = ({ projectId }) => {
 					))}
 
 				{credentials._tag === "Done" && !failed(credentials) && (
-					<Row label="Result">
-						<span className={classes("text-12", styles.passed)}>GitButler can fetch and push</span>
+					<Row label={i18nMessages.t("lite:ProjectGit.result")}>
+						<span className={classes("text-12", styles.passed)}>
+							<I18nMessage value={{ key: "lite:ProjectGit.gitButlerCanFetchAndPush" }} />
+						</span>
 					</Row>
 				)}
 			</Section>

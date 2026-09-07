@@ -13,6 +13,8 @@
 <script lang="ts">
 	import SkeletonBone from "$components/SkeletonBone.svelte";
 	import { useImageLoading } from "$lib/utils/imageLoading.svelte";
+	import { useTranslations } from "@gitbutler/i18n/svelte";
+	const i18nMessages = useTranslations();
 
 	let {
 		picture = $bindable(),
@@ -73,7 +75,9 @@
 		/>
 	{/if}
 
-	<span class="profile-pic__edit-label text-11 text-semibold">Edit</span>
+	<span class="profile-pic__edit-label text-11 text-semibold"
+		>{$i18nMessages.t("ui:ProfilePictureUpload.edit")}</span
+	>
 </label>
 
 <style lang="postcss">

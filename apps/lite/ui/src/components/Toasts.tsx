@@ -1,3 +1,4 @@
+import { Message as I18nMessage } from "@gitbutler/i18n/react";
 import { Toast } from "@base-ui/react";
 import type { FC } from "react";
 import { classes } from "#ui/components/classes.ts";
@@ -28,7 +29,9 @@ export const Toasts: FC = () => {
 							/>
 							<div className={styles.actions}>
 								{toast.actionProps && <Toast.Action className={getButtonClassName({})} />}
-								<Toast.Close className={getButtonClassName({})}>Dismiss</Toast.Close>
+								<Toast.Close className={getButtonClassName({})}>
+									<I18nMessage value={{ key: "lite:Toasts.dismiss" }} />
+								</Toast.Close>
 							</div>
 						</Toast.Content>
 					</Toast.Root>

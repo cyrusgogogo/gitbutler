@@ -47,7 +47,7 @@ jobs:
       - name: Fetch Rust dependencies
         run: cargo fetch --locked
       - name: Build MCP app
-        run: pnpm --filter @gitbutler/but-mcp-app build
+        run: pnpm exec turbo run build --filter=@gitbutler/but-mcp-app
       - name: Build but CLI
         env:
           GITBUTLER_REQUIRE_MCP_APP: "1"

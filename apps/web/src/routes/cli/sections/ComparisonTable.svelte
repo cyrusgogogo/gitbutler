@@ -1,26 +1,33 @@
 <script lang="ts">
 	import SectionHeader from "$home/components/SectionHeader.svelte";
+	import { useTranslations } from "@gitbutler/i18n/svelte";
+	import I18nRichMessage from "@gitbutler/ui/i18n/RichMessage.svelte";
+	const i18nMessages = useTranslations();
 
-	const features = [
-		{ name: "Stacked branch workflows", git: false, gitbutler: true },
-		{ name: "Work on multiple branches simultaneously", git: false, gitbutler: true },
-		{ name: "Unlimited undo/redo", git: false, gitbutler: true },
-		{ name: "Simple, predictable rebasing", git: false, gitbutler: true },
-		{ name: "Fast worktree management", git: false, gitbutler: true },
-		{ name: "AI agent-friendly commands", git: false, gitbutler: true },
-		{ name: "Make commits", git: true, gitbutler: true },
-		{ name: "Works with Git repositories", git: true, gitbutler: true },
-	];
+	const features = $derived([
+		{ name: $i18nMessages.t("web:detail.a966e26e15"), git: false, gitbutler: true },
+		{ name: $i18nMessages.t("web:detail.7340c7a4ec"), git: false, gitbutler: true },
+		{ name: $i18nMessages.t("web:detail.b792a7e59c"), git: false, gitbutler: true },
+		{ name: $i18nMessages.t("web:detail.67785388d4"), git: false, gitbutler: true },
+		{ name: $i18nMessages.t("web:detail.e2d0df3ffd"), git: false, gitbutler: true },
+		{ name: $i18nMessages.t("web:detail.f041cffacd"), git: false, gitbutler: true },
+		{ name: $i18nMessages.t("web:detail.b342cac012"), git: true, gitbutler: true },
+		{ name: $i18nMessages.t("web:detail.f292212153"), git: true, gitbutler: true },
+	]);
 </script>
 
 <section class="comparison-wrapper">
+	{#snippet i18nHeadingSlot(content: import("svelte").Snippet)}<i>{@render content()}</i>{/snippet}
 	<SectionHeader>
-		What <i>But gives you</i> over Git
+		<I18nRichMessage
+			value={{ key: "web:ComparisonTable.whatButGivesYouOverGit" }}
+			components={{ slot1: i18nHeadingSlot }}
+		/>
 	</SectionHeader>
 
 	<div class="comparison-table">
 		<div class="text-16 text-bold table-header">
-			<div class="header-cell feature-header">Feature</div>
+			<div class="header-cell feature-header">{$i18nMessages.t("web:ComparisonTable.feature")}</div>
 			<div class="header-cell">Git</div>
 			<div class="header-cell">GitButler</div>
 		</div>
@@ -96,10 +103,10 @@
 
 	<div class="comparison-description">
 		<p class="text-15 text-body text-center text-balance">
-			GitButler works with your existing Git repositories and remotes.
+			{$i18nMessages.t("web:ComparisonTable.gitButlerWorksWithYourExistingGitRepositoriesAnd")}
 		</p>
 		<p class="text-15 text-body text-center text-balance">
-			Zero configuration required. It simply layers onto your current workflow.
+			{$i18nMessages.t("web:ComparisonTable.zeroConfigurationRequiredItSimplyLayersOntoYour")}
 		</p>
 		<svg
 			class="description-underline"

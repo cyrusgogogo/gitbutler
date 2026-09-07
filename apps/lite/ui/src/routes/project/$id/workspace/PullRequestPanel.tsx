@@ -1,3 +1,6 @@
+import type { LocalizedText } from "@gitbutler/i18n";
+import { message as i18nMessage } from "@gitbutler/i18n";
+import { Message as I18nMessage, useTranslations } from "@gitbutler/i18n/react";
 import {
 	useAddReviewLabels,
 	useRemoveReviewLabel,
@@ -139,6 +142,7 @@ const Label: FC<{ label: ForgeReviewLabel }> = ({ label }) => {
 };
 
 const CopyableBranch: FC<{ name: string }> = ({ name }) => {
+	const i18nMessages = useTranslations();
 	const { copied, copy } = useCopied(name);
 
 	return (
@@ -146,13 +150,20 @@ const CopyableBranch: FC<{ name: string }> = ({ name }) => {
 			<Tooltip.Trigger
 				className={styles.sourceBranch}
 				onClick={copy}
-				render={<button type="button" aria-label="Copy branch name" />}
+				render={
+					<button
+						type="button"
+						aria-label={i18nMessages.t("lite:PullRequestPanel.copyBranchName")}
+					/>
+				}
 			>
-				{copied ? "Copied!" : name}
+				{copied ? <I18nMessage value={{ key: "lite:PullRequestPanel.copied" }} /> : name}
 			</Tooltip.Trigger>
 			<Tooltip.Portal>
 				<Tooltip.Positioner sideOffset={4}>
-					<Tooltip.Popup render={<TooltipPopup />}>Copy branch name</Tooltip.Popup>
+					<Tooltip.Popup render={<TooltipPopup />}>
+						<I18nMessage value={{ key: "lite:PullRequestPanel.copyBranchName" }} />
+					</Tooltip.Popup>
 				</Tooltip.Positioner>
 			</Tooltip.Portal>
 		</Tooltip.Root>
@@ -175,6 +186,7 @@ export const NewPullRequestPanel: FC<{
 	extras: DraftPRExtras;
 	onExtrasChange: (extras: DraftPRExtras) => void;
 }> = ({ projectId, sourceBranch, targetBranch, extras, onExtrasChange }) => {
+	const i18nMessages = useTranslations();
 	const { data: forgeInfo } = useQuery(forgeInfoOptions(projectId));
 	const canManage = forgeInfo?.capabilities.reviewManagement === true;
 	const { data: repoLabels } = useQuery({
@@ -247,8 +259,11 @@ export const NewPullRequestPanel: FC<{
 	return (
 		<aside className={styles.panel}>
 			<Section
-				heading="Reviewers"
-				action={canPickReviewers && pickerButton("Request a review", openReviewerMenu)}
+				heading={i18nMessages.t("lite:PullRequestPanel.reviewers")}
+				action={
+					canPickReviewers &&
+					pickerButton(i18nMessages.t("lite:PullRequestPanel.label7ccfb0e5c"), openReviewerMenu)
+				}
 			>
 				{pickedReviewers.length === 0 ? (
 					<PeoplePlaceholder />
@@ -266,8 +281,11 @@ export const NewPullRequestPanel: FC<{
 			</Section>
 
 			<Section
-				heading="Labels"
-				action={canPickLabels && pickerButton("Edit labels", openLabelMenu)}
+				heading={i18nMessages.t("lite:PullRequestPanel.labels")}
+				action={
+					canPickLabels &&
+					pickerButton(i18nMessages.t("lite:PullRequestPanel.label9cddcaa2f"), openLabelMenu)
+				}
 			>
 				{pickedLabels.length === 0 ? (
 					<LabelsPlaceholder />
@@ -280,7 +298,7 @@ export const NewPullRequestPanel: FC<{
 				)}
 			</Section>
 
-			<Section heading="Branches">
+			<Section heading={i18nMessages.t("lite:PullRequestPanel.branches")}>
 				<div className={classes("text-13", styles.branches)}>
 					<CopyableBranch name={sourceBranch} />
 					{targetBranch !== undefined && (
@@ -304,15 +322,16 @@ const reportOpenFailure = (error: unknown) => {
 type ProblemCheck = { check: CiCheck; tone: "danger" | "warn" | "muted" };
 
 /** Wall time from a check's start to its completion, once both are known. */
-const checkDuration = (check: CiCheck): string | null => {
+const checkDuration = (check: CiCheck, locale: "en" | "zh-CN"): string | null => {
 	const completedAt = typeof check.status === "string" ? null : check.status.complete.completed_at;
 	if (check.startedAt === null || completedAt === null) return null;
 	const ms = Date.parse(completedAt) - Date.parse(check.startedAt);
-	return Number.isNaN(ms) || ms < 0 ? null : formatCompactDuration(ms);
+	return Number.isNaN(ms) || ms < 0 ? null : formatCompactDuration(ms, locale);
 };
 
 const ProblemCheckRow: FC<{ problem: ProblemCheck }> = ({ problem: { check, tone } }) => {
-	const duration = checkDuration(check);
+	const i18nMessages = useTranslations();
+	const duration = checkDuration(check, i18nMessages.locale);
 
 	return (
 		<a
@@ -350,6 +369,7 @@ const ProblemCheckRow: FC<{ problem: ProblemCheck }> = ({ problem: { check, tone
  * running and failed, the same three as counts, and a row per failing check.
  */
 const ChecksSection: FC<{ projectId: string; reference: string }> = ({ projectId, reference }) => {
+	const i18nMessages = useTranslations();
 	const { data } = useQuery(
 		listCIChecksQueryOptions({ projectId, reference, polling: "priority" }),
 	);
@@ -376,7 +396,7 @@ const ChecksSection: FC<{ projectId: string; reference: string }> = ({ projectId
 	].filter((segment) => segment.count > 0);
 
 	return (
-		<Section heading="Checks">
+		<Section heading={i18nMessages.t("lite:PullRequestPanel.checks")}>
 			<div className={styles.checks}>
 				<div className={styles.checksSummary}>
 					<div className={styles.checksBar}>
@@ -391,7 +411,14 @@ const ChecksSection: FC<{ projectId: string; reference: string }> = ({ projectId
 
 					<div className={classes("text-12", styles.checksCounts)}>
 						{problems.length > 0 && (
-							<span className={styles.countFailed}>{problems.length} failed</span>
+							<span className={styles.countFailed}>
+								<I18nMessage
+									value={{
+										key: "lite:PullRequestPanel.valueFailed",
+										values: { length: String(problems.length) },
+									}}
+								/>
+							</span>
 						)}
 						{passed > 0 && (
 							<span className={styles.countPassed}>
@@ -400,8 +427,26 @@ const ChecksSection: FC<{ projectId: string; reference: string }> = ({ projectId
 									: `${passed} passed`}
 							</span>
 						)}
-						{pending > 0 && <span className={styles.countPending}>{pending} pending</span>}
-						{skipped > 0 && <span className={styles.countSkipped}>{skipped} skipped</span>}
+						{pending > 0 && (
+							<span className={styles.countPending}>
+								<I18nMessage
+									value={{
+										key: "lite:PullRequestPanel.valuePending",
+										values: { pending: String(pending) },
+									}}
+								/>
+							</span>
+						)}
+						{skipped > 0 && (
+							<span className={styles.countSkipped}>
+								<I18nMessage
+									value={{
+										key: "lite:PullRequestPanel.valueSkipped",
+										values: { skipped: String(skipped) },
+									}}
+								/>
+							</span>
+						)}
 					</div>
 				</div>
 
@@ -454,17 +499,29 @@ const reviewerRows = (
 	return [...byLogin.values()];
 };
 
-const verdictBits = (verdict: ReviewerVerdict): [IconName, string, string] =>
+const verdictBits = (verdict: ReviewerVerdict): [IconName, string, LocalizedText] =>
 	Match.value(verdict).pipe(
-		Match.withReturnType<[IconName, string, string]>(),
-		Match.when("approved", () => ["tick-circle", "var(--fill-safe-bg)", "Approved"]),
+		Match.withReturnType<[IconName, string, LocalizedText]>(),
+		Match.when("approved", () => [
+			"tick-circle",
+			"var(--fill-safe-bg)",
+			i18nMessage("lite:review.verdictApproved"),
+		]),
 		Match.when("changesRequested", () => [
 			"cross-circle",
 			"var(--fill-danger-bg)",
-			"Requested changes",
+			i18nMessage("lite:review.verdictRequestedchanges"),
 		]),
-		Match.when("commented", () => ["eye", "var(--text-3)", "Commented"]),
-		Match.when("awaiting", () => ["clock", "var(--text-3)", "Awaiting review"]),
+		Match.when("commented", () => [
+			"eye",
+			"var(--text-3)",
+			i18nMessage("lite:review.verdictCommented"),
+		]),
+		Match.when("awaiting", () => [
+			"clock",
+			"var(--text-3)",
+			i18nMessage("lite:review.verdictAwaitingreview"),
+		]),
 		Match.exhaustive,
 	);
 
@@ -474,6 +531,7 @@ export const PullRequestPanel: FC<{
 	/** The review's activity feed, shown as the panel's bottom section. */
 	activity?: ReactNode;
 }> = ({ projectId, review, activity }) => {
+	const i18nMessages = useTranslations();
 	const { data: forgeInfo } = useQuery(forgeInfoOptions(projectId));
 	const { data: reviewers } = useQuery({
 		...listReviewSubmissionsQueryOptions({ projectId, reviewId: review.number }),
@@ -558,10 +616,26 @@ export const PullRequestPanel: FC<{
 
 	const [statusLabel, statusVariant, statusIcon] = Match.value(reviewStatus(review)).pipe(
 		Match.withReturnType<[string, BadgeVariant, IconName]>(),
-		Match.when("open", () => ["Open", "safe", "pr"]),
-		Match.when("draft", () => ["Draft", "lightGray", "pr-draft"]),
-		Match.when("merged", () => ["Merged", "purple", "branch-merge"]),
-		Match.when("closed", () => ["Closed", "danger", "pr-close"]),
+		Match.when("open", () => [
+			i18nMessages.t("lite:PullRequestPanel.labelcf9b77061"),
+			"safe",
+			"pr",
+		]),
+		Match.when("draft", () => [
+			i18nMessages.t("lite:PullRequestPanel.label23d33e22a"),
+			"lightGray",
+			"pr-draft",
+		]),
+		Match.when("merged", () => [
+			i18nMessages.t("lite:PullRequestPanel.label0c4455982"),
+			"purple",
+			"branch-merge",
+		]),
+		Match.when("closed", () => [
+			i18nMessages.t("lite:PullRequestPanel.label88d86b772"),
+			"danger",
+			"pr-close",
+		]),
 		Match.exhaustive,
 	);
 
@@ -580,7 +654,7 @@ export const PullRequestPanel: FC<{
 	return (
 		<aside className={styles.panel}>
 			<Section
-				heading="Status"
+				heading={i18nMessages.t("lite:PullRequestPanel.status")}
 				action={
 					<a
 						href={review.htmlUrl}
@@ -611,15 +685,22 @@ export const PullRequestPanel: FC<{
 							}
 							type="button"
 						>
-							{review.draft ? "Mark as ready" : "Convert to draft"}
+							{review.draft ? (
+								<I18nMessage value={{ key: "lite:PullRequestPanel.markAsReady" }} />
+							) : (
+								<I18nMessage value={{ key: "lite:PullRequestPanel.convertToDraft" }} />
+							)}
 						</button>
 					)}
 				</div>
 			</Section>
 
 			<Section
-				heading="Reviewers"
-				action={canPickReviewers && pickerButton("Request a review", openReviewerMenu)}
+				heading={i18nMessages.t("lite:PullRequestPanel.reviewers")}
+				action={
+					canPickReviewers &&
+					pickerButton(i18nMessages.t("lite:PullRequestPanel.label7ccfb0e5c"), openReviewerMenu)
+				}
 			>
 				{reviewerList.length === 0 ? (
 					<PeoplePlaceholder />
@@ -627,7 +708,7 @@ export const PullRequestPanel: FC<{
 					reviewerList.map(({ user, verdict }) => {
 						const [icon, color, label] = verdictBits(verdict);
 						return (
-							<div key={user.id} className={styles.reviewerRow} title={label}>
+							<div key={user.id} className={styles.reviewerRow} title={i18nMessages.text(label)}>
 								<ReviewUser user={user} />
 								<Icon name={icon} style={{ color }} size={15} />
 							</div>
@@ -637,8 +718,11 @@ export const PullRequestPanel: FC<{
 			</Section>
 
 			<Section
-				heading="Labels"
-				action={canPickLabels && pickerButton("Edit labels", openLabelMenu)}
+				heading={i18nMessages.t("lite:PullRequestPanel.labels")}
+				action={
+					canPickLabels &&
+					pickerButton(i18nMessages.t("lite:PullRequestPanel.label9cddcaa2f"), openLabelMenu)
+				}
 			>
 				{review.labels.length === 0 ? (
 					<LabelsPlaceholder />
@@ -655,7 +739,7 @@ export const PullRequestPanel: FC<{
 				<ChecksSection projectId={projectId} reference={review.sourceBranch} />
 			)}
 
-			<Section heading="Branches">
+			<Section heading={i18nMessages.t("lite:PullRequestPanel.branches")}>
 				<div className={classes("text-13", styles.branches)}>
 					<CopyableBranch name={review.sourceBranch} />
 					<span className={styles.branchArrow}>→</span>
@@ -664,28 +748,32 @@ export const PullRequestPanel: FC<{
 			</Section>
 
 			{review.author !== null && (
-				<Section heading="Author">
+				<Section heading={i18nMessages.t("lite:PullRequestPanel.author")}>
 					<ReviewUser user={review.author} />
 				</Section>
 			)}
 
 			{createdAtMs !== null && (
-				<Section heading="Created">
+				<Section heading={i18nMessages.t("lite:PullRequestPanel.created")}>
 					<span className={classes("text-13", styles.created)}>
-						{formatRelativeTime(createdAtMs)}, {formatAbsoluteTime(createdAtMs)}
+						{formatRelativeTime(createdAtMs, undefined, i18nMessages.locale)},{" "}
+						{formatAbsoluteTime(createdAtMs, i18nMessages.locale)}
 					</span>
 				</Section>
 			)}
 
 			{showUpdated && (
-				<Section heading="Updated" joined>
+				<Section heading={i18nMessages.t("lite:PullRequestPanel.updated")} joined>
 					<span className={classes("text-13", styles.created)}>
-						{formatRelativeTime(modifiedAtMs)}, {formatAbsoluteTime(modifiedAtMs)}
+						{formatRelativeTime(modifiedAtMs, undefined, i18nMessages.locale)},{" "}
+						{formatAbsoluteTime(modifiedAtMs, i18nMessages.locale)}
 					</span>
 				</Section>
 			)}
 
-			{activity !== undefined && <Section heading="Activity">{activity}</Section>}
+			{activity !== undefined && (
+				<Section heading={i18nMessages.t("lite:PullRequestPanel.activity")}>{activity}</Section>
+			)}
 		</aside>
 	);
 };

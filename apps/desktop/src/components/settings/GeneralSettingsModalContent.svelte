@@ -13,8 +13,10 @@
 	import { generalSettingsPages } from "$lib/settings/generalSettingsPages";
 	import { USER_SERVICE } from "$lib/user/userService.svelte";
 	import { inject } from "@gitbutler/core/context";
+	import { useTranslations } from "@gitbutler/i18n/svelte";
 	import { Icon } from "@gitbutler/ui";
 	import type { GeneralSettingsModalState, GeneralSettingsPageId } from "$lib/state/uiState.svelte";
+	const i18nMessages = useTranslations();
 
 	type Props = {
 		data: GeneralSettingsModalState;
@@ -33,7 +35,7 @@
 </script>
 
 <SettingsModalLayout
-	title="Global settings"
+	title={$i18nMessages.t("desktop:GeneralSettingsModalContent.globalSettings")}
 	pages={generalSettingsPages}
 	selectedId={currentSelectedId}
 	isAdmin={userService.user?.role === "admin"}
@@ -60,10 +62,14 @@
 			{:else if currentPage.id === "organizations"}
 				<OrganisationSettings />
 			{:else}
-				Settings page {currentPage.id} not Found.
+				{$i18nMessages.t("desktop:GeneralSettingsModalContent.settingsPageValueNotFound", {
+					id: String(currentPage.id),
+				})}
 			{/if}
 		{:else}
-			Settings page {currentSelectedId} not Found.
+			{$i18nMessages.t("desktop:GeneralSettingsModalContent.settingsPageValueNotFound_c1734c7", {
+				currentSelectedId: String(currentSelectedId),
+			})}
 		{/if}
 	{/snippet}
 
@@ -75,7 +81,9 @@
 				onclick={async () => await urlService.openExternalUrl("https://docs.gitbutler.com/")}
 			>
 				<Icon name="docs" />
-				<span class="text-13 text-bold">Docs</span>
+				<span class="text-13 text-bold"
+					>{$i18nMessages.t("desktop:GeneralSettingsModalContent.docs")}</span
+				>
 				<div class="text-13 open-link-icon">↗</div>
 			</button>
 			<button
@@ -84,7 +92,9 @@
 				onclick={async () => await urlService.openExternalUrl("https://discord.gg/MmFkmaJ42D")}
 			>
 				<Icon name="discord" />
-				<span class="text-13 text-bold">Our Discord</span>
+				<span class="text-13 text-bold"
+					>{$i18nMessages.t("desktop:GeneralSettingsModalContent.ourDiscord")}</span
+				>
 				<div class="text-13 open-link-icon">↗</div>
 			</button>
 		</div>

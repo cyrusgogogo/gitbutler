@@ -14,6 +14,7 @@
 		"fs:allow-read-file",
 		"fs:allow-cache-read-recursive",
 		"log:default",
+		"os:allow-locale",
 		"process:default",
 		"shell:allow-open",
 		"store:default",

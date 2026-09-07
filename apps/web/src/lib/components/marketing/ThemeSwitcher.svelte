@@ -1,6 +1,8 @@
 <script lang="ts">
 	import { setTheme, themeStore } from "$lib/utils/theme.svelte";
+	import { useTranslations } from "@gitbutler/i18n/svelte";
 	import { Icon } from "@gitbutler/ui";
+	const i18nMessages = useTranslations();
 
 	// Get the current theme
 	const currentTheme = $derived($themeStore);
@@ -12,7 +14,7 @@
 		class="theme-switcher__button"
 		class:active={currentTheme === "light"}
 		onclick={() => setTheme("light")}
-		aria-label="Light theme"
+		aria-label={$i18nMessages.t("web:ThemeSwitcher.lightTheme")}
 	>
 		<Icon name="theme-light" />
 	</button>
@@ -21,7 +23,7 @@
 		class="theme-switcher__button"
 		class:active={currentTheme === "system"}
 		onclick={() => setTheme("system")}
-		aria-label="System theme"
+		aria-label={$i18nMessages.t("web:ThemeSwitcher.systemTheme")}
 	>
 		<Icon name="theme-system" />
 	</button>
@@ -30,7 +32,7 @@
 		class="theme-switcher__button"
 		class:active={currentTheme === "dark"}
 		onclick={() => setTheme("dark")}
-		aria-label="Dark theme"
+		aria-label={$i18nMessages.t("web:ThemeSwitcher.darkTheme")}
 	>
 		<Icon name="theme-dark" />
 	</button>

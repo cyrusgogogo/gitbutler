@@ -2,8 +2,12 @@
 	import MobileMenu from "$home/components/MobileMenu.svelte";
 	import GitbutlerLogoLink from "$lib/components/GitbutlerLogoLink.svelte";
 	import HeaderAuthSection from "$lib/components/HeaderAuthSection.svelte";
+	import LanguageSetting from "$lib/components/LanguageSetting.svelte";
 	import * as jsonLinks from "$lib/data/links.json";
+	import { useTranslations } from "@gitbutler/i18n/svelte";
 	import { Icon, type IconName } from "@gitbutler/ui";
+	import type { LocalizedText } from "@gitbutler/i18n";
+	const i18nMessages = useTranslations();
 
 	interface Props {
 		disableLogoLink?: boolean;
@@ -13,7 +17,7 @@
 </script>
 
 <!-- Link snippet for reusable navigation links -->
-{#snippet link(props: { href: string; label: string; icon?: IconName })}
+{#snippet link(props: { href: string; label: LocalizedText; icon?: IconName })}
 	<a
 		href={props.href}
 		target="_self"
@@ -21,7 +25,7 @@
 		class="text-14 text-semibold link-snippet"
 		data-sveltekit-preload-data="hover"
 	>
-		<span>{props.label}</span>
+		<span>{$i18nMessages.text(props.label)}</span>
 		{#if props.icon}
 			<Icon name={props.icon} />
 		{/if}
@@ -39,12 +43,12 @@
 			})}
 			{@render link({
 				href: jsonLinks.resources.source.url,
-				label: "Source",
+				label: $i18nMessages.t("web:nav.source"),
 				icon: "github",
 			})}
 			{@render link({
 				href: jsonLinks.social.discord.url,
-				label: "Community",
+				label: $i18nMessages.t("web:nav.community"),
 				icon: "discord",
 			})}
 			{@render link({
@@ -60,6 +64,7 @@
 				label: jsonLinks.resources.blog.label,
 			})}
 			<HeaderAuthSection />
+			<LanguageSetting />
 		</section>
 	</nav>
 

@@ -1,12 +1,16 @@
 <script lang="ts">
 	import SelectToPreviewSVG from "$lib/assets/illustrations/select-to-preview.svg?raw";
+	import { useTranslations } from "@gitbutler/i18n/svelte";
+	const i18nMessages = useTranslations();
 </script>
 
 <div class="select-some">
 	<div class="select-some__image">
 		{@html SelectToPreviewSVG}
 	</div>
-	<span class="text-13 select-some__caption">Select a file to preview</span>
+	<span class="text-13 select-some__caption"
+		>{$i18nMessages.t("desktop:FilePreviewPlaceholder.selectAFileToPreview")}</span
+	>
 </div>
 
 <style lang="postcss">

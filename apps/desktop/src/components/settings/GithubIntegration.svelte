@@ -6,9 +6,11 @@
 	import { URL_SERVICE } from "$lib/backend/url";
 	import { classifyGitHubDeviceOAuthFailure } from "$lib/error/errorClassification";
 	import { GITHUB_USER_SERVICE } from "$lib/forge/github/githubUserService.svelte";
+	import { canonicalMessages } from "$lib/notifications/toasts";
 	import { OnboardingEvent, POSTHOG_WRAPPER } from "$lib/telemetry/posthog";
 	import { inject } from "@gitbutler/core/context";
-
+	import { message as i18nMessage } from "@gitbutler/i18n";
+	import { useTranslations } from "@gitbutler/i18n/svelte";
 	import {
 		AddForgeAccountButton,
 		Button,
@@ -18,7 +20,10 @@
 		Spacer,
 		chipToasts as toasts,
 	} from "@gitbutler/ui";
+	import I18nRichMessage from "@gitbutler/ui/i18n/RichMessage.svelte";
 	import { fade } from "svelte/transition";
+	import type { LocalizedText } from "@gitbutler/i18n";
+	const i18nMessages = useTranslations();
 
 	const githubUserService = inject(GITHUB_USER_SERVICE);
 	const urlService = inject(URL_SERVICE);
@@ -43,12 +48,12 @@
 
 	// PAT flow state
 	let patInput = $state<string>();
-	let patError = $state<string>();
+	let patError = $state<LocalizedText>();
 
 	// GitHub Enterprise flow state
 	let ghePatInput = $state<string>();
 	let gheHostInput = $state<string>();
-	let ghePatError = $state<string>();
+	let ghePatError = $state<LocalizedText>();
 	let gheHostError = $state<string>();
 
 	function cleanupAuthFlow() {
@@ -75,7 +80,11 @@
 	/** One safe label serves the console, the toast, and telemetry; the raw rejection is never shown. */
 	function reportOAuthFailure(err: unknown) {
 		const { message, code, severity } = classifyGitHubDeviceOAuthFailure(err);
-		const failure = { name: "GitHub OAuth failed", message, ...(code && { code }) };
+		const failure = {
+			name: "GitHub OAuth failed",
+			message: canonicalMessages.text(message),
+			...(code && { code }),
+		};
 		console.error("GitHub device OAuth failed", failure);
 		(severity === "warning" ? toasts.warning : toasts.error)(message);
 		posthog.captureOnboarding(OnboardingEvent.GitHubOAuthFailed, failure);
@@ -101,7 +110,7 @@
 		loading = true;
 		try {
 			await githubUserService.checkAuthStatus({ deviceCode });
-			toasts.success("GitHub authenticated");
+			toasts.success(i18nMessage("desktop:github.authenticated"));
 		} catch (err: unknown) {
 			reportOAuthFailure(err);
 		} finally {
@@ -128,7 +137,7 @@
 			cleanupPatFlow();
 		} catch (err: any) {
 			console.error("Failed to store GitHub PAT:", err);
-			patError = "Invalid token or network error";
+			patError = i18nMessage("desktop:detail.717e974744");
 			posthog.captureOnboarding(OnboardingEvent.GitHubStorePatFailed);
 		}
 	}
@@ -147,7 +156,7 @@
 			cleanupGheFlow();
 		} catch (err: any) {
 			console.error("Failed to store GitHub Enterprise PAT:", err);
-			ghePatError = "Invalid token or host";
+			ghePatError = i18nMessage("desktop:detail.a9fa8428e8");
 			posthog.captureOnboarding(OnboardingEvent.GitHubStoreGHEPatFailed);
 		}
 	}
@@ -160,12 +169,13 @@
 			{#snippet error()}
 				<CardGroup.Item>
 					{#snippet title()}
-						Failed to load GitHub accounts
+						{$i18nMessages.t("desktop:GithubIntegration.failedToLoadGitHubAccounts")}
 					{/snippet}
 					<Button
 						style="pop"
 						onclick={deleteAllGitHubAccounts}
-						loading={clearingAllResult.current.isLoading}>Try again</Button
+						loading={clearingAllResult.current.isLoading}
+						>{$i18nMessages.t("desktop:GithubIntegration.tryAgain")}</Button
 					>
 				</CardGroup.Item>
 			{/snippet}
@@ -189,7 +199,7 @@
 					{/snippet}
 
 					{#snippet caption()}
-						Allows you to create Pull Requests
+						{$i18nMessages.t("desktop:GithubIntegration.allowsYouToCreatePullRequests")}
 					{/snippet}
 
 					{#snippet actions()}
@@ -212,7 +222,9 @@
 					<div class="step-section">
 						<div class="step-line"></div>
 						<div class="step-section__content">
-							<p class="text-13 text-body">Copy the following verification code:</p>
+							<p class="text-13 text-body">
+								{$i18nMessages.t("desktop:GithubIntegration.copyTheFollowingVerificationCode")}
+							</p>
 
 							<div class="code-wrapper">
 								<span class="text-head-20">
@@ -224,11 +236,13 @@
 									icon="copy"
 									disabled={codeCopied}
 									onclick={() => {
-										clipboardService.write(userCode, { message: "User code copied" });
+										clipboardService.write(userCode, {
+											message: i18nMessage("desktop:GithubIntegration.inline3f3a9bc91"),
+										});
 										codeCopied = true;
 									}}
 								>
-									Copy to Clipboard
+									{$i18nMessages.t("desktop:GithubIntegration.copyToClipboard")}
 								</Button>
 							</div>
 						</div>
@@ -239,7 +253,9 @@
 							<div class="step-line step-line-default"></div>
 							<div class="step-section__content">
 								<p class="text-13 text-body">
-									Navigate to the GitHub activation page and paste the code you copied.
+									{$i18nMessages.t(
+										"desktop:GithubIntegration.navigateToTheGitHubActivationPageAndPaste",
+									)}
 								</p>
 								<Button
 									style="pop"
@@ -255,7 +271,7 @@
 										}, 500);
 									}}
 								>
-									Open GitHub activation page
+									{$i18nMessages.t("desktop:GithubIntegration.openGitHubActivationPage")}
 								</Button>
 							</div>
 						</div>
@@ -273,7 +289,7 @@
 										await gitHubOauthCheckStatus(deviceCode);
 									}}
 								>
-									Check the status
+									{$i18nMessages.t("desktop:GithubIntegration.checkTheStatus")}
 								</Button>
 							</div>
 						</div>
@@ -287,28 +303,30 @@
 		<CardGroup>
 			<CardGroup.Item>
 				{#snippet title()}
-					Add Personal Access Token
+					{$i18nMessages.t("desktop:GithubIntegration.addPersonalAccessToken")}
 				{/snippet}
 
 				<Textbox
 					size="large"
 					type="password"
 					value={patInput}
-					placeholder="ghp_************************"
+					placeholder={$i18nMessages.t("desktop:GithubIntegration.ghp")}
 					oninput={(value) => (patInput = value)}
-					error={patError}
+					error={$i18nMessages.text(patError ?? "")}
 				/>
 			</CardGroup.Item>
 			<CardGroup.Item>
 				<div class="flex justify-end gap-6">
-					<Button style="gray" kind="outline" onclick={cleanupPatFlow}>Cancel</Button>
+					<Button style="gray" kind="outline" onclick={cleanupPatFlow}
+						>{$i18nMessages.t("desktop:GithubIntegration.cancel")}</Button
+					>
 					<Button
 						style="pop"
 						disabled={!patInput}
 						loading={storePatResult.current.isLoading}
 						onclick={storePersonalAccessToken}
 					>
-						Add account
+						{$i18nMessages.t("desktop:GithubIntegration.addAccount")}
 					</Button>
 				</div>
 			</CardGroup.Item>
@@ -317,19 +335,22 @@
 		<CardGroup>
 			<CardGroup.Item>
 				{#snippet title()}
-					Add GitHub Enterprise Account
+					{$i18nMessages.t("desktop:GithubIntegration.addGitHubEnterpriseAccount")}
 				{/snippet}
 
 				{#snippet caption()}
-					To connect to your GitHub Enterprise API, allow-list it in the app’s CSP settings.
-					<br />
-					See <Link href="https://docs.gitbutler.com/troubleshooting/custom-csp"
-						>docs for details</Link
+					{#snippet i18nSlot1()}<br />{/snippet}
+					<I18nRichMessage
+						value={{ key: "desktop:GithubIntegration.toConnectToYourGitHubEnterpriseAPIAllow" }}
+						components={{ slot1: i18nSlot1 }}
+					/>
+					<Link href="https://docs.gitbutler.com/troubleshooting/custom-csp"
+						>{$i18nMessages.t("desktop:GithubIntegration.docsForDetails")}</Link
 					>
 				{/snippet}
 
 				<Textbox
-					label="API Base URL"
+					label={$i18nMessages.t("desktop:GithubIntegration.aPIBaseURL")}
 					size="large"
 					value={gheHostInput}
 					oninput={(value) => (gheHostInput = value)}
@@ -337,25 +358,27 @@
 					error={gheHostError}
 				/>
 				<Textbox
-					label="Personal Access Token"
-					placeholder="ghp_************************"
+					label={$i18nMessages.t("desktop:GithubIntegration.personalAccessToken")}
+					placeholder={$i18nMessages.t("desktop:GithubIntegration.ghp")}
 					size="large"
 					type="password"
 					value={ghePatInput}
 					oninput={(value) => (ghePatInput = value)}
-					error={ghePatError}
+					error={$i18nMessages.text(ghePatError ?? "")}
 				/>
 			</CardGroup.Item>
 			<CardGroup.Item>
 				<div class="flex justify-end gap-6">
-					<Button style="gray" kind="outline" onclick={cleanupGheFlow}>Cancel</Button>
+					<Button style="gray" kind="outline" onclick={cleanupGheFlow}
+						>{$i18nMessages.t("desktop:GithubIntegration.cancel")}</Button
+					>
 					<Button
 						style="pop"
 						disabled={!gheHostInput || !ghePatInput}
 						loading={storeGhePatResult.current.isLoading}
 						onclick={storeGitHubEnterpriseToken}
 					>
-						Add account
+						{$i18nMessages.t("desktop:GithubIntegration.addAccount")}
 					</Button>
 				</div>
 			</CardGroup.Item>
@@ -373,10 +396,18 @@
 		disabled={showingFlow !== undefined}
 		loading={storePatResult.current.isLoading || storeGhePatResult.current.isLoading}
 		menuItems={[
-			{ label: "Authorize GitHub Account", icon: "link", onclick: gitHubStartOauth },
-			{ label: "Add Personal Access Token", icon: "lock-auth", onclick: startPatFlow },
 			{
-				label: "Add GitHub Enterprise Account",
+				label: $i18nMessages.t("desktop:GithubIntegration.inlinee8ba97430"),
+				icon: "link",
+				onclick: gitHubStartOauth,
+			},
+			{
+				label: $i18nMessages.t("desktop:GithubIntegration.inlinec08af6fc3"),
+				icon: "lock-auth",
+				onclick: startPatFlow,
+			},
+			{
+				label: $i18nMessages.t("desktop:GithubIntegration.inline91554f158"),
 				icon: "factory",
 				onclick: startGitHubEnterpriseFlow,
 			},

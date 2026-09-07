@@ -1,3 +1,4 @@
+import { message as i18nMessage, type LocalizedText } from "@gitbutler/i18n";
 import { writable } from "svelte/store";
 import type { ChipToastData, ChipToastOptions } from "$components/chipToast/chipToastTypes";
 
@@ -10,7 +11,7 @@ function generateId(): string {
 function createChipToastStore() {
 	const { subscribe, update } = writable<ChipToastData[]>([]);
 
-	function addChipToast(message: string, options: ChipToastOptions = {}): string {
+	function addChipToast(message: LocalizedText, options: ChipToastOptions = {}): string {
 		const id = generateId();
 		const chipToast: ChipToastData = {
 			id,
@@ -41,24 +42,24 @@ function createChipToastStore() {
 	}
 
 	// Convenience methods for different chipToast types
-	function info(message: string, options: Omit<ChipToastOptions, "type"> = {}) {
+	function info(message: LocalizedText, options: Omit<ChipToastOptions, "type"> = {}) {
 		return addChipToast(message, { type: "info", ...options });
 	}
 
-	function success(message: string, options: Omit<ChipToastOptions, "type"> = {}) {
+	function success(message: LocalizedText, options: Omit<ChipToastOptions, "type"> = {}) {
 		return addChipToast(message, { type: "success", ...options });
 	}
 
-	function warning(message: string, options: Omit<ChipToastOptions, "type"> = {}) {
+	function warning(message: LocalizedText, options: Omit<ChipToastOptions, "type"> = {}) {
 		return addChipToast(message, { type: "warning", ...options });
 	}
 
-	function error(message: string, options: Omit<ChipToastOptions, "type"> = {}) {
+	function error(message: LocalizedText, options: Omit<ChipToastOptions, "type"> = {}) {
 		return addChipToast(message, { type: "danger", ...options });
 	}
 
 	// Keep loading function for compatibility - just an alias for info
-	function loading(message: string, options: Omit<ChipToastOptions, "type"> = {}) {
+	function loading(message: LocalizedText, options: Omit<ChipToastOptions, "type"> = {}) {
 		return info(message, options);
 	}
 
@@ -66,13 +67,13 @@ function createChipToastStore() {
 	async function promise<T>(
 		promiseToHandle: Promise<T>,
 		opts: {
-			loading: string;
-			success: string;
-			error: string;
+			loading: LocalizedText;
+			success: LocalizedText;
+			error: LocalizedText;
 		} = {
-			loading: "Loading...",
-			success: "Success!",
-			error: "Error!",
+			loading: i18nMessage("ui:chipToast.loading"),
+			success: i18nMessage("ui:chipToast.success"),
+			error: i18nMessage("ui:chipToast.error"),
 		},
 	): Promise<T> {
 		const loadingToastId = loading(opts.loading);

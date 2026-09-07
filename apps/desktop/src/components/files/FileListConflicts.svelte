@@ -21,8 +21,10 @@
 	import { getFileListContext } from "$lib/selection/fileListController.svelte";
 	import { UI_STATE } from "$lib/state/uiState.svelte";
 	import { injectOptional, inject } from "@gitbutler/core/context";
+	import { useTranslations } from "@gitbutler/i18n/svelte";
 	import { AsyncButton, FileListItem, TestId } from "@gitbutler/ui";
 	import type { ConflictEntriesObj } from "$lib/files/conflicts";
+	const i18nMessages = useTranslations();
 
 	type Props = {
 		projectId: string;
@@ -97,8 +99,9 @@
 		{#if ancestorMostConflictedCommitId}
 			<div class="conflicted-entries__action">
 				<p class="text-12 text-body clr-text-2">
-					If the branch has multiple conflicted commits, GitButler opens the earliest one first,
-					since later commits depend on it.
+					{$i18nMessages.t(
+						"desktop:FileListConflicts.ifTheBranchHasMultipleConflictedCommitsGitButler",
+					)}
 				</p>
 				<AsyncButton
 					testId={TestId.CommitDrawerResolveConflictsButton}
@@ -113,7 +116,7 @@
 							projectId,
 						})}
 				>
-					Resolve conflicts
+					{$i18nMessages.t("desktop:FileListConflicts.resolveConflicts")}
 				</AsyncButton>
 			</div>
 		{/if}

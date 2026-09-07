@@ -7,7 +7,11 @@
 	import notFoundSvg from "$lib/assets/illustrations/not-found.svg?raw";
 	import { PROJECTS_SERVICE } from "$lib/project/projectsService";
 	import { inject } from "@gitbutler/core/context";
+	import { message as i18nMessage, type LocalizedText } from "@gitbutler/i18n";
+	import { useTranslations } from "@gitbutler/i18n/svelte";
 	import { Button, InfoMessage, type MessageStyle, Spacer, TestId } from "@gitbutler/ui";
+	import I18nRichMessage from "@gitbutler/ui/i18n/RichMessage.svelte";
+	const i18nMessages = useTranslations();
 
 	interface Props {
 		projectId: string;
@@ -40,14 +44,17 @@
 	}
 
 	interface DeletionStatus {
-		message: string;
+		message: LocalizedText;
 		style: MessageStyle;
 	}
 
 	function getDeletionStatus(repoName: string, deleteSucceeded: boolean): DeletionStatus {
 		return deleteSucceeded
-			? { message: `Project "${repoName}" successfully deleted`, style: "success" }
-			: { message: `Failed to delete "${repoName}" project`, style: "danger" };
+			? { message: i18nMessage("desktop:project.removed", { name: repoName }), style: "success" }
+			: {
+					message: i18nMessage("desktop:project.removeFailed", { name: repoName }),
+					style: "danger",
+				};
 	}
 </script>
 
@@ -58,25 +65,37 @@
 				{#if deleteSucceeded === undefined}
 					<div class="text-content">
 						<h2 class="title-text text-18 text-body text-bold">
-							Can’t find "{project.title}"
+							{$i18nMessages.t("desktop:ProjectNotFound.canTFindValue", {
+								title: String(project.title),
+							})}
 						</h2>
 
 						<p class="description-text text-13 text-body">
-							Sorry, we can't find the project you're looking for.
-							<br />
-							It might have been removed or doesn't exist.
+							{#snippet i18nSlot1()}<br />{/snippet}
+							<I18nRichMessage
+								value={{ key: "desktop:ProjectNotFound.sorryWeCanTFindTheProjectYou" }}
+								components={{ slot1: i18nSlot1 }}
+							/>
 							<button type="button" class="check-again-btn" onclick={() => location.reload()}
-								>Click here</button
+								>{$i18nMessages.t("desktop:ProjectNotFound.clickHere")}</button
 							>
-							to check again.
-							<br />
-							The current project path: <span class="code-string">{project.path}</span>
+							{#snippet i18nSlot2()}<br />{/snippet}
+							{#snippet i18nSlot3(content: import("svelte").Snippet)}<span class="code-string"
+									>{@render content()}</span
+								>{/snippet}
+							<I18nRichMessage
+								value={{
+									key: "desktop:ProjectNotFound.toCheckAgainTheCurrentProjectPathValue",
+									values: { path: String(project.path) },
+								}}
+								components={{ slot2: i18nSlot2, slot3: i18nSlot3 }}
+							/>
 						</p>
 					</div>
 
 					<div class="button-container">
 						<Button type="button" style="pop" onclick={async () => await locate(projectId)}
-							>Locate project…</Button
+							>{$i18nMessages.t("desktop:ProjectNotFound.locateProject")}</Button
 						>
 						<RemoveProjectButton
 							noModal
@@ -90,7 +109,7 @@
 					{@const deletionStatus = getDeletionStatus(project.title, deleteSucceeded)}
 					<InfoMessage filled outlined={false} style={deletionStatus.style} icon="info">
 						{#snippet content()}
-							{deletionStatus.message}
+							{$i18nMessages.text(deletionStatus.message)}
 						{/snippet}
 					</InfoMessage>
 				{/if}

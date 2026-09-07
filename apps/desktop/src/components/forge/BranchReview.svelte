@@ -6,9 +6,12 @@
 	import StackedPullRequestCard from "$components/forge/StackedPullRequestCard.svelte";
 	import { FORGE_INFO_SERVICE } from "$lib/forge/forgeInfo.svelte";
 	import { inject } from "@gitbutler/core/context";
+	import { useTranslations } from "@gitbutler/i18n/svelte";
 	import { Button, Modal } from "@gitbutler/ui";
+	import I18nRichMessage from "@gitbutler/ui/i18n/RichMessage.svelte";
 	import type { Segment } from "@gitbutler/but-sdk";
 	import type { Snippet } from "svelte";
+	const i18nMessages = useTranslations();
 
 	// TODO: This and the SeriesHeader should have a wholistic refactor to
 	// reduce the complexity of the forge related functionality.
@@ -47,7 +50,11 @@
 	const forgeInfoQuery = $derived(forgeInfoService.get(projectId));
 	const forgeInfo = $derived(forgeInfoQuery.response);
 	const reviewUnit = $derived(forgeInfo?.unit.abbr);
-	const reviewUnitName = $derived(forgeInfo?.unit.name ?? "Pull request");
+	const reviewUnitName = $derived(
+		$i18nMessages.t(
+			forgeInfo?.unit.abbr === "MR" ? "desktop:review.mergeRequest" : "desktop:review.pullRequest",
+		),
+	);
 
 	const canPublishPR = $derived(!!canPublishReviewPlugin?.imports.canPublishPR);
 
@@ -68,25 +75,37 @@
 	<Modal
 		width="small"
 		type="warning"
-		title="Create {reviewUnitName}"
+		title={$i18nMessages.t("desktop:BranchReview.createValue", {
+			reviewUnitName: String(reviewUnitName),
+		})}
 		bind:this={confirmCreatePrModal}
 		onSubmit={() => {
 			modal?.show();
 		}}
 	>
 		<p class="text-13 text-body helper-text">
-			It's strongly recommended to create {reviewUnitName.toLowerCase()}s starting with the branch
-			at the base of the stack.
-			<br />
-			Do you still want to create this {reviewUnitName.toLowerCase()}?
+			{#snippet i18nSlot1()}<br />{/snippet}
+			<I18nRichMessage
+				value={{
+					key: "desktop:BranchReview.itSStronglyRecommendedToCreateValueS",
+					values: { value: String(reviewUnitName.toLowerCase()) },
+				}}
+				components={{ slot1: i18nSlot1 }}
+			/>
 		</p>
 		{#snippet controls(close)}
-			<Button kind="outline" onclick={close}>Cancel</Button>
-			<Button style="warning" type="submit">Create {reviewUnitName}</Button>
+			<Button kind="outline" onclick={close}
+				>{$i18nMessages.t("desktop:BranchReview.cancel")}</Button
+			>
+			<Button style="warning" type="submit"
+				>{$i18nMessages.t("desktop:BranchReview.createValue", {
+					reviewUnitName: String(reviewUnitName),
+				})}</Button
+			>
 		{/snippet}
 	</Modal>
 
-	<Modal bind:this={modal} title="Submit changes for review">
+	<Modal bind:this={modal} title={$i18nMessages.t("desktop:BranchReview.submitChangesForReview")}>
 		<ReviewCreation
 			bind:this={reviewCreation}
 			{projectId}

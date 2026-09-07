@@ -1,6 +1,8 @@
 <script lang="ts">
+	import { useTranslations } from "@gitbutler/i18n/svelte";
 	import { Badge } from "@gitbutler/ui";
 	import type { GitlabAccountIdentifier } from "@gitbutler/but-sdk";
+	const i18nMessages = useTranslations();
 
 	type Props = {
 		account: GitlabAccountIdentifier;
@@ -21,9 +23,9 @@
 	export function tooltipText(account: GitlabAccountIdentifier): string {
 		switch (account.type) {
 			case "patUsername":
-				return "Personal Access Token";
+				return $i18nMessages.t("desktop:GitLabAccountBadge.detail46e0a20e2");
 			case "selfHosted":
-				return "Self-Hosted GitLab";
+				return $i18nMessages.t("desktop:GitLabAccountBadge.detail83c9ee69d");
 		}
 	}
 </script>

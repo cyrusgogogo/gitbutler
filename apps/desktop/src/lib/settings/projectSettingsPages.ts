@@ -1,8 +1,9 @@
+import { message, type LocalizedText } from "@gitbutler/i18n";
 import { type IconName } from "@gitbutler/ui";
 
 interface SettingsPage {
 	id: string;
-	label: string;
+	label: LocalizedText;
 	icon: IconName;
 	adminOnly?: boolean;
 }
@@ -10,22 +11,22 @@ interface SettingsPage {
 export const projectSettingsPages = [
 	{
 		id: "project",
-		label: "Project",
+		label: message("desktop:settings.project"),
 		icon: "user",
 	},
 	{
 		id: "git",
-		label: "Git stuff",
+		label: message("desktop:settings.git.stuff"),
 		icon: "git",
 	},
 	{
 		id: "ai",
-		label: "AI options",
+		label: message("desktop:settings.ai.options"),
 		icon: "ai",
 	},
 	{
 		id: "experimental",
-		label: "Experimental",
+		label: message("desktop:settings.experimental"),
 		icon: "lab",
 	},
 ] as const satisfies readonly SettingsPage[];

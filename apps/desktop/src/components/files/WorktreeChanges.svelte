@@ -16,12 +16,13 @@
 	import { UI_STATE } from "$lib/state/uiState.svelte";
 	import { WORKTREE_SERVICE } from "$lib/worktree/worktreeService.svelte";
 	import { inject } from "@gitbutler/core/context";
-
+	import { useTranslations } from "@gitbutler/i18n/svelte";
 	import { Badge, FileListItem, TestId } from "@gitbutler/ui";
 	import { focusable } from "@gitbutler/ui/focus/focusable";
 	import { isDefined } from "@gitbutler/ui/utils/typeguards";
 	import { untrack, type Snippet } from "svelte";
 	import type { DropzoneHandler } from "$lib/dragging/handler";
+	const i18nMessages = useTranslations();
 
 	type Props = {
 		projectId: string;
@@ -95,11 +96,11 @@
 
 	function getDropzoneLabel(handler: DropzoneHandler | undefined): string {
 		if (handler instanceof UncommitDzHandler) {
-			return "Uncommit";
+			return $i18nMessages.t("desktop:WorktreeChanges.detailf97b3f23f");
 		} else if (mode === "assigned") {
-			return "Assign";
+			return $i18nMessages.t("desktop:WorktreeChanges.detail244492843");
 		} else {
-			return "Unassign";
+			return $i18nMessages.t("desktop:WorktreeChanges.detail896bfd3a9");
 		}
 	}
 </script>
@@ -114,7 +115,9 @@
 			listMode="list"
 			pathFirst={uiState.global.pathFirst.current}
 			conflicted
-			conflictHint="Resolve the conflict, then right-click → Mark as Resolved"
+			conflictHint={$i18nMessages.t(
+				"desktop:WorktreeChanges.resolveTheConflictThenRightClickMarkAs",
+			)}
 			clickable={false}
 			oncontextmenu={(e) =>
 				conflictMenu?.open(e, { changes: [], path: filePath, conflicted: true })}

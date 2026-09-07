@@ -15,6 +15,7 @@
 	import { BranchDropData } from "$lib/dragging/dropHandlers/branchDropHandler";
 	import { DROPZONE_REGISTRY } from "$lib/dragging/registry";
 	import { inject } from "@gitbutler/core/context";
+	import { useTranslations } from "@gitbutler/i18n/svelte";
 	import { Badge, TestId, Icon } from "@gitbutler/ui";
 	import { DRAG_STATE_SERVICE } from "@gitbutler/ui/drag/dragStateService.svelte";
 	import { focusable } from "@gitbutler/ui/focus/focusable";
@@ -22,6 +23,7 @@
 	import type { PushStatus } from "@gitbutler/but-sdk";
 	import type { Snippet } from "svelte";
 	import type { ComponentProps } from "svelte";
+	const i18nMessages = useTranslations();
 
 	type Props = {
 		branchName: string;
@@ -169,7 +171,7 @@
 
 				{#if conflicts}
 					<div class="branch-header__top-badges">
-						<Badge style="danger">Conflicts</Badge>
+						<Badge style="danger">{$i18nMessages.t("desktop:BranchHeader.conflicts")}</Badge>
 					</div>
 				{/if}
 			</div>

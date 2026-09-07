@@ -1,3 +1,5 @@
+import { createI18n } from "@gitbutler/i18n";
+import { resources } from "@gitbutler/i18n/catalogs/lite";
 import { describe, expect, it } from "vitest";
 import type { TreeChange, UnifiedPatch } from "@gitbutler/but-sdk";
 import {
@@ -9,10 +11,16 @@ import {
 const change = (path: string): TreeChange =>
 	({ path, status: { type: "Modification" } }) as TreeChange;
 
+const english = createI18n(resources, "en");
+const buttonStateInEnglish = (input: Parameters<typeof commitMessageGenerationButtonState>[0]) => {
+	const state = commitMessageGenerationButtonState(input);
+	return { ...state, hint: state.hint === null ? null : english.text(state.hint) };
+};
+
 describe("commit message generation", () => {
 	it("hints at what blocks generation and disables the button while busy", () => {
 		expect(
-			commitMessageGenerationButtonState({
+			buttonStateInEnglish({
 				enabled: true,
 				configured: true,
 				busy: false,
@@ -20,7 +28,7 @@ describe("commit message generation", () => {
 			}),
 		).toEqual({ disabled: false, hint: null });
 		expect(
-			commitMessageGenerationButtonState({
+			buttonStateInEnglish({
 				enabled: true,
 				configured: true,
 				busy: true,
@@ -30,7 +38,7 @@ describe("commit message generation", () => {
 		// An unconfigured provider is reported over a disabled project setting,
 		// since the setting can't be turned on without one.
 		expect(
-			commitMessageGenerationButtonState({
+			buttonStateInEnglish({
 				enabled: false,
 				configured: false,
 				busy: false,
@@ -38,7 +46,7 @@ describe("commit message generation", () => {
 			}).hint,
 		).toContain("Application → AI");
 		expect(
-			commitMessageGenerationButtonState({
+			buttonStateInEnglish({
 				enabled: false,
 				configured: true,
 				busy: false,
@@ -46,7 +54,7 @@ describe("commit message generation", () => {
 			}).hint,
 		).toContain("Project → AI");
 		expect(
-			commitMessageGenerationButtonState({
+			buttonStateInEnglish({
 				enabled: true,
 				configured: true,
 				busy: false,

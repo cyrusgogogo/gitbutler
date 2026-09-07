@@ -1,10 +1,17 @@
 <script lang="ts">
 	import { AI_SERVICE, type DiffInput } from "$lib/ai/service";
 	import { ModelKind } from "$lib/ai/types";
+	import { canonicalMessages } from "$lib/notifications/toasts";
 	import { USER_SERVICE } from "$lib/user/userService.svelte";
 	import { inject } from "@gitbutler/core/context";
+	import { errorText, message as i18nMessage } from "@gitbutler/i18n";
+	import { getI18n, useTranslations } from "@gitbutler/i18n/svelte";
 	import { Button, InfoMessage, Link } from "@gitbutler/ui";
+	import I18nRichMessage from "@gitbutler/ui/i18n/RichMessage.svelte";
 	import { slide } from "svelte/transition";
+	import type { LocalizedText } from "@gitbutler/i18n";
+	const i18nMessages = useTranslations();
+	const i18n = getI18n();
 
 	const aiService = inject(AI_SERVICE);
 	const userService = inject(USER_SERVICE);
@@ -13,7 +20,7 @@
 	let isStreaming = $state(false);
 	let result = $state<string | null>(null);
 	let streamingResult = $state<string>("");
-	let error = $state<string | null>(null);
+	let error = $state<LocalizedText | null>(null);
 	let modelKind = $state<ModelKind | undefined>();
 	let isUsingButlerAPI = $state(false);
 	let debugInfo = $state<string | null>(null);
@@ -74,21 +81,19 @@
 			if (!isConfigValid) {
 				if (modelKind === ModelKind.OpenAI || modelKind === ModelKind.Anthropic) {
 					if (isUsingButlerAPI && !userService.user) {
-						throw new Error("Please sign in to use GitButler's AI API");
+						throw i18n.error("desktop:ai.validation.signIn");
 					} else {
-						throw new Error("Please provide a valid API key for your selected AI service");
+						throw i18n.error("desktop:ai.validation.apiKey");
 					}
 				} else if (modelKind === ModelKind.Ollama) {
 					// Get Ollama configuration for more detailed error
 					const endpoint = await aiService.getOllamaEndpoint();
 					const model = await aiService.getOllamaModelName();
-					throw new Error(
-						`Please check Ollama configuration: endpoint=${endpoint}, model=${model}`,
-					);
+					throw i18n.error("desktop:ai.validation.ollama", { endpoint, model });
 				} else if (modelKind === ModelKind.LMStudio) {
 					// Get LM Studio configuration for more detailed error
 					const endpoint = await aiService.getLMStudioEndpoint();
-					throw new Error(`Please check LM Studio configuration: endpoint=${endpoint}`);
+					throw i18n.error("desktop:ai.validation.lmstudio", { endpoint });
 				}
 			}
 
@@ -98,8 +103,7 @@
 			testTimeout = setTimeout(() => {
 				if (testing) {
 					console.error("AI response timed out after 20 seconds");
-					error =
-						"AI response timed out after 20 seconds. Please check if your AI service is running properly.";
+					error = i18nMessage("desktop:detail.4d05df5b9f");
 					testing = false;
 					isStreaming = false; // Make sure streaming state is reset on timeout
 					debugInfo += `, Timeout after 20s`;
@@ -146,19 +150,19 @@
 
 			// If result is empty or undefined, show an error
 			if (!result || result.trim() === "") {
-				throw new Error("Received empty response from AI service");
+				throw i18n.error("desktop:ai.validation.emptyResponse");
 			}
 		} catch (e) {
 			console.error("AI credential check error:", e);
 
 			// Don't show abort errors as they're expected when we cancel the request
 			if (e instanceof Error && e.name === "AbortError") {
-				error = "AI request was cancelled";
+				error = i18nMessage("desktop:detail.444c0b069a");
 			} else {
-				error = e instanceof Error ? e.message : "Unknown error occurred";
+				error = errorText(e, i18nMessage("common:unknownError"));
 			}
 
-			debugInfo += `, Error: ${error}`;
+			debugInfo += `, Error: ${canonicalMessages.text(error)}`;
 
 			// Clear the timeout if there was an error
 			if (testTimeout) {
@@ -196,11 +200,11 @@
 			>
 				{#snippet title()}
 					{#if error}
-						AI credential check failed
+						{$i18nMessages.t("desktop:AiCredentialCheck.aICredentialCheckFailed")}
 					{:else if result}
-						AI credential check passed
+						{$i18nMessages.t("desktop:AiCredentialCheck.aICredentialCheckPassed")}
 					{:else if isStreaming}
-						AI is responding...
+						{$i18nMessages.t("desktop:AiCredentialCheck.aIIsResponding")}
 					{/if}
 				{/snippet}
 
@@ -208,24 +212,44 @@
 					<div class="result-content" transition:slide={{ duration: 250 }}>
 						{#if error}
 							{#if (modelKind === ModelKind.OpenAI || modelKind === ModelKind.Anthropic) && isUsingButlerAPI && !userService.user}
-								<span> Please sign in to use GitButler's AI API. </span>
+								<span
+									>{$i18nMessages.t(
+										"desktop:AiCredentialCheck.pleaseSignInToUseGitButlerSAI",
+									)}</span
+								>
 							{:else if modelKind === ModelKind.OpenAI || modelKind === ModelKind.Anthropic}
-								<span> Please check your API key or try GitButler's API. </span>
+								<span
+									>{$i18nMessages.t(
+										"desktop:AiCredentialCheck.pleaseCheckYourAPIKeyOrTryGitButler",
+									)}</span
+								>
 							{:else if modelKind === ModelKind.Ollama}
 								<span>
-									Please check your Ollama endpoint and model configuration.
-									<br />
-									Make sure Ollama is running locally and accessible.
+									{#snippet i18nSlot3()}<br />{/snippet}
+									<I18nRichMessage
+										value={{
+											key: "desktop:AiCredentialCheck.pleaseCheckYourOllamaEndpointAndModelConfiguration",
+										}}
+										components={{ slot3: i18nSlot3 }}
+									/>
 
-									<Link href="https://ollama.ai">Learn more</Link>
+									<Link href="https://ollama.ai"
+										>{$i18nMessages.t("desktop:AiCredentialCheck.learnMore")}</Link
+									>
 								</span>
 							{:else if modelKind === ModelKind.LMStudio}
 								<span>
-									Please check your LM Studio configuration.
-									<br />
-									Make sure LM Studio is running locally and accessible.
+									{#snippet i18nSlot4()}<br />{/snippet}
+									<I18nRichMessage
+										value={{
+											key: "desktop:AiCredentialCheck.pleaseCheckYourLMStudioConfigurationMakeSure",
+										}}
+										components={{ slot4: i18nSlot4 }}
+									/>
 
-									<Link href="https://lmstudio.ai">Learn more</Link>
+									<Link href="https://lmstudio.ai"
+										>{$i18nMessages.t("desktop:AiCredentialCheck.learnMore")}</Link
+									>
 								</span>
 							{/if}
 						{:else}
@@ -245,33 +269,45 @@
 	{/if}
 	<Button style="pop" wide icon="ai" disabled={testing || isStreaming} onclick={testAiCredentials}>
 		{#if testing || isStreaming}
-			{isStreaming ? "AI is responding..." : "Testing AI connection..."}
+			{isStreaming
+				? $i18nMessages.t("desktop:AiCredentialCheck.aIIsResponding")
+				: $i18nMessages.t("desktop:AiCredentialCheck.testingAIConnection")}
 		{:else if error}
-			Try again
+			{$i18nMessages.t("desktop:AiCredentialCheck.tryAgain")}
 		{:else if result}
-			Test again
+			{$i18nMessages.t("desktop:AiCredentialCheck.testAgain")}
 		{:else}
-			Test AI connection
+			{$i18nMessages.t("desktop:AiCredentialCheck.testAIConnection")}
 		{/if}
 	</Button>
 
 	{#if showDebug && debugInfo}
 		<div class="debug-info text-12 text-body">
-			<p><span class="text-bold">Debug info</span>:</p>
+			<p>
+				{#snippet i18nSlot5(content: import("svelte").Snippet)}<span class="text-bold"
+						>{@render content()}</span
+					>{/snippet}
+				<I18nRichMessage
+					value={{ key: "desktop:AiCredentialCheck.debugInfo" }}
+					components={{ slot5: i18nSlot5 }}
+				/>
+			</p>
 			<p>{debugInfo}</p>
 		</div>
 	{/if}
 
 	{#if showSampleDiff}
 		<div class="debug-info text-12 text-body">
-			<p class="text-bold">Sample diff:</p>
+			<p class="text-bold">{$i18nMessages.t("desktop:AiCredentialCheck.sampleDiff")}</p>
 			<pre class="debug-info__code">{testDiff[0]?.diff}</pre>
 		</div>
 	{/if}
 
 	<div class="debug-info-buttons">
 		<button type="button" class="text-12 debug-button" onclick={toggleSampleMessage}>
-			{showSampleDiff ? "Hide" : "Show"} diff sample
+			{$i18nMessages.t(
+				showSampleDiff ? "desktop:ai.hideshowSampleDiff" : "desktop:ai.showshowSampleDiff",
+			)}
 		</button>
 		<button
 			type="button"
@@ -279,7 +315,7 @@
 			class:debug-button_disabled={!debugInfo}
 			onclick={toggleDebug}
 		>
-			{showDebug ? "Hide" : "Show"} debug info
+			{$i18nMessages.t(showDebug ? "desktop:ai.hideshowDebug" : "desktop:ai.showshowDebug")}
 		</button>
 	</div>
 </div>

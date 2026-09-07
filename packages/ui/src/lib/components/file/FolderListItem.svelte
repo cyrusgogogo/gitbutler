@@ -5,6 +5,8 @@
 	import FileIndent from "$components/file/FileIndent.svelte";
 	import { type FocusableOptions } from "$lib/focus/focusTypes";
 	import { focusable } from "$lib/focus/focusable";
+	import { useTranslations } from "@gitbutler/i18n/svelte";
+	const i18nMessages = useTranslations();
 
 	interface Props {
 		name: string;
@@ -89,7 +91,7 @@
 
 		<button
 			type="button"
-			aria-label="Toggle folder"
+			aria-label={$i18nMessages.t("ui:FolderListItem.toggleFolder")}
 			class="folder-list-item__arrow"
 			class:expanded={isExpanded}
 			onclick={(e) => {

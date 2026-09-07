@@ -1,7 +1,9 @@
 <script lang="ts">
 	import AIPromptBubble from "$components/shared/AIPromptBubble.svelte";
 	import { MessageRole, type UserPrompt } from "$lib/ai/types";
+	import { useTranslations } from "@gitbutler/i18n/svelte";
 	import { Button, Icon, Textbox } from "@gitbutler/ui";
+	const i18nMessages = useTranslations();
 
 	interface Props {
 		prompt: UserPrompt;
@@ -153,9 +155,11 @@
 		{#if displayMode === "writable"}
 			<div class="actions">
 				{#if editing}
-					<Button kind="outline" onclick={() => cancel()}>Cancel</Button>
+					<Button kind="outline" onclick={() => cancel()}
+						>{$i18nMessages.t("desktop:AIPromptEntry.cancel")}</Button
+					>
 					<Button disabled={errorMessages.length > 0} style="pop" onclick={() => save()}
-						>Save Changes</Button
+						>{$i18nMessages.t("desktop:AIPromptEntry.saveChanges")}</Button
 					>
 				{:else}
 					<Button
@@ -164,9 +168,11 @@
 							e.stopPropagation();
 							deletePrompt?.(prompt);
 						}}
-						icon="bin">Delete</Button
+						icon="bin">{$i18nMessages.t("desktop:AIPromptEntry.delete")}</Button
 					>
-					<Button kind="outline" icon="edit" onclick={() => (editing = true)}>Edit prompt</Button>
+					<Button kind="outline" icon="edit" onclick={() => (editing = true)}
+						>{$i18nMessages.t("desktop:AIPromptEntry.editPrompt")}</Button
+					>
 				{/if}
 			</div>
 		{/if}

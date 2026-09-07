@@ -10,8 +10,11 @@
 	import { STACK_SERVICE } from "$lib/stacks/stackService.svelte";
 	import { UI_STATE, type NewCommitMessage, type RejectionReason } from "$lib/state/uiState.svelte";
 	import { inject } from "@gitbutler/core/context";
+	import { message as i18nMessage } from "@gitbutler/i18n";
+	import { useTranslations } from "@gitbutler/i18n/svelte";
 	import { TestId } from "@gitbutler/ui";
 	import { tick } from "svelte";
+	const i18nMessages = useTranslations();
 
 	type Props = {
 		projectId: string;
@@ -51,7 +54,10 @@
 
 	async function createCommit(message: string) {
 		if (isCooking) {
-			showToast({ message: "Commit is already in progress", style: "danger" });
+			showToast({
+				message: i18nMessage("desktop:NewCommitView.commitIsAlreadyInProgress"),
+				style: "danger",
+			});
 			return;
 		}
 
@@ -90,7 +96,10 @@
 			if ($runCommitHooks) {
 				const messageHookResult = await runMessageHook({ projectId, message });
 				if (messageHookResult?.status === "failure") {
-					showWarning("Commit message hook failed", messageHookResult.error);
+					showWarning(
+						i18nMessage("desktop:NewCommitView.commitMessageHookFailed"),
+						messageHookResult.error,
+					);
 					return;
 				} else if (messageHookResult?.status === "message") {
 					finalMessage = messageHookResult.message;
@@ -177,7 +186,10 @@
 
 		const message = description ? title + "\n\n" + description : title;
 		if (!message) {
-			showToast({ message: "Commit message is required", style: "danger" });
+			showToast({
+				message: i18nMessage("desktop:NewCommitView.commitMessageIsRequired"),
+				style: "danger",
+			});
 			return;
 		}
 
@@ -224,7 +236,7 @@
 		bind:this={input}
 		{projectId}
 		{stackId}
-		actionLabel="Create commit"
+		actionLabel={$i18nMessages.t("desktop:NewCommitView.createCommit")}
 		action={({ title, description }) => handleCommitCreation(title, description)}
 		onChange={({ title, description }) => handleMessageUpdate(title, description)}
 		onCancel={cancel}

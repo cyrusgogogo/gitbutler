@@ -1,6 +1,8 @@
 <script lang="ts">
 	import Child from "$components/test/change-during-async-sees-updates-two-components/Child.svelte";
+	import { useTranslations } from "@gitbutler/i18n/svelte";
 	import type { ExternallyResolvedPromise } from "$lib/utils/resolveExternally";
+	const i18nMessages = useTranslations();
 
 	type Props = {
 		promise: ExternallyResolvedPromise<undefined>;
@@ -13,4 +15,6 @@
 </script>
 
 <Child {promise} {log} {value} />
-<button onclick={() => (value = "world")} type="button">update-state</button>
+<button onclick={() => (value = "world")} type="button"
+	>{$i18nMessages.t("desktop:Component.updateState")}</button
+>

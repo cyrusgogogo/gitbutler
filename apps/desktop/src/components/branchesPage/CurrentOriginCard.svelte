@@ -1,7 +1,10 @@
 <script lang="ts">
 	import BranchesCardLayout from "$components/branchesPage/BranchesCardLayout.svelte";
+	import { useTranslations } from "@gitbutler/i18n/svelte";
 	import { Avatar, SeriesLabelsRow, TestId } from "@gitbutler/ui";
 	import type { Author } from "@gitbutler/but-sdk";
+	const i18nMessages = useTranslations();
+
 	interface Props {
 		originName: string;
 		commitsAmount?: number;
@@ -12,11 +15,19 @@
 
 	const { originName, commitsAmount: commitCount, lastCommit, selected, onclick }: Props = $props();
 
-	const authorName = $derived(lastCommit?.author.name ?? lastCommit?.author.email ?? "Unknown");
+	const authorName = $derived(
+		lastCommit?.author.name ??
+			lastCommit?.author.email ??
+			$i18nMessages.t("desktop:CurrentOriginCard.detailbc7819b34"),
+	);
 	const authorAvatar = $derived(lastCommit?.author.gravatarUrl ?? "");
 
 	const fromOtherBranch = $derived(
-		lastCommit && originName.endsWith(lastCommit.branch) ? "" : `from ${lastCommit?.branch}`,
+		lastCommit && originName.endsWith(lastCommit.branch)
+			? ""
+			: $i18nMessages.t("desktop:CurrentOriginCard.detaila6833d17a", {
+					value1: String(lastCommit?.branch),
+				}),
 	);
 </script>
 
@@ -61,9 +72,11 @@
 
 			<div class="workspace-target-card__details-item">
 				{#if lastCommit}
-					<span>
-						head {lastCommit.sha.slice(0, 7)}
-					</span>
+					<span
+						>{$i18nMessages.t("desktop:CurrentOriginCard.headValue", {
+							value: String(lastCommit.sha.slice(0, 7)),
+						})}</span
+					>
 				{/if}
 			</div>
 		</div>

@@ -1,3 +1,7 @@
+import type { LocalizedText } from "@gitbutler/i18n";
+import { message as i18nMessage } from "@gitbutler/i18n";
+import { createElement as createI18nElement } from "react";
+import { Message as I18nMessage } from "@gitbutler/i18n/react";
 /**
  * @file Plan, dry run, and execute operations upon potentially multiple sources and a target.
  *
@@ -74,7 +78,7 @@ type Operation =
 	  }
 	| { _tag: "MoveBranch"; subjectBranch: string; targetBranch: string };
 
-type LabelledOperation = { operation: Operation; label: string };
+type LabelledOperation = { operation: Operation; label: LocalizedText };
 
 const executeOperation = async ({
 	projectId,
@@ -269,8 +273,10 @@ export const useExecuteOperation = (projectId: string) => {
 
 			toastManager.add({
 				type: "error",
-				title: "Failed to run operation",
-				description: errorMessageForToast(error),
+				title: createI18nElement(I18nMessage, {
+					value: i18nMessage("lite:operation.failedToRunOperation"),
+				}),
+				description: createI18nElement(I18nMessage, { value: errorMessageForToast(error) }),
 				priority: "high",
 			});
 		},
@@ -319,7 +325,7 @@ const squashOperation = ({
 				subjectCommitIds: sources.map((source) => source.commitId),
 				destinationCommitId: target.commitId,
 			},
-			label: "Squash",
+			label: i18nMessage("lite:operation.static7cf8b9cbf"),
 		};
 	}
 
@@ -334,7 +340,7 @@ const squashOperation = ({
 				subjectCommitIds: sources.map((source) => source.commitId),
 				assignTo: null,
 			},
-			label: "Uncommit",
+			label: i18nMessage("lite:operation.staticf97b3f23f"),
 		};
 	}
 
@@ -345,7 +351,7 @@ const squashOperation = ({
 				commitId: target.commitId,
 				sources,
 			},
-			label: "Amend",
+			label: i18nMessage("lite:operation.staticb98926901"),
 		};
 	}
 
@@ -360,7 +366,7 @@ const squashOperation = ({
 				assignTo: null,
 				sources,
 			},
-			label: "Uncommit",
+			label: i18nMessage("lite:operation.staticf97b3f23f"),
 		};
 	}
 
@@ -372,7 +378,7 @@ const squashOperation = ({
 				destinationCommitId: target.commitId,
 				sources,
 			},
-			label: "Amend",
+			label: i18nMessage("lite:operation.staticb98926901"),
 		};
 	}
 
@@ -401,7 +407,7 @@ const intoOperation = ({
 				relativeTo: { type: "referenceBytes", subject: target.branchRef },
 				side: "below",
 			},
-			label: "Move here",
+			label: i18nMessage("lite:operation.staticd6f5b75c9"),
 		};
 	}
 
@@ -414,7 +420,7 @@ const intoOperation = ({
 				sources,
 				message: "",
 			},
-			label: "Commit here",
+			label: i18nMessage("lite:operation.static2be287935"),
 		};
 	}
 
@@ -459,8 +465,8 @@ const moveOperation = ({
 				side,
 			},
 			label: Match.value(side).pipe(
-				Match.when("above", () => "Move above"),
-				Match.when("below", () => "Move below"),
+				Match.when("above", () => i18nMessage("lite:operation.moveAbove")),
+				Match.when("below", () => i18nMessage("lite:operation.moveBelow")),
 				Match.exhaustive,
 			),
 		};
@@ -476,8 +482,8 @@ const moveOperation = ({
 				message: "",
 			},
 			label: Match.value(side).pipe(
-				Match.when("above", () => "Commit above"),
-				Match.when("below", () => "Commit below"),
+				Match.when("above", () => i18nMessage("lite:operation.commitAbove")),
+				Match.when("below", () => i18nMessage("lite:operation.commitBelow")),
 				Match.exhaustive,
 			),
 		};
@@ -494,8 +500,8 @@ const moveOperation = ({
 				sources,
 			},
 			label: Match.value(side).pipe(
-				Match.when("above", () => "Commit above"),
-				Match.when("below", () => "Commit below"),
+				Match.when("above", () => i18nMessage("lite:operation.commitAbove")),
+				Match.when("below", () => i18nMessage("lite:operation.commitBelow")),
 				Match.exhaustive,
 			),
 		};
@@ -517,7 +523,7 @@ const moveOperation = ({
 					subjectBranch: decodeBytes(source.branchRef),
 					targetBranch: decodeBytes(target.branchRef),
 				},
-				label: "Move above",
+				label: i18nMessage("lite:operation.static0bdf9d619"),
 			}),
 		),
 		Match.orElse(() => null),
@@ -579,9 +585,9 @@ const cherryPickOperation = ({
 			side: destination.side,
 		},
 		label: Match.value(placement).pipe(
-			Match.when("above", () => "Cherry-pick above"),
-			Match.when("below", () => "Cherry-pick below"),
-			Match.when("into", () => "Cherry-pick here"),
+			Match.when("above", () => i18nMessage("lite:operation.cherryPickAbove")),
+			Match.when("below", () => i18nMessage("lite:operation.cherryPickBelow")),
+			Match.when("into", () => i18nMessage("lite:operation.cherryPickHere")),
 			Match.exhaustive,
 		),
 	};

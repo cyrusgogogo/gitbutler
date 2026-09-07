@@ -9,7 +9,9 @@
 	import { SETTINGS_SERVICE } from "$lib/settings/appSettings";
 	import { sleep } from "$lib/utils/sleep";
 	import { inject } from "@gitbutler/core/context";
+	import { useTranslations } from "@gitbutler/i18n/svelte";
 	import { TestId } from "@gitbutler/ui";
+	const i18nMessages = useTranslations();
 
 	const settingsService = inject(SETTINGS_SERVICE);
 	const appSettings = $derived(settingsService.appSettings);
@@ -34,7 +36,7 @@
 
 {#if analyticsConfirmed === undefined}
 	<!-- Loading state while we determine if analytics have been confirmed -->
-	loading...
+	{$i18nMessages.t("desktop:page.loading")}
 {:else}
 	<IllustrationSplitLayout
 		img={analyticsConfirmed ? newZenSvg : newProjectSvg}

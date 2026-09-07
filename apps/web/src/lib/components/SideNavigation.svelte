@@ -1,8 +1,10 @@
 <script lang="ts">
 	import { USER_SERVICE } from "$lib/user/userService";
 	import { inject } from "@gitbutler/core/context";
+	import { useTranslations } from "@gitbutler/i18n/svelte";
 	import { WEB_ROUTES_SERVICE } from "@gitbutler/shared/routing/webRoutes.svelte";
 	import { env } from "$env/dynamic/public";
+	const i18nMessages = useTranslations();
 
 	const routes = inject(WEB_ROUTES_SERVICE);
 	const userService = inject(USER_SERVICE);
@@ -19,7 +21,12 @@
 
 <div class="navigation">
 	<div class="domains">
-		<a href="/" class="main-nav" aria-label="main nav" title="Home">
+		<a
+			href="/"
+			class="main-nav"
+			aria-label={$i18nMessages.t("web:SideNavigation.mainNav")}
+			title={$i18nMessages.t("web:SideNavigation.home")}
+		>
 			<svg
 				xmlns="http://www.w3.org/2000/svg"
 				width="23"
@@ -32,7 +39,11 @@
 		</a>
 
 		{#if $user}
-			<a class="nav-link nav-button" href="/organizations" aria-label="organizations">
+			<a
+				class="nav-link nav-button"
+				href="/organizations"
+				aria-label={$i18nMessages.t("web:SideNavigation.organizations")}
+			>
 				<svg
 					xmlns="http://www.w3.org/2000/svg"
 					width="16"
@@ -59,8 +70,8 @@
 			<a
 				class="nav-link nav-button"
 				href={routes.projectsPath()}
-				aria-label="projects"
-				title="Projects"
+				aria-label={$i18nMessages.t("web:SideNavigation.projects")}
+				title={$i18nMessages.t("web:SideNavigation.projects_53e890d")}
 			>
 				<svg
 					xmlns="http://www.w3.org/2000/svg"
@@ -141,7 +152,12 @@
 				</svg>
 			{/if}
 		</button>
-		<a class="nav-link nav-button" href="/downloads" aria-label="downloads" title="Downloads">
+		<a
+			class="nav-link nav-button"
+			href="/downloads"
+			aria-label={$i18nMessages.t("web:SideNavigation.downloads")}
+			title={$i18nMessages.t("web:SideNavigation.downloads_a862c2b")}
+		>
 			<svg
 				xmlns="http://www.w3.org/2000/svg"
 				width="16"
@@ -162,8 +178,8 @@
 		<a
 			class="nav-link email"
 			href="mailto:hello@gitbutler.com"
-			aria-label="contact us"
-			title="Contact Us"
+			aria-label={$i18nMessages.t("web:SideNavigation.contactUs")}
+			title={$i18nMessages.t("web:SideNavigation.contactUs_9ad0ccf")}
 		>
 			<svg
 				xmlns="http://www.w3.org/2000/svg"

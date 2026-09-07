@@ -1,9 +1,12 @@
 <script lang="ts">
 	import { USER_SERVICE } from "$lib/user/userService.svelte";
 	import { inject } from "@gitbutler/core/context";
+	import { useTranslations } from "@gitbutler/i18n/svelte";
 	import { Button, ModalHeader, ModalFooter, SkeletonBone } from "@gitbutler/ui";
 	import { gravatarUrlFromEmail } from "@gitbutler/ui/components/avatar/gravatar";
+	import I18nRichMessage from "@gitbutler/ui/i18n/RichMessage.svelte";
 	import type { LoginConfirmationModalState } from "$lib/state/uiState.svelte";
+	const i18nMessages = useTranslations();
 
 	type Props = {
 		data: LoginConfirmationModalState;
@@ -46,7 +49,11 @@
 	const avatarSize = "3.25rem";
 </script>
 
-<ModalHeader type="info">Confirm login attempt for {incomingUserName}</ModalHeader>
+<ModalHeader type="info"
+	>{$i18nMessages.t("desktop:LoginConfirmationModalContent.confirmLoginAttemptForValue", {
+		incomingUserName: String(incomingUserName),
+	})}</ModalHeader
+>
 <div class="modal-content">
 	{#await getUserAvatarURL()}
 		<SkeletonBone width={avatarSize} height={avatarSize} radius="100%" />
@@ -55,14 +62,30 @@
 	{/await}
 
 	<p class="text-13 text-body clr-text-2">
-		A new login attempt has been detected for the user with email
-		<span class="text-bold clr-text-1">{incomingUserEmail ?? "-unknown-"}</span>. Would you like to
-		accept this login?
+		{#snippet i18nSlot1(content: import("svelte").Snippet)}<span class="text-bold clr-text-1"
+				>{@render content()}</span
+			>{/snippet}
+		<I18nRichMessage
+			value={{
+				key: "desktop:LoginConfirmationModalContent.aNewLoginAttemptHasBeenDetectedFor",
+				values: {
+					value: String(
+						incomingUserEmail ??
+							$i18nMessages.t("desktop:LoginConfirmationModalContent.unknownEmail"),
+					),
+				},
+			}}
+			components={{ slot1: i18nSlot1 }}
+		/>
 	</p>
 </div>
 <ModalFooter>
-	<Button kind="outline" onclick={rejectLogin}>Reject</Button>
-	<Button style="pop" onclick={acceptLogin}>Accept login</Button>
+	<Button kind="outline" onclick={rejectLogin}
+		>{$i18nMessages.t("desktop:LoginConfirmationModalContent.reject")}</Button
+	>
+	<Button style="pop" onclick={acceptLogin}
+		>{$i18nMessages.t("desktop:LoginConfirmationModalContent.acceptLogin")}</Button
+	>
 </ModalFooter>
 
 <style lang="postcss">

@@ -8,8 +8,8 @@
 	import { getStackName } from "$lib/stacks/stack";
 	import { STACK_SERVICE } from "$lib/stacks/stackService.svelte";
 	import { inject } from "@gitbutler/core/context";
+	import { useTranslations } from "@gitbutler/i18n/svelte";
 	import { persisted } from "@gitbutler/shared/persisted";
-
 	import {
 		Button,
 		ElementId,
@@ -21,7 +21,9 @@
 		SelectItem,
 		TestId,
 	} from "@gitbutler/ui";
+	import I18nRichMessage from "@gitbutler/ui/i18n/RichMessage.svelte";
 	import { isDefined } from "@gitbutler/ui/utils/typeguards";
+	const i18nMessages = useTranslations();
 
 	type Props = {
 		projectId: string;
@@ -57,7 +59,7 @@
 				if (!stack.id) return;
 				return {
 					// TODO(CTO): Change this not to error out if stack name is undefined
-					label: getStackName(stack),
+					label: getStackName(stack, $i18nMessages.t("desktop:stack.unnamed")),
 					value: stack.id,
 				};
 			})
@@ -142,7 +144,7 @@
 	<div class="content-wrap">
 		<BranchNameTextbox
 			bind:this={branchNameInput}
-			label="New branch"
+			label={$i18nMessages.t("desktop:CreateBranchModal.newBranch")}
 			id={ElementId.NewBranchNameInput}
 			value={createRefName}
 			autofocus
@@ -150,7 +152,11 @@
 			onvalidationchange={(isValid) => (isBranchNameValid = isValid)}
 		/>
 
-		<div class="options-wrap" role="radiogroup" aria-label="Branch type selection">
+		<div
+			class="options-wrap"
+			role="radiogroup"
+			aria-label={$i18nMessages.t("desktop:CreateBranchModal.branchTypeSelection")}
+		>
 			<!-- Option 1 -->
 			<label for="new-stack" class="radio-label" class:radio-selected={createRefType === "stack"}>
 				<div class="radio-btn">
@@ -163,9 +169,15 @@
 				</div>
 
 				<div class="radio-content">
-					<h3 class="text-14 text-bold text-body radio-title">Independent branch</h3>
+					<h3 class="text-14 text-bold text-body radio-title">
+						{$i18nMessages.t("desktop:CreateBranchModal.independentBranch")}
+					</h3>
 					<p class="text-12 text-body radio-caption">
-						Create an independent branch<br />in a new stack.
+						{#snippet i18nSlot1()}<br />{/snippet}
+						<I18nRichMessage
+							value={{ key: "desktop:CreateBranchModal.createAnIndependentBranchInANewStack" }}
+							components={{ slot1: i18nSlot1 }}
+						/>
 					</p>
 
 					<div class="radio-illustration">
@@ -195,12 +207,22 @@
 				</div>
 
 				<div class="radio-content">
-					<h3 class="text-14 text-bold text-body radio-title">Dependent branch</h3>
+					<h3 class="text-14 text-bold text-body radio-title">
+						{$i18nMessages.t("desktop:CreateBranchModal.dependentBranch")}
+					</h3>
 					<p class="text-12 text-body radio-caption">
 						{#if allStacks.length === 0}
-							Create a branch that depends<br />on another stack (none available).
+							{#snippet i18nSlot2()}<br />{/snippet}
+							<I18nRichMessage
+								value={{ key: "desktop:CreateBranchModal.createABranchThatDependsOnAnotherStack" }}
+								components={{ slot2: i18nSlot2 }}
+							/>
 						{:else}
-							Create a branch that depends<br />on a selected stack.
+							{#snippet i18nSlot3()}<br />{/snippet}
+							<I18nRichMessage
+								value={{ key: "desktop:CreateBranchModal.createABranchThatDependsOnASelected" }}
+								components={{ slot3: i18nSlot3 }}
+							/>
 						{/if}
 					</p>
 
@@ -215,9 +237,9 @@
 			<Select
 				options={stackOptions}
 				value={selectedStackId}
-				label="Add to stack"
+				label={$i18nMessages.t("desktop:CreateBranchModal.addToStack")}
 				disabled={stackOptions.length <= 1}
-				placeholder="Select a stack..."
+				placeholder={$i18nMessages.t("desktop:CreateBranchModal.selectAStack")}
 				onselect={(value) => (selectedStackId = value)}
 			>
 				{#snippet itemSnippet({ item, highlighted })}
@@ -233,9 +255,11 @@
 
 			<p>
 				{#if createRefType === "stack"}
-					The new branch will be applied in parallel with other stacks in the workspace.
-					<br />
-					Adjust branch placement and preferences in
+					{#snippet i18nSlot4()}<br />{/snippet}
+					<I18nRichMessage
+						value={{ key: "desktop:CreateBranchModal.theNewBranchWillBeAppliedInParallel" }}
+						components={{ slot4: i18nSlot4 }}
+					/>
 					<button
 						type="button"
 						class="settings-link underline-dotted"
@@ -244,13 +268,16 @@
 							openGeneralSettings("lanes-and-branches");
 						}}
 					>
-						Settings → Lanes & branches
+						{$i18nMessages.t("desktop:CreateBranchModal.settingsLanesBranches")}
 					</button>
 				{:else}
-					Creates a branch that depends on a selected stack.
-					<br />
-					A stack's top branches also have a
-					<i class="create-dependent-icon"><Icon name="stack-plus" /></i> icon to create dependent branches.
+					{#snippet i18nSlot5()}<br />{/snippet}
+					<I18nRichMessage
+						value={{ key: "desktop:CreateBranchModal.createsABranchThatDependsOnASelected" }}
+						components={{ slot5: i18nSlot5 }}
+					/>
+					<i class="create-dependent-icon"><Icon name="stack-plus" /></i>
+					{$i18nMessages.t("desktop:CreateBranchModal.iconToCreateDependentBranches")}
 				{/if}
 			</p>
 		</div>
@@ -259,14 +286,16 @@
 	{#snippet controls(close)}
 		<div class="footer">
 			<span class="text-12 text-body footer-text"
-				>See more: <Link
-					href="https://docs.gitbutler.com/features/branch-management/stacked-branches"
-					>Stacked vs. Independent</Link
+				>{$i18nMessages.t("desktop:CreateBranchModal.seeMore")}
+				<Link href="https://docs.gitbutler.com/features/branch-management/stacked-branches"
+					>{$i18nMessages.t("desktop:CreateBranchModal.stackedVsIndependent")}</Link
 				></span
 			>
 
 			<div class="footer__controls">
-				<Button kind="outline" type="reset" onclick={close}>Cancel</Button>
+				<Button kind="outline" type="reset" onclick={close}
+					>{$i18nMessages.t("desktop:CreateBranchModal.cancel")}</Button
+				>
 				<Button
 					style="pop"
 					type="submit"
@@ -275,7 +304,7 @@
 					loading={isAddingNew}
 					testId={TestId.ConfirmSubmit}
 				>
-					Create branch
+					{$i18nMessages.t("desktop:CreateBranchModal.createBranch")}
 				</Button>
 			</div>
 		</div>

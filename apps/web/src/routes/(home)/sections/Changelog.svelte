@@ -2,7 +2,9 @@
 	import ArrowButton from "$home/components/ArrowButton.svelte";
 	import SectionHeader from "$home/components/SectionHeader.svelte";
 	import ReleaseCard from "$lib/components/marketing/ReleaseCard.svelte";
+	import { useTranslations } from "@gitbutler/i18n/svelte";
 	import type { Release } from "$lib/types/releases";
+	const i18nMessages = useTranslations();
 
 	interface Props {
 		releases: Release[];
@@ -23,10 +25,13 @@
 
 <section class="changelog-section">
 	<SectionHeader>
-		Changelog
+		{$i18nMessages.t("web:Changelog.changelog")}
 
 		{#snippet buttons()}
-			<ArrowButton label="All updates" onclick={goToFullChangelog} />
+			<ArrowButton
+				label={$i18nMessages.t("web:Changelog.allUpdates")}
+				onclick={goToFullChangelog}
+			/>
 		{/snippet}
 	</SectionHeader>
 
@@ -40,17 +45,19 @@
 
 			{#if visibleCount < 10 && releases.length > visibleCount}
 				<div class="show-more-container">
-					<button type="button" class="show-more-button" onclick={showMore}> Show more </button>
+					<button type="button" class="show-more-button" onclick={showMore}>
+						{$i18nMessages.t("web:Changelog.showMore")}
+					</button>
 				</div>
 			{:else if visibleCount >= 10 || releases.length <= visibleCount}
 				<div class="show-more-container">
 					<button type="button" class="show-more-button full-changelog" onclick={goToFullChangelog}>
-						See complete changelog
+						{$i18nMessages.t("web:Changelog.seeCompleteChangelog")}
 					</button>
 				</div>
 			{/if}
 		{:else}
-			<div class="loading">Loading releases...</div>
+			<div class="loading">{$i18nMessages.t("web:Changelog.loadingReleases")}</div>
 		{/if}
 	</div>
 </section>

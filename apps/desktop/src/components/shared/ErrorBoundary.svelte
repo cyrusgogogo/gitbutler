@@ -1,7 +1,9 @@
 <script lang="ts">
 	import { logError } from "$lib/error/logError";
+	import { useTranslations } from "@gitbutler/i18n/svelte";
 	import { Icon } from "@gitbutler/ui";
 	import type { Snippet } from "svelte";
+	const i18nMessages = useTranslations();
 
 	type Props = {
 		children: Snippet;
@@ -9,7 +11,10 @@
 		compact?: boolean;
 	};
 
-	const { children, title = "Something went wrong", compact = false }: Props = $props();
+	const { children, title: providedTitle, compact = false }: Props = $props();
+	const title = $derived(
+		providedTitle ?? $i18nMessages.t("desktop:ErrorBoundary.default8d886c0ba"),
+	);
 </script>
 
 <svelte:boundary onerror={(e) => logError(e, { skipToast: true })}>

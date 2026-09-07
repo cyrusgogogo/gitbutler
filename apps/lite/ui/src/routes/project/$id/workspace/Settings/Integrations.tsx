@@ -1,3 +1,10 @@
+import type { LocalizedText } from "@gitbutler/i18n";
+import { message as i18nMessage } from "@gitbutler/i18n";
+import {
+	Message as I18nMessage,
+	RichMessage as I18nRichMessage,
+	useTranslations,
+} from "@gitbutler/i18n/react";
 import { useQueryClient, useSuspenseQueries } from "@tanstack/react-query";
 import { useEffect, useRef, useState, type FC } from "react";
 import {
@@ -47,6 +54,7 @@ type ForgeCardProps<Identifier> = {
 };
 
 const ForgeCard = <Identifier,>(p: ForgeCardProps<Identifier>) => {
+	const i18nMessages = useTranslations();
 	const [adding, setAdding] = useState(false);
 	const [token, setToken] = useState("");
 	const [email, setEmail] = useState("");
@@ -82,7 +90,7 @@ const ForgeCard = <Identifier,>(p: ForgeCardProps<Identifier>) => {
 						disabled={p.isBusy}
 						onClick={() => p.onForget(account.identifier)}
 					>
-						Forget
+						<I18nMessage value={{ key: "lite:Integrations.forget" }} />{" "}
 						<Icon name="bin" size={12} />
 					</button>
 				</div>
@@ -104,15 +112,22 @@ const ForgeCard = <Identifier,>(p: ForgeCardProps<Identifier>) => {
 						onClick={(event) => {
 							if (p.onSignIn === undefined) return setAdding(true);
 							void showNativeMenuFromTrigger(event.currentTarget, [
-								nativeMenuItem({ label: `Authorize ${p.name} Account`, onSelect: p.onSignIn }),
 								nativeMenuItem({
-									label: "Add Personal Access Token",
+									label: i18nMessage("lite:Integrations.authorizeValueAccount", { value: p.name }),
+									onSelect: p.onSignIn,
+								}),
+								nativeMenuItem({
+									label: i18nMessage("lite:Integrations.addPersonalAccessToken"),
 									onSelect: () => setAdding(true),
 								}),
 							]);
 						}}
 					>
-						{p.accounts.length > 0 ? "Add another account" : "Add account"}
+						{p.accounts.length > 0 ? (
+							<I18nMessage value={{ key: "lite:Integrations.addAnotherAccount" }} />
+						) : (
+							<I18nMessage value={{ key: "lite:Integrations.addAccount" }} />
+						)}
 						<Icon name="plus" size={12} />
 					</button>
 				)}
@@ -120,8 +135,10 @@ const ForgeCard = <Identifier,>(p: ForgeCardProps<Identifier>) => {
 
 			{p.pendingCode != null && (
 				<p className={classes("text-12", styles.deviceCode)}>
-					Enter <code>{p.pendingCode}</code> on the GitHub page that just opened. This waits until
-					you have.
+					<I18nRichMessage
+						value={{ key: "lite:Integrations.enterOnTheGitHubPageThatJustOpened" }}
+						components={{ slot1: <code>{p.pendingCode}</code> }}
+					/>{" "}
 				</p>
 			)}
 
@@ -138,7 +155,7 @@ const ForgeCard = <Identifier,>(p: ForgeCardProps<Identifier>) => {
 							type="email"
 							required
 							className="text-13"
-							placeholder="Account email"
+							placeholder={i18nMessages.t("lite:Integrations.accountEmail")}
 							value={email}
 							onChange={(evt) => setEmail(evt.currentTarget.value)}
 						/>
@@ -146,7 +163,7 @@ const ForgeCard = <Identifier,>(p: ForgeCardProps<Identifier>) => {
 					<input
 						type="password"
 						className="text-13"
-						placeholder="Personal access token"
+						placeholder={i18nMessages.t("lite:Integrations.personalAccessToken")}
 						autoComplete="off"
 						value={token}
 						onChange={(evt) => setToken(evt.currentTarget.value)}
@@ -157,7 +174,11 @@ const ForgeCard = <Identifier,>(p: ForgeCardProps<Identifier>) => {
 							className={getButtonClassName({ variant: "pop", size: "small" })}
 							disabled={p.isBusy || incomplete}
 						>
-							{p.isBusy ? "Adding…" : "Add"}
+							{p.isBusy ? (
+								<I18nMessage value={{ key: "lite:Integrations.adding" }} />
+							) : (
+								<I18nMessage value={{ key: "lite:Integrations.add" }} />
+							)}
 						</button>
 						<button
 							type="button"
@@ -168,7 +189,7 @@ const ForgeCard = <Identifier,>(p: ForgeCardProps<Identifier>) => {
 								setEmail("");
 							}}
 						>
-							Cancel
+							<I18nMessage value={{ key: "lite:Integrations.cancel" }} />
 						</button>
 					</div>
 				</form>
@@ -199,7 +220,7 @@ export const Integrations: FC = () => {
 
 	const [githubCode, setGithubCode] = useState<string | null>(null);
 	const [githubBusy, setGithubBusy] = useState(false);
-	const [githubError, setGithubError] = useState<string | null>(null);
+	const [githubError, setGithubError] = useState<LocalizedText | null>(null);
 	const inFlight = useRef<AbortController | null>(null);
 
 	// Closing the dialog abandons the device flow, so the poll should go with it.
@@ -274,11 +295,17 @@ export const Integrations: FC = () => {
 				onAdd={(accessToken, email) => addBitbucket.mutate({ email, accessToken })}
 			/>
 
-			{githubError !== null && <p className={classes("text-12", styles.error)}>{githubError}</p>}
+			{githubError !== null && (
+				<p className={classes("text-12", styles.error)}>
+					<I18nMessage value={githubError} />
+				</p>
+			)}
 
 			<p className={classes("text-12", styles.footnote)}>
 				<Icon name="lock" className={styles.footnoteIcon} />
-				Credentials are kept in your operating system's keychain, not by GitButler.
+				<I18nMessage
+					value={{ key: "lite:Integrations.credentialsAreKeptInYourOperatingSystemS" }}
+				/>{" "}
 			</p>
 		</>
 	);

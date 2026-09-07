@@ -2,8 +2,12 @@
 	import emptyFileSvg from "$lib/assets/empty-state/empty-file.svg?raw";
 	import { FILE_SERVICE } from "$lib/files/fileService";
 	import { inject } from "@gitbutler/core/context";
+	import { message as i18nMessage } from "@gitbutler/i18n";
+	import { useTranslations } from "@gitbutler/i18n/svelte";
 	import { ImageDiff, EmptyStatePlaceholder } from "@gitbutler/ui";
 	import type { TreeChange } from "@gitbutler/but-sdk";
+	import type { LocalizedText } from "@gitbutler/i18n";
+	const i18nMessages = useTranslations();
 
 	type Props = {
 		projectId: string;
@@ -46,7 +50,7 @@
 
 	let beforeImageUrl = $state<string | null>(null);
 	let afterImageUrl = $state<string | null>(null);
-	let loadError = $state<string | null>(null);
+	let loadError = $state<LocalizedText | null>(null);
 	let isLoading = $state<boolean>(true);
 
 	// Decide image sources for before/after panels.
@@ -163,15 +167,17 @@
 			afterImageUrl = after;
 
 			if (!before && !after) {
-				loadError = "Failed to load both images (before and after).";
+				loadError = i18nMessage("desktop:detail.76ddee6769");
 			} else if (!before && strategy.before) {
-				loadError = "Failed to load before image.";
+				loadError = i18nMessage("desktop:detail.a848fdbae3");
 			} else if (!after && strategy.after) {
-				loadError = "Failed to load after image.";
+				loadError = i18nMessage("desktop:detail.0a793eed18");
 			}
 		} catch (err) {
 			console.error("Failed to load images:", err);
-			loadError = `Failed to load images: ${err instanceof Error ? err.message : String(err)}`;
+			loadError = i18nMessage("desktop:detail.a51796bcd6", {
+				value1: String(err instanceof Error ? err.message : String(err)),
+			});
 		} finally {
 			isLoading = false;
 		}
@@ -188,7 +194,7 @@
 	<div class="imagediff-placeholder">
 		<EmptyStatePlaceholder image={emptyFileSvg} gap={12} topBottomPadding={34}>
 			{#snippet caption()}
-				Can't preview this file type
+				{$i18nMessages.t("desktop:ImageDiff.canTPreviewThisFileType")}
 			{/snippet}
 		</EmptyStatePlaceholder>
 	</div>

@@ -5,11 +5,17 @@ on:
       - master
     paths:
       - "apps/web/**"
+      - "packages/i18n/**"
+      - "packages/ui/**"
+      - "packages/shared/**"
       - "scripts/install.sh"
       - ".github/workflows/test-web.yml"
   pull_request:
     paths:
       - "apps/web/**"
+      - "packages/i18n/**"
+      - "packages/ui/**"
+      - "packages/shared/**"
       - "scripts/install.sh"
       - ".github/workflows/test-web.yml"
 
@@ -29,7 +35,7 @@ jobs:
 
       - name: Run unit tests
         working-directory: apps/web
-        run: pnpm test
+        run: pnpm exec turbo run test --filter=@gitbutler/web
 
       - name: Install Playwright browsers
         working-directory: apps/web

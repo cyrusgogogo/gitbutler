@@ -1,4 +1,7 @@
 <script lang="ts">
+	import { useTranslations } from "@gitbutler/i18n/svelte";
+	const i18nMessages = useTranslations();
+
 	interface Props {
 		active: boolean;
 		onclick: () => void;
@@ -7,7 +10,13 @@
 	const { active, onclick }: Props = $props();
 </script>
 
-<button type="button" class="fold-btn" class:active {onclick} aria-label="Toggle fold">
+<button
+	type="button"
+	class="fold-btn"
+	class:active
+	{onclick}
+	aria-label={$i18nMessages.t("desktop:UnassignedFoldButton.toggleFold")}
+>
 	<div class="fold-icon__frame"></div>
 </button>
 

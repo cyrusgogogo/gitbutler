@@ -9,6 +9,7 @@
 	import { SECRET_SERVICE } from "$lib/secrets/secretsService";
 	import { USER_SERVICE } from "$lib/user/userService.svelte";
 	import { inject } from "@gitbutler/core/context";
+	import { useTranslations } from "@gitbutler/i18n/svelte";
 	import {
 		CardGroup,
 		Icon,
@@ -20,9 +21,10 @@
 		Spacer,
 		Textbox,
 	} from "@gitbutler/ui";
-
+	import I18nRichMessage from "@gitbutler/ui/i18n/RichMessage.svelte";
 	import { onMount, tick } from "svelte";
 	import { run } from "svelte/legacy";
+	const i18nMessages = useTranslations();
 
 	const gitConfigService = inject(GIT_CONFIG_SERVICE);
 	const secretsService = inject(SECRET_SERVICE);
@@ -85,46 +87,46 @@
 		initialized = true;
 	});
 
-	const keyOptions = [
+	const keyOptions = $derived([
 		{
-			label: "Use GitButler API",
+			label: $i18nMessages.t("desktop:AiSettings.useGitButlerAPI"),
 			value: KeyOption.ButlerAPI,
 		},
 		{
-			label: "Your own key",
+			label: $i18nMessages.t("desktop:AiSettings.yourOwnKey"),
 			value: KeyOption.BringYourOwn,
 		},
-	];
+	]);
 
-	const openAIModelOptions = [
+	const openAIModelOptions = $derived([
 		{
-			label: "GPT 5.4",
+			label: $i18nMessages.t("desktop:AiSettings.gPT54"),
 			value: OpenAIModelName.GPT54,
 		},
 		{
-			label: "GPT 5.4 Mini",
+			label: $i18nMessages.t("desktop:AiSettings.gPT54Mini"),
 			value: OpenAIModelName.GPT54Mini,
 		},
 		{
-			label: "GPT 5.4 Nano (recommended)",
+			label: $i18nMessages.t("desktop:AiSettings.gPT54NanoRecommended"),
 			value: OpenAIModelName.GPT54Nano,
 		},
-	];
+	]);
 
-	const anthropicModelOptions = [
+	const anthropicModelOptions = $derived([
 		{
-			label: "Haiku (recommended)",
+			label: $i18nMessages.t("desktop:AiSettings.haikuRecommended"),
 			value: AnthropicModelName.Haiku,
 		},
 		{
-			label: "Sonnet",
+			label: $i18nMessages.t("desktop:AiSettings.sonnet"),
 			value: AnthropicModelName.Sonnet,
 		},
 		{
-			label: "Opus",
+			label: $i18nMessages.t("desktop:AiSettings.opus"),
 			value: AnthropicModelName.Opus,
 		},
-	];
+	]);
 
 	let form = $state<HTMLFormElement>();
 
@@ -190,15 +192,14 @@
 {/snippet}
 
 <p class="text-13 text-body ai-settings__about-text">
-	GitButler supports multiple AI providers: OpenAI and Anthropic (via API or your own key),
-	OpenRouter for access to hundreds of models, plus local models through Ollama and LM Studio.
+	{$i18nMessages.t("desktop:AiSettings.gitButlerSupportsMultipleAIProvidersOpenAIAndAnthropic")}
 </p>
 
 <CardGroup>
 	<form class="git-radio" bind:this={form} onchange={(e) => onFormChange(e.currentTarget)}>
 		<CardGroup.Item labelFor="open-ai">
 			{#snippet title()}
-				Open AI
+				{$i18nMessages.t("desktop:AiSettings.openAI")}
 			{/snippet}
 			{#snippet actions()}
 				<RadioButton name="modelKind" id="open-ai" value={ModelKind.OpenAI} />
@@ -210,7 +211,7 @@
 					value={openAIKeyOption}
 					options={keyOptions}
 					wide
-					label="Do you want to provide your own key?"
+					label={$i18nMessages.t("desktop:AiSettings.doYouWantToProvideYourOwnKey")}
 					onselect={(value) => {
 						openAIKeyOption = value as KeyOption;
 					}}
@@ -224,25 +225,27 @@
 
 				{#if openAIKeyOption === KeyOption.ButlerAPI}
 					{#if !userService.user}
-						<AuthorizationBanner message="Please sign in to use the GitButler API." />
+						<AuthorizationBanner
+							message={$i18nMessages.t("desktop:AiSettings.pleaseSignInToUseTheGitButlerAPI")}
+						/>
 					{:else}
-						{@render shortNote("GitButler uses OpenAI API for commit messages and branch names.")}
+						{@render shortNote($i18nMessages.t("desktop:AiSettings.inlined335baabd"))}
 					{/if}
 				{/if}
 
 				{#if openAIKeyOption === KeyOption.BringYourOwn}
 					<Textbox
-						label="API key"
+						label={$i18nMessages.t("desktop:AiSettings.aPIKey")}
 						type="password"
 						bind:value={openAIKey}
 						required
-						placeholder="sk-..."
+						placeholder={$i18nMessages.t("desktop:AiSettings.sk")}
 					/>
 
 					<Select
 						value={openAIModelName}
 						options={openAIModelOptions}
-						label="Model version"
+						label={$i18nMessages.t("desktop:AiSettings.modelVersion")}
 						wide
 						onselect={(value) => {
 							openAIModelName = value as OpenAIModelName;
@@ -256,7 +259,7 @@
 					</Select>
 
 					<Textbox
-						label="Custom endpoint"
+						label={$i18nMessages.t("desktop:AiSettings.customEndpoint")}
 						bind:value={openAICustomEndpoint}
 						placeholder="https://api.openai.com/v1"
 					/>
@@ -278,7 +281,7 @@
 					value={anthropicKeyOption}
 					options={keyOptions}
 					wide
-					label="Do you want to provide your own key?"
+					label={$i18nMessages.t("desktop:AiSettings.doYouWantToProvideYourOwnKey")}
 					onselect={(value) => {
 						anthropicKeyOption = value as KeyOption;
 					}}
@@ -292,27 +295,27 @@
 
 				{#if anthropicKeyOption === KeyOption.ButlerAPI}
 					{#if !userService.user}
-						<AuthorizationBanner message="Please sign in to use the GitButler API." />
+						<AuthorizationBanner
+							message={$i18nMessages.t("desktop:AiSettings.pleaseSignInToUseTheGitButlerAPI")}
+						/>
 					{:else}
-						{@render shortNote(
-							"GitButler uses Anthropic API for commit messages and branch names.",
-						)}
+						{@render shortNote($i18nMessages.t("desktop:AiSettings.inline9df49d24e"))}
 					{/if}
 				{/if}
 
 				{#if anthropicKeyOption === KeyOption.BringYourOwn}
 					<Textbox
-						label="API key"
+						label={$i18nMessages.t("desktop:AiSettings.aPIKey")}
 						type="password"
 						bind:value={anthropicKey}
 						required
-						placeholder="sk-ant-api03-..."
+						placeholder={$i18nMessages.t("desktop:AiSettings.skAntApi03")}
 					/>
 
 					<Select
 						value={anthropicModelName}
 						options={anthropicModelOptions}
-						label="Model version"
+						label={$i18nMessages.t("desktop:AiSettings.modelVersion")}
 						onselect={(value) => {
 							anthropicModelName = value as AnthropicModelName;
 						}}
@@ -329,7 +332,7 @@
 
 		<CardGroup.Item labelFor="ollama">
 			{#snippet title()}
-				Ollama 🦙
+				{$i18nMessages.t("desktop:AiSettings.ollama")}
 			{/snippet}
 			{#snippet actions()}
 				<RadioButton name="modelKind" id="ollama" value={ModelKind.Ollama} />
@@ -338,20 +341,29 @@
 		{#if modelKind === ModelKind.Ollama}
 			<CardGroup.Item>
 				<Textbox
-					label="Endpoint"
+					label={$i18nMessages.t("desktop:AiSettings.endpoint")}
 					bind:value={ollamaEndpoint}
 					placeholder="http://127.0.0.1:11434"
 				/>
-				<Textbox label="Model" bind:value={ollamaModel} placeholder="llama3" />
+				<Textbox
+					label={$i18nMessages.t("desktop:AiSettings.model")}
+					bind:value={ollamaModel}
+					placeholder={$i18nMessages.t("desktop:AiSettings.llama3")}
+				/>
 				<InfoMessage filled outlined={false}>
 					{#snippet title()}
-						Configuring Ollama
+						{$i18nMessages.t("desktop:AiSettings.configuringOllama")}
 					{/snippet}
 					{#snippet content()}
-						To connect to your Ollama endpoint, <b>allow-list it in the app’s CSP settings</b>.
-						<br />
-						See the <Link href="https://docs.gitbutler.com/troubleshooting/custom-csp"
-							>docs for details</Link
+						{#snippet i18nSlot1(content: import("svelte").Snippet)}<b>{@render content()}</b
+							>{/snippet}
+						{#snippet i18nSlot2()}<br />{/snippet}
+						<I18nRichMessage
+							value={{ key: "desktop:AiSettings.toConnectToYourOllamaEndpointAllowList" }}
+							components={{ slot1: i18nSlot1, slot2: i18nSlot2 }}
+						/>
+						<Link href="https://docs.gitbutler.com/troubleshooting/custom-csp"
+							>{$i18nMessages.t("desktop:AiSettings.docsForDetails")}</Link
 						>
 					{/snippet}
 				</InfoMessage>
@@ -360,7 +372,7 @@
 
 		<CardGroup.Item labelFor="lmstudio">
 			{#snippet title()}
-				LM Studio
+				{$i18nMessages.t("desktop:AiSettings.lMStudio")}
 			{/snippet}
 			{#snippet actions()}
 				<RadioButton name="modelKind" id="lmstudio" value={ModelKind.LMStudio} />
@@ -369,32 +381,48 @@
 		{#if modelKind === ModelKind.LMStudio}
 			<CardGroup.Item>
 				<Textbox
-					label="Endpoint"
+					label={$i18nMessages.t("desktop:AiSettings.endpoint")}
 					bind:value={lmStudioEndpoint}
 					placeholder="http://127.0.0.1:1234"
 				/>
-				<Textbox label="Model" bind:value={lmStudioModel} placeholder="default" />
+				<Textbox
+					label={$i18nMessages.t("desktop:AiSettings.model")}
+					bind:value={lmStudioModel}
+					placeholder={$i18nMessages.t("desktop:AiSettings.default")}
+				/>
 				<InfoMessage filled outlined={false}>
 					{#snippet title()}
-						Configuring LM Studio
+						{$i18nMessages.t("desktop:AiSettings.configuringLMStudio")}
 					{/snippet}
 					{#snippet content()}
 						<div class="ai-settings__section-text-block">
-							<p>Connecting to your LM Studio endpoint requires that you do two things:</p>
+							<p>
+								{$i18nMessages.t("desktop:AiSettings.connectingToYourLMStudioEndpointRequiresThat")}
+							</p>
 
 							<p>
-								1. <span class="text-bold"
-									>Allow-list it in the CSP settings for the application</span
-								>. You can find more details on how to do that in the <Link
-									href="https://docs.gitbutler.com/troubleshooting/custom-csp">GitButler docs</Link
+								{#snippet i18nSlot3(content: import("svelte").Snippet)}<span class="text-bold"
+										>{@render content()}</span
+									>{/snippet}
+								<I18nRichMessage
+									value={{ key: "desktop:AiSettings.1AllowListItInTheCSPSettings" }}
+									components={{ slot3: i18nSlot3 }}
+								/>
+								<Link href="https://docs.gitbutler.com/troubleshooting/custom-csp"
+									>{$i18nMessages.t("desktop:AiSettings.gitButlerDocs")}</Link
 								>.
 							</p>
 
 							<p>
-								2. <span class="text-bold">Enable CORS support in LM Studio</span>. You can find
-								more details on how to do that in the <Link
-									href="https://lmstudio.ai/docs/cli/server-start#enable-cors-support"
-									>LM Studio docs</Link
+								{#snippet i18nSlot4(content: import("svelte").Snippet)}<span class="text-bold"
+										>{@render content()}</span
+									>{/snippet}
+								<I18nRichMessage
+									value={{ key: "desktop:AiSettings.2EnableCORSSupportInLMStudioYou" }}
+									components={{ slot4: i18nSlot4 }}
+								/>
+								<Link href="https://lmstudio.ai/docs/cli/server-start#enable-cors-support"
+									>{$i18nMessages.t("desktop:AiSettings.lMStudioDocs")}</Link
 								>.
 							</p>
 						</div>
@@ -405,7 +433,7 @@
 
 		<CardGroup.Item labelFor="openrouter">
 			{#snippet title()}
-				OpenRouter
+				{$i18nMessages.t("desktop:AiSettings.openRouter")}
 			{/snippet}
 			{#snippet actions()}
 				<RadioButton name="modelKind" id="openrouter" value={ModelKind.OpenRouter} />
@@ -414,14 +442,18 @@
 		{#if modelKind === ModelKind.OpenRouter}
 			<CardGroup.Item>
 				<Textbox
-					label="API key"
+					label={$i18nMessages.t("desktop:AiSettings.aPIKey")}
 					type="password"
 					bind:value={openRouterKey}
 					required
-					placeholder="sk-or-..."
+					placeholder={$i18nMessages.t("desktop:AiSettings.skOr")}
 				/>
 
-				<Textbox label="Model" bind:value={openRouterModel} placeholder="openai/gpt-4.1-mini" />
+				<Textbox
+					label={$i18nMessages.t("desktop:AiSettings.model")}
+					bind:value={openRouterModel}
+					placeholder={$i18nMessages.t("desktop:AiSettings.openaiGpt41Mini")}
+				/>
 			</CardGroup.Item>
 		{/if}
 
@@ -435,10 +467,10 @@
 
 <CardGroup.Item standalone>
 	{#snippet title()}
-		Amount of provided context
+		{$i18nMessages.t("desktop:AiSettings.amountOfProvidedContext")}
 	{/snippet}
 	{#snippet caption()}
-		How many characters of your git diff should be provided to AI
+		{$i18nMessages.t("desktop:AiSettings.howManyCharactersOfYourGitDiffShould")}
 	{/snippet}
 	{#snippet actions()}
 		<Textbox
@@ -459,11 +491,10 @@
 
 <SettingsSection>
 	{#snippet title()}
-		Custom AI prompts
+		{$i18nMessages.t("desktop:AiSettings.customAIPrompts")}
 	{/snippet}
 	{#snippet description()}
-		GitButler's AI assistant generates commit messages and branch names. Use default prompts or
-		create your own. Assign prompts in the project settings.
+		{$i18nMessages.t("desktop:AiSettings.gitButlerSAIAssistantGeneratesCommitMessagesAnd")}
 	{/snippet}
 
 	<div class="prompt-groups">

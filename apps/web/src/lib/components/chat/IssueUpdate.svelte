@@ -1,10 +1,11 @@
 <script lang="ts">
+	import { useTranslations } from "@gitbutler/i18n/svelte";
 	import { eventTimeStamp } from "@gitbutler/shared/branches/utils";
-
 	import { Icon } from "@gitbutler/ui";
 	import type { IssueUpdateEvent } from "@gitbutler/shared/patchEvents/types";
+	const i18nMessages = useTranslations();
 
-	const UNKNOWN_AUTHOR = "Unknown author";
+	const UNKNOWN_AUTHOR = $derived($i18nMessages.t("web:detail.d7600d9a10"));
 
 	interface Props {
 		event: IssueUpdateEvent;
@@ -17,7 +18,7 @@
 
 	const authorName = $derived(user?.login ?? user?.name ?? user?.email ?? UNKNOWN_AUTHOR);
 
-	const timestamp = $derived(eventTimeStamp(event));
+	const timestamp = $derived(eventTimeStamp(event, $i18nMessages.locale));
 </script>
 
 <div class="issue-update">
@@ -33,7 +34,7 @@
 				<Icon name="tick" />
 			</div>
 
-			<p class="text-12 issue-update__status">resolved</p>
+			<p class="text-12 issue-update__status">{$i18nMessages.t("web:IssueUpdate.resolved")}</p>
 		{/if}
 
 		<div class="text-12 issue-update__timestamp" title={event.createdAt}>{timestamp}</div>

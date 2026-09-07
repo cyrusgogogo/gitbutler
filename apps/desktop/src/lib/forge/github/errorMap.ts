@@ -1,3 +1,4 @@
+import { message as i18nMessage } from "@gitbutler/i18n";
 import type { Toast } from "$lib/notifications/toasts";
 
 export function mapErrorToToast(err: any): Toast | undefined {
@@ -15,13 +16,8 @@ export function mapErrorToToast(err: any): Toast | undefined {
 
 	if (message.includes("Draft pull requests are not supported")) {
 		return {
-			title: "Draft pull requests are not enabled",
-			message: `
-                It looks like draft pull requests are not enabled in your repository.
-
-                Please see our [documentation](https://docs.gitbutler.com/)
-                for additional help.
-            `,
+			title: i18nMessage("desktop:errorMap.static6eb697da3"),
+			message: i18nMessage("desktop:forge.error.draftUnavailable"),
 			error: message,
 			style: "danger",
 		};
@@ -29,13 +25,8 @@ export function mapErrorToToast(err: any): Toast | undefined {
 
 	if (message.includes("enabled OAuth App access restrictions")) {
 		return {
-			title: "OAuth access restricted",
-			message: `
-				It looks like OAuth access has been restricted by your organization.
-
-				Please see our [documentation](https://docs.gitbutler.com/)
-				for additional help.
-			`,
+			title: i18nMessage("desktop:errorMap.staticf63bc2f3a"),
+			message: i18nMessage("desktop:forge.error.oauthRestricted"),
 			error: message,
 			style: "danger",
 		};
@@ -52,13 +43,8 @@ export function mapErrorToToast(err: any): Toast | undefined {
 				.join("\n");
 		}
 		return {
-			title: "GitHub validation failed",
-			message: `
-                It seems there was a problem validating the request.
-
-                Please see our [documentation](https://docs.gitbutler.com/)
-                for additional help.
-            `,
+			title: i18nMessage("desktop:errorMap.static588aa3f9b"),
+			message: i18nMessage("desktop:forge.error.validationFailed"),
 			error: errorStrings,
 			style: "danger",
 		};

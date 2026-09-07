@@ -2,6 +2,7 @@
 	import LoginModal from "$lib/components/LoginModal.svelte";
 	import { USER_SERVICE } from "$lib/user/userService";
 	import { inject } from "@gitbutler/core/context";
+	import { useTranslations } from "@gitbutler/i18n/svelte";
 	import { PATCH_COMMIT_SERVICE } from "@gitbutler/shared/patches/patchCommitService";
 	import { type PatchCommit } from "@gitbutler/shared/patches/types";
 	import {
@@ -10,6 +11,7 @@
 		ContextMenuSection,
 		DropdownButton,
 	} from "@gitbutler/ui";
+	const i18nMessages = useTranslations();
 
 	interface Props {
 		branchUuid: string;
@@ -17,10 +19,10 @@
 		isUserLoggedIn: boolean;
 	}
 
-	const actionLabels = {
-		approve: "Approve commit",
-		requestChanges: "Request changes",
-	} as const;
+	const actionLabels = $derived({
+		approve: $i18nMessages.t("web:detail.a2076a8de7"),
+		requestChanges: $i18nMessages.t("web:detail.bbd0717f18"),
+	} as const);
 
 	type Action = keyof typeof actionLabels;
 	type UserActionType = "requested-changes" | "approved" | "not-reviewed";
@@ -99,8 +101,8 @@
 	function confirmStatusChange(action: Action): boolean {
 		const message =
 			action === "requestChanges"
-				? "You have already approved this commit. Do you want to request changes instead?"
-				: "You have already requested changes for this commit. Do you want to approve it instead?";
+				? $i18nMessages.t("web:detail.c2ab790770")
+				: $i18nMessages.t("web:detail.9477fd4823");
 
 		return confirm(message);
 	}
@@ -118,10 +120,10 @@
 		<div class="text-12 my-status-text">
 			{#if userAction === "approved"}
 				<CommitStatusBadge status="approved" kind="icon" />
-				<span>You approved this</span>
+				<span>{$i18nMessages.t("web:ChangeActionButton.youApprovedThis")}</span>
 			{:else}
 				<CommitStatusBadge status="changes-requested" kind="icon" />
-				<span>You requested changes</span>
+				<span>{$i18nMessages.t("web:ChangeActionButton.youRequestedChanges")}</span>
 			{/if}
 		</div>
 
@@ -130,7 +132,7 @@
 			type="button"
 			onclick={() => handleChangeStatus(userAction === "approved" ? "requestChanges" : "approve")}
 		>
-			Change status
+			{$i18nMessages.t("web:ChangeActionButton.changeStatus")}
 		</button>
 	</div>
 {:else}
@@ -165,7 +167,7 @@
 {/if}
 
 <LoginModal bind:this={loginModal}>
-	To approve this commit or request changes, you need to be logged in.
+	{$i18nMessages.t("web:ChangeActionButton.toApproveThisCommitOrRequestChangesYou")}
 </LoginModal>
 
 <style lang="postcss">

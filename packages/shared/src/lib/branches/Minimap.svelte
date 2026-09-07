@@ -7,6 +7,7 @@
 	import { getPatch } from "@gitbutler/shared/patches/patchCommitsPreview.svelte";
 	import { reactive } from "@gitbutler/shared/reactiveUtils.svelte";
 	import { inject } from "@gitbutler/core/context";
+	import { useTranslations } from "@gitbutler/i18n/svelte";
 	import { CommitStatusBadge } from "@gitbutler/ui";
 	import {
 		EXTERNAL_LINK_SERVICE,
@@ -14,6 +15,7 @@
 	} from "@gitbutler/ui/utils/externalLinkService";
 	import { isDefined } from "@gitbutler/ui/utils/typeguards";
 	import type { PatchCommit } from "@gitbutler/shared/patches/types";
+	const i18nMessages = useTranslations();
 
 	type Props = {
 		ownerSlug: string;
@@ -108,14 +110,18 @@
 		<div class="info-section">
 			<div class="section-header">
 				<ChangeStatus {patchCommit} />
-				<p class="text-11">Change: {patchCommit.changeId.slice(0, 7)}</p>
+				<p class="text-11">
+					{$i18nMessages.t("shared:Minimap.changeValue", {
+						value: String(patchCommit.changeId.slice(0, 7)),
+					})}
+				</p>
 			</div>
 			<p class="text-13 text-semibold no-wrap">{patchCommit.title}</p>
 		</div>
 		{#if !myReview}
 			<div class="info-section bottom">
 				<div class="section-header">
-					<p class="text-11">Your status:</p>
+					<p class="text-11">{$i18nMessages.t("shared:Minimap.yourStatus")}</p>
 				</div>
 				<CommitStatusBadge
 					status={iAccepted ? "approved" : iRejected ? "changes-requested" : "unreviewed"}

@@ -1,11 +1,13 @@
 <script lang="ts">
 	import { browser } from "$app/environment";
 	import { inject } from "@gitbutler/core/context";
+	import { useTranslations } from "@gitbutler/i18n/svelte";
 	import {
 		OrganizationService,
 		ORGANIZATION_SERVICE,
 	} from "@gitbutler/shared/organizations/organizationService";
 	import { Button, Textbox } from "@gitbutler/ui";
+	const i18nMessages = useTranslations();
 
 	interface Props {
 		organizationSlug: string;
@@ -55,9 +57,7 @@
 		if (!browser) return;
 
 		// Show confirmation dialog
-		const confirmed = confirm(
-			"Are you sure you want to reset the invite code? This will invalidate all existing invite links.",
-		);
+		const confirmed = confirm($i18nMessages.t("web:detail.c3c3afa42d"));
 
 		if (confirmed) {
 			try {
@@ -73,7 +73,7 @@
 				updateInviteUrl();
 			} catch (error) {
 				console.error("Failed to reset invite code:", error);
-				alert("Failed to reset invite code. Please try again.");
+				alert($i18nMessages.t("web:detail.2d8ae26e8c"));
 			} finally {
 				resetting = false;
 			}
@@ -83,30 +83,34 @@
 
 {#if inviteCode}
 	<div class="invite-link-container">
-		<p>Share this link to invite people to join this organization:</p>
+		<p>{$i18nMessages.t("web:InviteLink.shareThisLinkToInvitePeopleToJoin")}</p>
 
 		<div class="invite-url-container">
 			<Textbox readonly value={inviteCode} />
-			<Button onclick={copyToClipboard} style={copied ? "safe" : "pop"}>copy url</Button>
+			<Button onclick={copyToClipboard} style={copied ? "safe" : "pop"}
+				>{$i18nMessages.t("web:InviteLink.copyUrl")}</Button
+			>
 		</div>
 
 		<p class="info-text">
-			Anyone with this link can join your organization by accepting the invitation.
+			{$i18nMessages.t("web:InviteLink.anyoneWithThisLinkCanJoinYourOrganization")}
 		</p>
 
 		<div class="reset-container">
 			<Button onclick={resetInviteCode} style="warning" disabled={resetting || serviceError}>
 				{#if serviceError}
-					Service Unavailable
+					{$i18nMessages.t("web:InviteLink.serviceUnavailable")}
 				{:else if resetting}
-					Resetting...
+					{$i18nMessages.t("web:InviteLink.resetting")}
 				{:else}
-					Reset Invite Code
+					{$i18nMessages.t("web:InviteLink.resetInviteCode")}
 				{/if}
 			</Button>
 			{#if serviceError}
 				<p class="error-text">
-					Reset functionality is currently unavailable. The organization service could not be found.
+					{$i18nMessages.t(
+						"web:InviteLink.resetFunctionalityIsCurrentlyUnavailableTheOrganizationService",
+					)}
 				</p>
 			{/if}
 		</div>

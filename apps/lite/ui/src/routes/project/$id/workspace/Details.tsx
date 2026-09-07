@@ -1,3 +1,8 @@
+import {
+	Message as I18nMessage,
+	RichMessage as I18nRichMessage,
+	useTranslations,
+} from "@gitbutler/i18n/react";
 import { ResizeHandle } from "#ui/components/ResizeHandle.tsx";
 import { startAbsorb, setCursor, useCanShowFiles, useSelection } from "#ui/use-cursor.ts";
 import uiStyles from "#ui/components/ui.module.css";
@@ -409,8 +414,12 @@ const DadJokeFooter: FC = () => {
 
 	return (
 		<p className={styles.dadJoke}>
-			<span>{setup}</span>
-			<span>{punchline}</span>
+			<span>
+				<I18nMessage value={setup} />
+			</span>
+			<span>
+				<I18nMessage value={punchline} />
+			</span>
 		</p>
 	);
 };
@@ -1826,6 +1835,7 @@ type DiffFileHeaderProps = {
 };
 
 const DiffFileHeader: FC<DiffFileHeaderProps> = (p) => {
+	const i18nMessages = useTranslations();
 	const menuItems = useFileMenuItems({
 		projectId: p.projectId,
 		address: p.address,
@@ -1842,10 +1852,13 @@ const DiffFileHeader: FC<DiffFileHeaderProps> = (p) => {
 	// The counts read as added/removed lines on sight, but only to someone who
 	// knows the colouring: the wording carries the units, for the tooltip and for
 	// screen readers alike.
-	const lineStatsParts = p.lineStats === null ? [] : describeLineStats(p.lineStats);
+	const lineStatsParts =
+		p.lineStats === null ? [] : describeLineStats(p.lineStats).map(i18nMessages.text);
 	const lineStatsLabel = lineStatsParts.length === 0 ? null : lineStatsParts.join(", ");
 
-	const collapseLabel = p.collapsed ? "Unfold" : "Fold";
+	const collapseLabel = p.collapsed
+		? i18nMessages.t("lite:Details.label02d85ea4e")
+		: i18nMessages.t("lite:Details.labelb6ba0db1f");
 	const reviewLabel =
 		p.reviewState === "reviewed"
 			? "Reviewed"
@@ -1926,7 +1939,10 @@ const DiffFileHeader: FC<DiffFileHeaderProps> = (p) => {
 						</Tooltip.Root>
 					)}
 
-					<Toolbar.Root aria-label="File actions" className={styles.fileHeaderActions}>
+					<Toolbar.Root
+						aria-label={i18nMessages.t("lite:Details.fileActions")}
+						className={styles.fileHeaderActions}
+					>
 						<Toolbar.Separator className={styles.fileHeaderSeparator} />
 						{/* One button carrying checkbox semantics, with the box drawn inside it,
 						    rather than a real Checkbox nested in a button or a label. Both of
@@ -1951,7 +1967,7 @@ const DiffFileHeader: FC<DiffFileHeaderProps> = (p) => {
 												<Icon size={10} name={p.reviewState === "reviewed" ? "tick" : "minus"} />
 											)}
 										</span>
-										Reviewed
+										<I18nMessage value={{ key: "lite:control.Reviewed" }} />
 									</Toolbar.Button>
 								}
 							/>
@@ -1962,7 +1978,7 @@ const DiffFileHeader: FC<DiffFileHeaderProps> = (p) => {
 							</Tooltip.Portal>
 						</Tooltip.Root>
 						<Toolbar.Button
-							aria-label="File menu"
+							aria-label={i18nMessages.t("lite:Details.fileMenu")}
 							onClick={(event) => {
 								void showNativeMenuFromTrigger(event.currentTarget, menuItems);
 							}}
@@ -1978,6 +1994,7 @@ const DiffFileHeader: FC<DiffFileHeaderProps> = (p) => {
 };
 
 const FilesToggle: FC<{ projectId: string }> = ({ projectId }) => {
+	const i18nMessages = useTranslations();
 	const dispatch = useAppDispatch();
 	const filesVisible = useAppSelector((state) =>
 		projectSlice.selectors.selectFilesVisible(state, projectId),
@@ -1990,7 +2007,7 @@ const FilesToggle: FC<{ projectId: string }> = ({ projectId }) => {
 					<button
 						type="button"
 						className={getButtonClassName({ iconOnly: true, variant: "ghost" })}
-						aria-label={workspaceHotkeys.toggleFiles.meta.name}
+						aria-label={i18nMessages.t(workspaceHotkeys.toggleFiles.meta.i18nKey)}
 						aria-pressed={filesVisible}
 						onClick={() => dispatch(projectSlice.actions.toggleFiles({ projectId }))}
 					>
@@ -2001,7 +2018,7 @@ const FilesToggle: FC<{ projectId: string }> = ({ projectId }) => {
 			<Tooltip.Portal>
 				<Tooltip.Positioner sideOffset={4}>
 					<Tooltip.Popup render={<TooltipPopup kbd={workspaceHotkeys.toggleFiles.hotkey} />}>
-						{workspaceHotkeys.toggleFiles.meta.name}
+						{i18nMessages.t(workspaceHotkeys.toggleFiles.meta.i18nKey)}
 					</Tooltip.Popup>
 				</Tooltip.Positioner>
 			</Tooltip.Portal>
@@ -2012,6 +2029,7 @@ const FilesToggle: FC<{ projectId: string }> = ({ projectId }) => {
 const DiffOverflowToggle: FC<
 	Omit<ComponentProps<typeof Toggle>, "aria-label" | "pressed" | "onPressedChange">
 > = (toggleProps) => {
+	const i18nMessages = useTranslations();
 	const { data: diffOverflow } = useQuery({
 		...guiSettingsQueryOptions,
 		select: (cfg) => cfg.diffOverflow,
@@ -2024,7 +2042,7 @@ const DiffOverflowToggle: FC<
 				render={
 					<Toggle
 						{...toggleProps}
-						aria-label="Toggle line wrapping"
+						aria-label={i18nMessages.t("lite:Details.toggleLineWrapping")}
 						pressed={(diffOverflow ?? defaultSettings.diffOverflow) === "wrap"}
 						onPressedChange={(pressed) =>
 							saveGUISettings({ diffOverflow: pressed ? "wrap" : "scroll" })
@@ -2034,7 +2052,9 @@ const DiffOverflowToggle: FC<
 			/>
 			<Tooltip.Portal>
 				<Tooltip.Positioner sideOffset={4}>
-					<Tooltip.Popup render={<TooltipPopup />}>Toggle line wrapping</Tooltip.Popup>
+					<Tooltip.Popup render={<TooltipPopup />}>
+						<I18nMessage value={{ key: "lite:Details.toggleLineWrapping" }} />
+					</Tooltip.Popup>
 				</Tooltip.Positioner>
 			</Tooltip.Portal>
 		</Tooltip.Root>
@@ -2044,6 +2064,7 @@ const DiffOverflowToggle: FC<
 const DiffBackgroundsToggle: FC<
 	Omit<ComponentProps<typeof Toggle>, "aria-label" | "pressed" | "onPressedChange">
 > = (toggleProps) => {
+	const i18nMessages = useTranslations();
 	const { data: diffBackgrounds } = useQuery({
 		...guiSettingsQueryOptions,
 		select: (cfg) => cfg.diffBackground,
@@ -2056,7 +2077,7 @@ const DiffBackgroundsToggle: FC<
 				render={
 					<Toggle
 						{...toggleProps}
-						aria-label="Toggle diff backgrounds"
+						aria-label={i18nMessages.t("lite:Details.toggleDiffBackgrounds")}
 						pressed={diffBackgrounds ?? defaultSettings.diffBackground}
 						onPressedChange={(enabled) => saveGUISettings({ diffBackground: enabled })}
 					/>
@@ -2064,7 +2085,9 @@ const DiffBackgroundsToggle: FC<
 			/>
 			<Tooltip.Portal>
 				<Tooltip.Positioner sideOffset={4}>
-					<Tooltip.Popup render={<TooltipPopup />}>Toggle diff backgrounds</Tooltip.Popup>
+					<Tooltip.Popup render={<TooltipPopup />}>
+						<I18nMessage value={{ key: "lite:Details.toggleDiffBackgrounds" }} />
+					</Tooltip.Popup>
 				</Tooltip.Positioner>
 			</Tooltip.Portal>
 		</Tooltip.Root>
@@ -2077,6 +2100,7 @@ const DiffStyleToggleGroup: FC<
 		"aria-label" | "value" | "onValueChange"
 	>
 > = (toggleGroupProps) => {
+	const i18nMessages = useTranslations();
 	const { data: diffStyle } = useQuery({
 		...guiSettingsQueryOptions,
 		select: (cfg) => cfg.diffStyle,
@@ -2089,7 +2113,7 @@ const DiffStyleToggleGroup: FC<
 				render={
 					<ToggleGroup
 						{...toggleGroupProps}
-						aria-label={diffHotkeys.toggleDiffStyle.meta.name}
+						aria-label={i18nMessages.t(diffHotkeys.toggleDiffStyle.meta.i18nKey)}
 						value={[diffStyle ?? defaultSettings.diffStyle]}
 						onValueChange={(value: Array<NonNullable<GUISettings["diffStyle"]>>) => {
 							const head = value[0];
@@ -2103,7 +2127,7 @@ const DiffStyleToggleGroup: FC<
 			<Tooltip.Portal>
 				<Tooltip.Positioner sideOffset={4}>
 					<Tooltip.Popup render={<TooltipPopup kbd={diffHotkeys.toggleDiffStyle.hotkey} />}>
-						{diffHotkeys.toggleDiffStyle.meta.name}
+						{i18nMessages.t(diffHotkeys.toggleDiffStyle.meta.i18nKey)}
 					</Tooltip.Popup>
 				</Tooltip.Positioner>
 			</Tooltip.Portal>
@@ -2180,6 +2204,7 @@ const Diff: FC<{
 	didScrollToViaFileRef,
 	headerSlot,
 }) => {
+	const i18nMessages = useTranslations();
 	const focusScopeRef = useRef<HTMLDivElement>(null);
 	const store = useAppStore();
 	const dispatch = useAppDispatch();
@@ -2580,11 +2605,11 @@ const Diff: FC<{
 			<div className={classes(styles.diffTab, styles.diffTabEmpty)}>
 				<EmptyState
 					illustration="waving"
-					title="No file changes"
+					title={i18nMessages.t("lite:Details.noFileChanges")}
 					description={
 						fileParent._tag === "Commit"
-							? "This commit changes no files"
-							: "Nothing on this branch changes any files"
+							? i18nMessages.t("lite:Details.thisCommitChangesNoFiles")
+							: i18nMessages.t("lite:Details.nothingOnThisBranchChangesAnyFiles")
 					}
 				/>
 			</div>
@@ -2645,7 +2670,7 @@ const Diff: FC<{
 										uncommit={uncommit}
 										emptyLabel={
 											filesFilter !== null && filesItems.length > 0
-												? "No matching files."
+												? i18nMessages.t("lite:Details.noMatchingFiles")
 												: undefined
 										}
 										ref={filesTreeRef}
@@ -2667,7 +2692,10 @@ const Diff: FC<{
 							<ChangeStats fileCount={changes.length} lineStats={lineStats} />
 						)}
 
-						<Toolbar.Root aria-label="Diff controls" className={styles.diffControls}>
+						<Toolbar.Root
+							aria-label={i18nMessages.t("lite:Details.diffControls")}
+							className={styles.diffControls}
+						>
 							<Toolbar.Button
 								className={getButtonClassName({ variant: "outline" })}
 								disabled={
@@ -2675,7 +2703,11 @@ const Diff: FC<{
 								}
 								onClick={toggleAllFilesReviewed}
 							>
-								{allFilesReviewed ? "Mark all unreviewed" : "Mark all reviewed"}
+								{allFilesReviewed ? (
+									<I18nMessage value={{ key: "lite:Details.markAllUnreviewed" }} />
+								) : (
+									<I18nMessage value={{ key: "lite:Details.markAllReviewed" }} />
+								)}
 							</Toolbar.Button>
 							<ToggleGroupStyles>
 								<Toolbar.Button
@@ -2699,13 +2731,13 @@ const Diff: FC<{
 										render={<Toggle render={<ToggleStyles />} />}
 										value={"split" satisfies GUISettings["diffStyle"]}
 									>
-										Split
+										<I18nMessage value={{ key: "lite:Details.split" }} />{" "}
 									</Toolbar.Button>
 									<Toolbar.Button
 										render={<Toggle render={<ToggleStyles />} />}
 										value={"unified" satisfies GUISettings["diffStyle"]}
 									>
-										Unified
+										<I18nMessage value={{ key: "lite:Details.unified" }} />{" "}
 									</Toolbar.Button>
 								</DiffStyleToggleGroup>
 							)}
@@ -2785,7 +2817,9 @@ const CopyableId: FC<{
 				render={<button type="button" aria-label={label} />}
 			>
 				<Icon size={14} name={copied ? "tick" : icon} />
-				<span>{copied ? "Copied!" : displayValue}</span>
+				<span>
+					{copied ? <I18nMessage value={{ key: "lite:Details.copied" }} /> : displayValue}
+				</span>
 			</Tooltip.Trigger>
 			<Tooltip.Portal>
 				<Tooltip.Positioner sideOffset={4}>
@@ -2807,7 +2841,9 @@ const CommitDetailsSkeleton: FC = () => {
 
 					<div className={styles.title}>
 						<Icon name="commit" />
-						<h3 className={classes("text-15", "text-semibold")}>Loading…</h3>
+						<h3 className={classes("text-15", "text-semibold")}>
+							<I18nMessage value={{ key: "lite:Details.loading" }} />
+						</h3>
 					</div>
 				</div>
 			</div>
@@ -2831,6 +2867,7 @@ const CommitDetails: FC<{
 	viewerRef,
 	didScrollToViaFileRef,
 }) => {
+	const i18nMessages = useTranslations();
 	const detailsFullWindow = useAppSelector(interfaceSlice.selectors.selectDetailsFullWindow);
 	const filesVisibleState = useAppSelector((state) =>
 		projectSlice.selectors.selectFilesVisible(state, projectId),
@@ -2908,11 +2945,13 @@ const CommitDetails: FC<{
 						<Icon name="commit" />
 						<h3 className={classes(styles.titleContentWrapper, "text-15", "text-semibold")}>
 							<span className={styles.titleContent}>
-								{commitTitle(commitDetails.commit.message) ?? "(no message)"}
+								{commitTitle(commitDetails.commit.message) ?? (
+									<I18nMessage value={{ key: "lite:Details.noMessage" }} />
+								)}
 							</span>
 							{commitDetails.commit.hasConflicts && (
 								<Badge variant="danger" className={styles.commitConflictBadge}>
-									Conflicted
+									<I18nMessage value={{ key: "lite:Details.conflicted" }} />{" "}
 								</Badge>
 							)}
 
@@ -2921,7 +2960,11 @@ const CommitDetails: FC<{
 									<Tooltip.Trigger
 										aria-controls={commitBodyId}
 										aria-expanded={!commitBodyCollapsed}
-										aria-label={commitBodyCollapsed ? "Expand commit body" : "Collapse commit body"}
+										aria-label={
+											commitBodyCollapsed
+												? i18nMessages.t("lite:Details.expandCommitBody")
+												: i18nMessages.t("lite:Details.collapseCommitBody")
+										}
 										aria-pressed={!commitBodyCollapsed}
 										className={classes(
 											getButtonClassName({
@@ -2938,7 +2981,11 @@ const CommitDetails: FC<{
 									<Tooltip.Portal>
 										<Tooltip.Positioner sideOffset={4}>
 											<Tooltip.Popup render={<TooltipPopup />}>
-												{commitBodyCollapsed ? "Expand commit body" : "Collapse commit body"}
+												{commitBodyCollapsed ? (
+													<I18nMessage value={{ key: "lite:Details.expandCommitBody" }} />
+												) : (
+													<I18nMessage value={{ key: "lite:Details.collapseCommitBody" }} />
+												)}
 											</Tooltip.Popup>
 										</Tooltip.Positioner>
 									</Tooltip.Portal>
@@ -2967,22 +3014,29 @@ const CommitDetails: FC<{
 					<img
 						src={commitDetails.commit.author.gravatarUrl}
 						className={styles.avatar}
-						alt="Commit author avatar"
+						alt={i18nMessages.t("lite:Details.commitAuthorAvatar")}
 					/>
 					<span>
-						<span title={commitDetails.commit.author.email}>
-							{commitDetails.commit.author.name}
-						</span>{" "}
-						at {fmtDate}
+						<I18nRichMessage
+							value={{
+								key: "lite:Details.valueValueAtValue",
+								values: {
+									name: String(commitDetails.commit.author.name),
+									value: String(" "),
+									fmtDate: String(fmtDate),
+								},
+							}}
+							components={{ slot1: <span title={commitDetails.commit.author.email} /> }}
+						/>
 					</span>
 					<CopyableId
-						label="Copy change ID"
+						label={i18nMessages.t("lite:Details.copyChangeID")}
 						icon="finger-print"
 						displayValue={shortCommitId(commitDetails.commit.changeId)}
 						copyValue={commitDetails.commit.changeId}
 					/>
 					<CopyableId
-						label="Copy commit ID"
+						label={i18nMessages.t("lite:Details.copyCommitID")}
 						icon="hash"
 						displayValue={shortCommitId(commitDetails.commit.id)}
 						copyValue={commitDetails.commit.id}
@@ -3026,10 +3080,18 @@ const LandedReviewView: FC<{ projectId: string; reviewId: number }> = ({ project
 	const { data: review, isError } = useQuery(getReviewQueryOptions({ projectId, reviewId }));
 	if (isError) {
 		return (
-			<div className={classes(styles.loadingTab, "text-13")}>Could not load the pull request.</div>
+			<div className={classes(styles.loadingTab, "text-13")}>
+				<I18nMessage value={{ key: "lite:Details.couldNotLoadThePullRequest" }} />
+			</div>
 		);
 	}
-	if (!review) return <div className={classes(styles.loadingTab, "text-13")}>Loading…</div>;
+	if (!review) {
+		return (
+			<div className={classes(styles.loadingTab, "text-13")}>
+				<I18nMessage value={{ key: "lite:Details.loading" }} />
+			</div>
+		);
+	}
 	// Keyed: a switch to another review is a new visit, so the arrival
 	// snapshot and its markers start clean rather than surviving in place.
 	return (
@@ -3117,30 +3179,39 @@ const BranchTabToggle: FC<{
 	/** Marks the Pull Request tab with an unread-activity dot. */
 	prUnread?: boolean;
 	className?: string;
-}> = ({ branchTab, setBranchTab, prDisabled = false, prUnread = false, className }) => (
-	<ToggleGroup
-		render={<ToggleGroupStyles className={className} />}
-		value={[branchTab]}
-		onValueChange={(value: Array<BranchTab>) => {
-			const head = value[0];
-			if (head === undefined) return;
-			setBranchTab(head);
-		}}
-		aria-label="Branch tab"
-	>
-		<Toggle render={<ToggleStyles />} value={"diff" satisfies BranchTab}>
-			Diff
-		</Toggle>
-		<Toggle render={<ToggleStyles />} value={"pr" satisfies BranchTab} disabled={prDisabled}>
-			{prDisabled ? "No pull request" : "Pull Request"}
-			{!prDisabled && prUnread && (
-				<span className={rowStyles.unreadDot}>
-					<span className={rowStyles.unreadLabel}>New activity</span>
-				</span>
-			)}
-		</Toggle>
-	</ToggleGroup>
-);
+}> = ({ branchTab, setBranchTab, prDisabled = false, prUnread = false, className }) => {
+	const i18nMessages = useTranslations();
+	return (
+		<ToggleGroup
+			render={<ToggleGroupStyles className={className} />}
+			value={[branchTab]}
+			onValueChange={(value: Array<BranchTab>) => {
+				const head = value[0];
+				if (head === undefined) return;
+				setBranchTab(head);
+			}}
+			aria-label={i18nMessages.t("lite:Details.branchTab")}
+		>
+			<Toggle render={<ToggleStyles />} value={"diff" satisfies BranchTab}>
+				<I18nMessage value={{ key: "lite:Details.diff" }} />{" "}
+			</Toggle>
+			<Toggle render={<ToggleStyles />} value={"pr" satisfies BranchTab} disabled={prDisabled}>
+				{prDisabled ? (
+					<I18nMessage value={{ key: "lite:Details.noPullRequest" }} />
+				) : (
+					<I18nMessage value={{ key: "lite:Details.pullRequest" }} />
+				)}
+				{!prDisabled && prUnread && (
+					<span className={rowStyles.unreadDot}>
+						<span className={rowStyles.unreadLabel}>
+							<I18nMessage value={{ key: "lite:Details.newActivity" }} />
+						</span>
+					</span>
+				)}
+			</Toggle>
+		</ToggleGroup>
+	);
+};
 
 /** `[` and `]` step between a branch's tabs; with two of them, either key toggles. */
 const useBranchTabHotkeys = ({
@@ -3412,13 +3483,19 @@ const UnappliedBranchDetails: FC<BranchDetailsProps> = ({
 							onClick={() => apply(decodeBytes(branch.branchRef))}
 						>
 							{isApplyPending && <Icon name="spinner" />}
-							Apply to workspace
+							<I18nMessage value={{ key: "lite:Details.applyToWorkspace" }} />
 						</button>
 					</div>
 				</div>
 			</div>
 
-			<Suspense fallback={<div className={classes(styles.loadingTab, "text-13")}>Loading…</div>}>
+			<Suspense
+				fallback={
+					<div className={classes(styles.loadingTab, "text-13")}>
+						<I18nMessage value={{ key: "lite:control.Loading" }} />
+					</div>
+				}
+			>
 				{reviewTab !== null && branchTab === "pr" ? (
 					<div className={styles.prTabScroll}>
 						<div className={styles.prTab}>{reviewTab}</div>
@@ -3554,7 +3631,13 @@ const AppliedBranchDetails: FC<BranchDetailsProps> = ({
 				</div>
 			</div>
 
-			<Suspense fallback={<div className={classes(styles.loadingTab, "text-13")}>Loading…</div>}>
+			<Suspense
+				fallback={
+					<div className={classes(styles.loadingTab, "text-13")}>
+						<I18nMessage value={{ key: "lite:control.Loading" }} />
+					</div>
+				}
+			>
 				{branchTab === "pr" ? (
 					<div className={styles.prTabScroll}>
 						<div className={styles.prTab}>
@@ -3627,12 +3710,16 @@ const FileDetailsSkeleton: FC = () => {
 
 					<div className={styles.title}>
 						<Icon name="file" />
-						<h3 className={classes("text-15", "text-semibold")}>Uncommitted</h3>
+						<h3 className={classes("text-15", "text-semibold")}>
+							<I18nMessage value={{ key: "lite:Details.uncommitted" }} />
+						</h3>
 					</div>
 				</div>
 			</div>
 
-			<div className={classes(styles.loadingTab, "text-13")}>Loading…</div>
+			<div className={classes(styles.loadingTab, "text-13")}>
+				<I18nMessage value={{ key: "lite:Details.loading" }} />
+			</div>
 		</div>
 	);
 };
@@ -3673,7 +3760,9 @@ const FileDetails: FC<{
 
 			<div className={styles.title}>
 				<Icon name="file-diff" />
-				<h3 className={classes("text-15", "text-semibold")}>Uncommitted</h3>
+				<h3 className={classes("text-15", "text-semibold")}>
+					<I18nMessage value={{ key: "lite:Details.uncommitted" }} />
+				</h3>
 			</div>
 		</>
 	);

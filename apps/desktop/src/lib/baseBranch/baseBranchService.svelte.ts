@@ -1,6 +1,7 @@
 import { showError } from "$lib/error/showError";
 import { parseRemoteUrl } from "$lib/git/gitUrl";
 import { InjectionToken } from "@gitbutler/core/context";
+import { message as i18nMessage } from "@gitbutler/i18n";
 import type { BackendApi } from "$lib/state/backendApi";
 import type { BaseBranch } from "@gitbutler/but-sdk";
 
@@ -82,7 +83,7 @@ export default class BaseBranchService {
 				// cargo-build hint for the `Unknown` + cargo message) to the
 				// classifier.
 				if (action === "auto") return;
-				showError("Failed to fetch", error);
+				showError(i18nMessage("desktop:baseBranchService.failedToFetch"), error);
 			});
 	}
 

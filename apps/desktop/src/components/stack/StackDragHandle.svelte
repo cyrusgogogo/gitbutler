@@ -3,8 +3,10 @@
 	import { MODE_SERVICE } from "$lib/mode/modeService";
 	import { STACK_SERVICE } from "$lib/stacks/stackService.svelte";
 	import { inject } from "@gitbutler/core/context";
+	import { useTranslations } from "@gitbutler/i18n/svelte";
 	import { ContextMenuItem, ContextMenuSection, Icon, KebabButton } from "@gitbutler/ui";
 	import type { Stack } from "$lib/stacks/stack";
+	const i18nMessages = useTranslations();
 
 	type Props = {
 		stackId?: string;
@@ -107,7 +109,7 @@
 			{#if isOpenWorkspace}
 				<ContextMenuSection>
 					<ContextMenuItem
-						label="Move to leftmost"
+						label={$i18nMessages.t("desktop:StackDragHandle.moveToLeftmost")}
 						icon="leftmost-lane"
 						disabled={!canMoveLeft}
 						onclick={() => {
@@ -116,7 +118,7 @@
 						}}
 					/>
 					<ContextMenuItem
-						label="Move to rightmost"
+						label={$i18nMessages.t("desktop:StackDragHandle.moveToRightmost")}
 						icon="rightmost-lane"
 						disabled={!canMoveRight}
 						onclick={() => {
@@ -128,10 +130,12 @@
 			{/if}
 			<ContextMenuSection>
 				<ContextMenuItem
-					label="Unapply stack"
+					label={$i18nMessages.t("desktop:StackDragHandle.unapplyStack")}
 					icon="eject"
 					disabled={!isOpenWorkspace}
-					caption={!isOpenWorkspace ? "Only available in workspace mode" : undefined}
+					caption={!isOpenWorkspace
+						? $i18nMessages.t("desktop:StackDragHandle.inline263127c93")
+						: undefined}
 					onclick={() => {
 						unapplyStack();
 						close();

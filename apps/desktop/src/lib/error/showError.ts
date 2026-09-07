@@ -1,12 +1,23 @@
 import { classify } from "$lib/error/errorClassification";
 import { isNormalizedError, normalizedErrorToException } from "$lib/error/normalizedError";
-import { shouldCaptureToast, showToast, type Toast } from "$lib/notifications/toasts";
+import {
+	canonicalMessages,
+	shouldCaptureToast,
+	showToast,
+	type Toast,
+} from "$lib/notifications/toasts";
 import { captureException } from "@sentry/sveltekit";
 import posthog from "posthog-js";
+import type { LocalizedText } from "@gitbutler/i18n";
 
 type ExtraAction = NonNullable<Toast["extraAction"]>;
 
-export function showError(title: string, error: unknown, extraAction?: ExtraAction, id?: string) {
+export function showError(
+	title: LocalizedText,
+	error: unknown,
+	extraAction?: ExtraAction,
+	id?: string,
+) {
 	const classified = classify(error, title);
 	if (classified.severity === "silent") {
 		return;
@@ -15,7 +26,7 @@ export function showError(title: string, error: unknown, extraAction?: ExtraActi
 	if (shouldCaptureToast()) {
 		posthog.capture("toast:show_error", {
 			error_test_id: id,
-			error_title: classified.title,
+			error_title: canonicalMessages.text(classified.title),
 			error_message: classified.message,
 		});
 

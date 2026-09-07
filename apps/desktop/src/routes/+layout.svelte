@@ -20,6 +20,7 @@
 	import { initDependencies } from "$lib/bootstrap/deps";
 	import { GIT_CONFIG_SERVICE } from "$lib/config/gitConfigService";
 	import { fModeEnabled } from "$lib/config/uiFeatureFlags";
+	import { LANGUAGE_SERVICE } from "$lib/i18n";
 	import { PROJECTS_SERVICE } from "$lib/project/projectsService";
 	import { TERMINAL_SERVICE } from "$lib/settings/terminalService";
 	import { createKeybind } from "$lib/shortcuts/hotkeys";
@@ -28,12 +29,13 @@
 	import { initUserSettings, UI_STATE } from "$lib/state/uiState.svelte";
 	import { POSTHOG_WRAPPER } from "$lib/telemetry/posthog";
 	import { USER_SERVICE } from "$lib/user/userService.svelte";
-	import { inject } from "@gitbutler/core/context";
+	import { inject, provide } from "@gitbutler/core/context";
+	import { provideI18n } from "@gitbutler/i18n/svelte";
 	import { ChipToastContainer } from "@gitbutler/ui";
 	import { FOCUS_MANAGER } from "@gitbutler/ui/focus/focusManager";
+	import { onMount } from "svelte";
 	import { untrack, type Snippet } from "svelte";
 	import type { LayoutData } from "./$types";
-
 	const { data, children }: { data: LayoutData; children: Snippet } = $props();
 	const projectId = $derived(page.params.projectId);
 
@@ -43,6 +45,10 @@
 
 	const { backend } = untrack(() => data);
 	initDependencies(untrack(() => data));
+	const language = untrack(() => data.language);
+	provideI18n(language.i18n);
+	provide(LANGUAGE_SERVICE, language);
+	onMount(() => language.start());
 
 	const clientState = inject(CLIENT_STATE);
 	const posthog = inject(POSTHOG_WRAPPER);

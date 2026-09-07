@@ -1,3 +1,4 @@
+import { RichMessage as I18nRichMessage } from "@gitbutler/i18n/react";
 /**
  * @file Based on https://base-ui.com/react/components/autocomplete#command-palette
  */
@@ -24,6 +25,8 @@ import styles from "./PickerDialog.module.css";
 
 export type PickerDialogGroup<T> = {
 	value: string;
+	/** Presentation can change without changing the group's identity or highlighted item. */
+	label?: string;
 	items: Array<T>;
 };
 
@@ -229,7 +232,7 @@ const VirtualizedListArea = <T,>({
 											)}
 											style={style}
 										>
-											{row.group.value}
+											{row.group.label ?? row.group.value}
 										</div>
 									);
 								}
@@ -410,15 +413,23 @@ export const PickerDialog = <T,>({
 					    every list, and paging yields the slot to the shortcut that has no equivalent
 					    anywhere else in the app. */}
 					<div className={styles.hints}>
-						<span className={styles.hint}>
-							<kbd className={styles.hintKey}>
-								{formatForDisplaySorted("Mod+ArrowUp")} {formatForDisplaySorted("Mod+ArrowDown")}
-							</kbd>{" "}
-							First / last
-						</span>
-						<span className={styles.hint}>
-							<kbd className={styles.hintKey}>{formatForDisplaySorted("Enter")}</kbd> {selectLabel}
-						</span>
+						<I18nRichMessage
+							value={{
+								key: "lite:PickerDialog.valueFirstLastValue",
+								values: { value: String(" "), selectLabel: String(selectLabel) },
+							}}
+							components={{
+								slot1: <span className={styles.hint} />,
+								slot2: (
+									<kbd className={styles.hintKey}>
+										{formatForDisplaySorted("Mod+ArrowUp")}{" "}
+										{formatForDisplaySorted("Mod+ArrowDown")}
+									</kbd>
+								),
+								slot3: <span className={styles.hint} />,
+								slot4: <kbd className={styles.hintKey}>{formatForDisplaySorted("Enter")}</kbd>,
+							}}
+						/>
 					</div>
 					{footerAction}
 				</div>

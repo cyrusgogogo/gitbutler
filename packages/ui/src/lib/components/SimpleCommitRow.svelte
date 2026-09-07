@@ -22,6 +22,8 @@
 	import Icon from "$components/Icon.svelte";
 	import SimpleCommitRowSkeleton from "$components/SimpleCommitRowSkeleton.svelte";
 	import { getTimeAndAuthor } from "$lib/utils/getTimeAndAuthor";
+	import { useTranslations } from "@gitbutler/i18n/svelte";
+	const i18nMessages = useTranslations();
 
 	const {
 		title,
@@ -78,13 +80,13 @@
 				{#if url && onOpen}
 					<span class="details-divider">•</span>
 					<button type="button" class="details-btn link-btn" onclick={() => onOpen(url)}>
-						<span>Open</span>
+						<span>{$i18nMessages.t("ui:SimpleCommitRow.open")}</span>
 						<Icon name="arrow-up-righ" />
 					</button>
 				{/if}
 
 				<span class="details-divider">•</span>
-				<span class="truncate">{getTimeAndAuthor(date, author)}</span>
+				<span class="truncate">{getTimeAndAuthor(date, author, $i18nMessages.locale)}</span>
 			</div>
 		</div>
 	</div>

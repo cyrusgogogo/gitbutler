@@ -16,7 +16,6 @@
 	} from "$lib/utils/diffParsing";
 	import type { ContextMenuParams } from "$components/hunkDiff/HunkDiffRow.svelte";
 	import type { Snippet } from "svelte";
-
 	interface Props {
 		id?: string;
 		filePath: string;

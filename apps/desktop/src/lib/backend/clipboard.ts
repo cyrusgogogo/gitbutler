@@ -1,4 +1,5 @@
 import { InjectionToken } from "@gitbutler/core/context";
+import { message as i18nMessage, type LocalizedText } from "@gitbutler/i18n";
 import { chipToasts } from "@gitbutler/ui";
 import type { IBackend } from "$lib/backend/backend";
 
@@ -17,18 +18,18 @@ export default class ClipboardService {
 	async write(
 		text: string,
 		opt: {
-			errorMessage?: string;
-			message?: string;
+			errorMessage?: LocalizedText;
+			message?: LocalizedText;
 		} = {},
 	) {
 		const { errorMessage, message } = opt;
 		await this.backend
 			.writeTextToClipboard(text)
 			.then(() => {
-				chipToasts.success(message || "Copied to clipboard");
+				chipToasts.success(message || i18nMessage("desktop:clipboard.copiedToClipboard"));
 			})
 			.catch((err) => {
-				chipToasts.error(errorMessage || "Failed to copy");
+				chipToasts.error(errorMessage || i18nMessage("desktop:clipboard.failedToCopy"));
 				console.error(errorMessage, err);
 			});
 	}

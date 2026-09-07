@@ -1,3 +1,4 @@
+import { message, type LocalizedText } from "@gitbutler/i18n";
 import type { ConflictEntryPresence, FileInfo } from "@gitbutler/but-sdk";
 
 /**
@@ -10,11 +11,11 @@ export type ConflictState = "conflicted" | "resolved" | "unknown";
  * What a conflict is between, said plainly. Both sides present is the
  * ordinary conflict; a missing side means one of them deleted the file.
  */
-export const conflictHint = (presence: ConflictEntryPresence): string => {
-	if (presence.ours && presence.theirs) return "conflicts";
-	if (!presence.ours && presence.theirs) return "deleted by you";
-	if (presence.ours && !presence.theirs) return "deleted by them";
-	return "conflicts";
+export const conflictHint = (presence: ConflictEntryPresence): LocalizedText => {
+	if (presence.ours && presence.theirs) return message("lite:conflict.conflicts");
+	if (!presence.ours && presence.theirs) return message("lite:conflict.deletedbyyou");
+	if (presence.ours && !presence.theirs) return message("lite:conflict.deletedbythem");
+	return message("lite:conflict.conflicts");
 };
 
 const hasConflictMarker = (content: string): boolean =>

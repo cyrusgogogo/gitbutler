@@ -3,7 +3,9 @@
 	import { SETTINGS_SERVICE } from "$lib/settings/appSettings";
 	import { STACK_SERVICE } from "$lib/stacks/stackService.svelte";
 	import { inject } from "@gitbutler/core/context";
+	import { useTranslations } from "@gitbutler/i18n/svelte";
 	import { Button, CardGroup, InfoMessage, Select, SelectItem } from "@gitbutler/ui";
+	const i18nMessages = useTranslations();
 
 	const { projectId }: { projectId: string } = $props();
 
@@ -37,7 +39,9 @@
 	// With the singleBranch feature flag, only the target metadata is rewritten
 	// and no branch is checked out, so avoid claiming a branch switch.
 	const switchingLabel = $derived(
-		$settingsStore?.featureFlags.singleBranch ? "Updating target..." : "Switching branches...",
+		$settingsStore?.featureFlags.singleBranch
+			? $i18nMessages.t("desktop:BaseBranchSwitch.detail93d7d52f0")
+			: $i18nMessages.t("desktop:BaseBranchSwitch.detail25902b94f"),
 	);
 
 	async function switchTarget(branch: string, pushRemote?: string) {
@@ -63,7 +67,7 @@
 {#if remoteBranchesQuery.result.isLoading}
 	<InfoMessage filled outlined={false} icon="info">
 		{#snippet content()}
-			Loading remote branches...
+			{$i18nMessages.t("desktop:BaseBranchSwitch.loadingRemoteBranches")}
 		{/snippet}
 	</InfoMessage>
 {:else if remoteBranchesQuery.result.isSuccess}
@@ -73,12 +77,10 @@
 		<CardGroup>
 			<CardGroup.Item>
 				{#snippet title()}
-					Remote configuration
+					{$i18nMessages.t("desktop:BaseBranchSwitch.remoteConfiguration")}
 				{/snippet}
 				{#snippet caption()}
-					Lets you choose where to push code and set the target branch for contributions. The target
-					branch is usually the "production" branch like 'origin/master' or 'upstream/main.' This
-					section helps ensure your code goes to the correct remote and branch for integration.
+					{$i18nMessages.t("desktop:BaseBranchSwitch.letsYouChooseWhereToPushCodeAnd")}
 				{/snippet}
 
 				<Select
@@ -89,7 +91,7 @@
 						selectedBranch = value;
 					}}
 					disabled={targetChangeDisabled}
-					label="Current target branch"
+					label={$i18nMessages.t("desktop:BaseBranchSwitch.currentTargetBranch")}
 					searchable
 				>
 					{#snippet itemSnippet({ item, highlighted })}
@@ -108,7 +110,7 @@
 							selectedRemote = value;
 						}}
 						disabled={targetChangeDisabled}
-						label="Create branches on remote"
+						label={$i18nMessages.t("desktop:BaseBranchSwitch.createBranchesOnRemote")}
 					>
 						{#snippet itemSnippet({ item, highlighted })}
 							<SelectItem selected={item.value === selectedRemote} {highlighted}>
@@ -121,8 +123,9 @@
 				{#if targetChangeDisabled}
 					<InfoMessage filled outlined={false} icon="info">
 						{#snippet content()}
-							You have {stackCount === 1 ? "1 active branch" : `${stackCount} active branches`} in your
-							workspace. Please clear the workspace before switching the base branch.
+							{$i18nMessages.t("desktop:workspace.clearBeforeBaseSwitch", {
+								count: stackCount ?? 0,
+							})}
 						{/snippet}
 					</InfoMessage>
 				{:else}
@@ -135,7 +138,9 @@
 							selectedRemote === baseBranch?.pushRemoteName) ||
 							targetChangeDisabled}
 					>
-						{switching ? switchingLabel : "Update configuration"}
+						{switching
+							? switchingLabel
+							: $i18nMessages.t("desktop:BaseBranchSwitch.updateConfiguration")}
 					</Button>
 				{/if}
 			</CardGroup.Item>
@@ -144,7 +149,7 @@
 {:else if remoteBranchesQuery.result.isError}
 	<InfoMessage filled outlined={true} style="danger">
 		{#snippet title()}
-			We got an error trying to list your remote branches
+			{$i18nMessages.t("desktop:BaseBranchSwitch.weGotAnErrorTryingToListYour")}
 		{/snippet}
 	</InfoMessage>
 {/if}

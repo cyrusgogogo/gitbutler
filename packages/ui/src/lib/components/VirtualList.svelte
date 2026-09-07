@@ -28,13 +28,13 @@
 <script lang="ts" generics="T">
 	import Button from "$components/Button.svelte";
 	import ScrollableContainer from "$components/scroll/ScrollableContainer.svelte";
-
 	import { debounce } from "$lib/utils/debounce";
-
 	import { resizeObserver } from "$lib/utils/resizeObserver";
+	import { useTranslations } from "@gitbutler/i18n/svelte";
 	import { onDestroy, tick, untrack, type Snippet } from "svelte";
 	import { fade } from "svelte/transition";
 	import type { ScrollbarVisilitySettings } from "$components/scroll/Scrollbar.svelte";
+	const i18nMessages = useTranslations();
 
 	type Props = {
 		/** Array of items to render in the virtual list. */
@@ -986,7 +986,7 @@
 							jumpToIndex(items.length - 1);
 						}}
 					>
-						New unread
+						{$i18nMessages.t("ui:VirtualList.newUnread")}
 					</button>
 				{/if}
 				{#if showBottomButton && previousDistance > NEAR_BOTTOM_THRESHOLD}
@@ -994,7 +994,7 @@
 						<Button
 							kind="outline"
 							icon="arrow-down"
-							tooltip="Scroll to bottom"
+							tooltip={$i18nMessages.t("ui:VirtualList.scrollToBottom")}
 							onclick={() => {
 								if (items && items.length > 0) {
 									scrollToBottom();

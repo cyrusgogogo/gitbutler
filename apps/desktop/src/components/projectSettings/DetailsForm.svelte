@@ -2,7 +2,9 @@
 	import ReduxResult from "$components/shared/ReduxResult.svelte";
 	import { PROJECTS_SERVICE } from "$lib/project/projectsService";
 	import { inject } from "@gitbutler/core/context";
+	import { useTranslations } from "@gitbutler/i18n/svelte";
 	import { CardGroup, Spacer, Textarea, Textbox } from "@gitbutler/ui";
+	const i18nMessages = useTranslations();
 
 	const { projectId }: { projectId: string } = $props();
 
@@ -14,12 +16,17 @@
 	<ReduxResult {projectId} result={projectQuery.result}>
 		{#snippet children(project)}
 			<div class="fields-wrapper">
-				<Textbox label="Project path" readonly id="path" value={project?.path} />
+				<Textbox
+					label={$i18nMessages.t("desktop:DetailsForm.projectPath")}
+					readonly
+					id="path"
+					value={project?.path}
+				/>
 				<div class="description-wrapper">
 					<Textbox
-						label="Project name"
+						label={$i18nMessages.t("desktop:DetailsForm.projectName")}
 						id="name"
-						placeholder="Project name can't be empty"
+						placeholder={$i18nMessages.t("desktop:DetailsForm.projectNameCanTBeEmpty")}
 						value={project.title}
 						required
 						onchange={(value: string) => {
@@ -30,7 +37,7 @@
 						id="description"
 						minRows={3}
 						maxRows={6}
-						placeholder="Project description"
+						placeholder={$i18nMessages.t("desktop:DetailsForm.projectDescription")}
 						value={project.description}
 						oninput={(e: Event) => {
 							const target = e.currentTarget as HTMLTextAreaElement;

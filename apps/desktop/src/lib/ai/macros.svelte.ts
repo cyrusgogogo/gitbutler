@@ -1,4 +1,5 @@
 import { showToast } from "$lib/notifications/toasts";
+import { message as i18nMessage } from "@gitbutler/i18n";
 import type { PromptService } from "$lib/ai/aiPromptService";
 import type DiffInputContext from "$lib/ai/diffInputContext.svelte";
 import type { AIService, DiffInput } from "$lib/ai/service";
@@ -49,7 +50,7 @@ export default class AIMacros {
 			// consistent with the empty state.
 			showToast({
 				style: "info",
-				message: "Nothing to summarize yet — add or select some changes first.",
+				message: i18nMessage("desktop:macros.nothingToSummarizeYetAddOrSelectSome"),
 			});
 			return;
 		}
@@ -100,7 +101,7 @@ export default class AIMacros {
 		if (!diffInput) {
 			showToast({
 				style: "info",
-				message: "Nothing to summarize yet — add or select some changes first.",
+				message: i18nMessage("desktop:macros.nothingToSummarizeYetAddOrSelectSome"),
 			});
 			return { branchName: undefined, commitMessage: undefined };
 		}
@@ -109,7 +110,7 @@ export default class AIMacros {
 		if (!branchName) {
 			showToast({
 				style: "danger",
-				message: "Failed to generate branch name.",
+				message: i18nMessage("desktop:macros.failedToGenerateBranchName"),
 			});
 			return { branchName, commitMessage: undefined };
 		}
@@ -119,7 +120,7 @@ export default class AIMacros {
 		if (!commitMessage) {
 			showToast({
 				style: "danger",
-				message: "Failed to generate commit message.",
+				message: i18nMessage("desktop:macros.failedToGenerateCommitMessage"),
 			});
 			return { branchName, commitMessage };
 		}

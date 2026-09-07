@@ -1,3 +1,4 @@
+import { Message as I18nMessage, useTranslations } from "@gitbutler/i18n/react";
 import { assert } from "#ui/assert.ts";
 import { getButtonClassName } from "#ui/components/Button.tsx";
 import { classes } from "#ui/components/classes.ts";
@@ -43,6 +44,7 @@ export const DiffSearchBar: FC<Props> = ({
 	onMatchesChange,
 	getSearchSource,
 }) => {
+	const i18nMessages = useTranslations();
 	/** The query, or `null` while the search is closed. */
 	const [query, setQuery] = useState<string | null>(null);
 	const [index, setIndex] = useState(0);
@@ -147,8 +149,8 @@ export const DiffSearchBar: FC<Props> = ({
 					ref={inputRef}
 					className="text-13"
 					icon={<Icon name="search" />}
-					aria-label="Search diff"
-					placeholder="Search diff"
+					aria-label={i18nMessages.t("lite:DiffSearchBar.searchDiff")}
+					placeholder={i18nMessages.t("lite:DiffSearchBar.searchDiff")}
 					value={query}
 					onChange={(event) => {
 						setQuery(event.currentTarget.value);
@@ -162,13 +164,17 @@ export const DiffSearchBar: FC<Props> = ({
 
 			{query !== "" && (
 				<span className={classes("text-12", styles.matchCount)} aria-live="polite">
-					{current === null ? "No results" : `${current + 1} of ${matches.length}`}
+					{current === null ? (
+						<I18nMessage value={{ key: "lite:DiffSearchBar.noResults" }} />
+					) : (
+						`${current + 1} of ${matches.length}`
+					)}
 				</span>
 			)}
 
 			<button
 				type="button"
-				aria-label="Previous match"
+				aria-label={i18nMessages.t("lite:DiffSearchBar.previousMatch")}
 				disabled={matches.length === 0}
 				className={getButtonClassName({ size: "small", variant: "ghost", iconOnly: true })}
 				onClick={() => step(-1)}
@@ -177,7 +183,7 @@ export const DiffSearchBar: FC<Props> = ({
 			</button>
 			<button
 				type="button"
-				aria-label="Next match"
+				aria-label={i18nMessages.t("lite:DiffSearchBar.nextMatch")}
 				disabled={matches.length === 0}
 				className={getButtonClassName({ size: "small", variant: "ghost", iconOnly: true })}
 				onClick={() => step(1)}
@@ -186,7 +192,7 @@ export const DiffSearchBar: FC<Props> = ({
 			</button>
 			<button
 				type="button"
-				aria-label="Close search"
+				aria-label={i18nMessages.t("lite:DiffSearchBar.closeSearch")}
 				className={getButtonClassName({ size: "small", variant: "ghost", iconOnly: true })}
 				onClick={close}
 			>

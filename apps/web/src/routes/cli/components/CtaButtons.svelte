@@ -1,7 +1,10 @@
 <script lang="ts">
 	import { getOS } from "$lib/utils/getOS";
 	import { fetchAndProcessReleases, findLinuxCliBuild } from "$lib/utils/releaseUtils";
-	import { onMount } from "svelte";
+	import { useTranslations } from "@gitbutler/i18n/svelte";
+	import RichMessage from "@gitbutler/ui/i18n/RichMessage.svelte";
+	import { onMount, type Snippet } from "svelte";
+	const i18nMessages = useTranslations();
 
 	interface Props {
 		darkMode?: boolean;
@@ -39,17 +42,23 @@
 
 <section class="cta-wrap" class:dark-mode={darkMode}>
 	<button type="button" class="copy-button" class:copied onclick={handleCopy}>
-		<h3>Get the But CLI</h3>
+		<h3>{$i18nMessages.t("web:CtaButtons.getTheButCLI")}</h3>
 
 		{#if isLinux && cliBinaryUrl}
 			<code class="subtitle-text">curl -fsSL https://gitbutler.com/install.sh | sh</code>
-			<code class="subtitle-text-pop"
-				>or <a
-					class="subtitle-link"
-					href={cliBinaryUrl}
-					onclick={(e) => e.stopPropagation()}
-					onmousedown={(e) => e.stopPropagation()}>Download the binary</a
-				>
+			<code class="subtitle-text-pop">
+				{#snippet download(children: Snippet)}
+					<a
+						class="subtitle-link"
+						href={cliBinaryUrl}
+						onclick={(e) => e.stopPropagation()}
+						onmousedown={(e) => e.stopPropagation()}>{@render children()}</a
+					>
+				{/snippet}
+				<RichMessage
+					value={{ key: "web:CtaButtons.binaryAlternative" }}
+					components={{ download }}
+				/>
 				<svg
 					class="subtitle-icon"
 					width="12"
@@ -126,7 +135,7 @@
 		</svg>
 
 		<div class="flex items-center gap-16 justify-between">
-			<span>View docs</span>
+			<span>{$i18nMessages.t("web:CtaButtons.viewDocs")}</span>
 			<svg
 				class="docs-button__arrow"
 				width="22"

@@ -1,3 +1,4 @@
+import { useTranslations } from "@gitbutler/i18n/react";
 import { Badge } from "#ui/components/Badge.tsx";
 import { classes } from "#ui/components/classes.ts";
 import { Icon } from "#ui/components/Icon.tsx";
@@ -7,10 +8,6 @@ import { Tooltip } from "@base-ui/react";
 import type { Stack } from "@gitbutler/but-sdk";
 import type { FC } from "react";
 import styles from "./StacksSummary.module.css";
-
-const pluralRules = new Intl.PluralRules("en");
-const branches = (count: number) =>
-	`${count} branch${pluralRules.select(count) === "one" ? "" : "es"}`;
 
 /**
  * Stands in for the stacks a folded panel hides, the way a folded branch row's
@@ -22,13 +19,16 @@ const branches = (count: number) =>
  * has something to report, so seeing one always means something.
  */
 export const StacksSummary: FC<{ stacks: Array<Stack> }> = ({ stacks }) => {
+	const i18nMessages = useTranslations();
 	const { branches: branchCount, unpushedBranches, hasConflicts } = workspaceStacksSummary(stacks);
 	if (branchCount === 0) return null;
 
 	const spoken = [
-		branches(branchCount),
-		...(unpushedBranches > 0 ? [`${unpushedBranches} with unpushed commits`] : []),
-		...(hasConflicts ? ["some conflicted"] : []),
+		i18nMessages.t("lite:stacks.branches", { count: branchCount }),
+		...(unpushedBranches > 0
+			? [i18nMessages.t("lite:StacksSummary.labelb27dc1398", { value0: unpushedBranches })]
+			: []),
+		...(hasConflicts ? [i18nMessages.t("lite:StacksSummary.label79f71b346")] : []),
 	].join(", ");
 
 	return (

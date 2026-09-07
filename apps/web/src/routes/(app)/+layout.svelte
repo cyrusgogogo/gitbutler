@@ -9,6 +9,7 @@
 	import { WebState, WEB_STATE } from "$lib/redux/store.svelte";
 	import { UserService, USER_SERVICE } from "$lib/user/userService";
 	import { provide } from "@gitbutler/core/context";
+	import { useTranslations } from "@gitbutler/i18n/svelte";
 	import { BranchService, BRANCH_SERVICE } from "@gitbutler/shared/branches/branchService";
 	import {
 		LatestBranchLookupService,
@@ -61,6 +62,7 @@
 	import { type Snippet } from "svelte";
 	import { readable } from "svelte/store";
 	import { env } from "$env/dynamic/public";
+	const i18nMessages = useTranslations();
 
 	const CHAT_NOTFICATION_SOUND = "/sounds/pop.mp3";
 
@@ -159,7 +161,7 @@
 		if (!hasNavigation) return [];
 
 		if (page.route.id === "/(app)/profile") {
-			return [{ label: "Profile", href: "/profile" }];
+			return [{ label: $i18nMessages.t("web:layout.profile"), href: "/profile" }];
 		}
 		return [];
 	}

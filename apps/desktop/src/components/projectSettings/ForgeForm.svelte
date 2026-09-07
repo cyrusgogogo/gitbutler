@@ -25,9 +25,10 @@
 	import { LISTING_SERVICE } from "$lib/forge/listingService.svelte";
 	import { PROJECTS_SERVICE } from "$lib/project/projectsService";
 	import { inject } from "@gitbutler/core/context";
+	import { useTranslations } from "@gitbutler/i18n/svelte";
 	import { reactive } from "@gitbutler/shared/reactiveUtils.svelte";
 	import { CardGroup, Select, SelectItem } from "@gitbutler/ui";
-
+	import I18nRichMessage from "@gitbutler/ui/i18n/RichMessage.svelte";
 	import type { Project } from "$lib/project/project";
 	import type {
 		BitbucketAccountIdentifier,
@@ -38,16 +39,17 @@
 		GitlabAccountIdentifier,
 		ReviewStackingDescription,
 	} from "@gitbutler/but-sdk";
+	const i18nMessages = useTranslations();
 
 	type ForgeSelection = ForgeName | "default";
 
-	const FORGE_OPTIONS: { label: string; value: ForgeSelection }[] = [
-		{ label: "None", value: "default" },
+	const FORGE_OPTIONS: { label: string; value: ForgeSelection }[] = $derived([
+		{ label: $i18nMessages.t("desktop:ForgeForm.none"), value: "default" },
 		{ label: "GitHub", value: "github" },
 		{ label: "GitLab", value: "gitlab" },
-		{ label: "Azure", value: "azure" },
-		{ label: "BitBucket", value: "bitbucket" },
-	];
+		{ label: $i18nMessages.t("desktop:ForgeForm.azure"), value: "azure" },
+		{ label: $i18nMessages.t("desktop:ForgeForm.bitBucket"), value: "bitbucket" },
+	]);
 
 	const { projectId }: { projectId: string } = $props();
 
@@ -143,23 +145,32 @@
 <CardGroup>
 	<CardGroup.Item>
 		{#snippet title()}
-			Forge override
+			{$i18nMessages.t("desktop:ForgeForm.forgeOverride")}
 		{/snippet}
 
 		{#snippet caption()}
 			{#if determinedForgeType === "default"}
-				We couldn't detect which Forge you're using.
-				<br />
-				To enable Forge integration, please select your Forge from the dropdown below.
-				<br />
-				<span class="text-bold">Note:</span> Currently, only GitHub, GitLab and Bitbucket support pull
-				request creation.
+				{#snippet i18nSlot1()}<br />{/snippet}
+				{#snippet i18nSlot2()}<br />{/snippet}
+				{#snippet i18nSlot3(content: import("svelte").Snippet)}<span class="text-bold"
+						>{@render content()}</span
+					>{/snippet}
+				<I18nRichMessage
+					value={{ key: "desktop:ForgeForm.weCouldnTDetectWhichForgeYouRe" }}
+					components={{ slot1: i18nSlot1, slot2: i18nSlot2, slot3: i18nSlot3 }}
+				/>
 			{:else}
-				We’ve detected that you’re using <span class="text-bold"
-					>{determinedForgeType.toUpperCase()}</span
-				>.
-				<br />
-				At the moment, it’s not possible to manually override the detected forge type.
+				{#snippet i18nSlot4(content: import("svelte").Snippet)}<span class="text-bold"
+						>{@render content()}</span
+					>{/snippet}
+				{#snippet i18nSlot5()}<br />{/snippet}
+				<I18nRichMessage
+					value={{
+						key: "desktop:ForgeForm.weVeDetectedThatYouReUsingValue",
+						values: { value: String(determinedForgeType.toUpperCase()) },
+					}}
+					components={{ slot4: i18nSlot4, slot5: i18nSlot5 }}
+				/>
 			{/if}
 		{/snippet}
 
@@ -181,22 +192,22 @@
 
 	<CardGroup.Item>
 		{#snippet title()}
-			Stack information in review descriptions
+			{$i18nMessages.t("desktop:ForgeForm.stackInformationInReviewDescriptions")}
 		{/snippet}
 
 		{#snippet caption()}
-			Choose where GitButler-managed stack information appears. Changes apply on the next review
-			sync. The default is Bottom. Does not apply to native GitHub stacked pull requests, where
-			GitHub shows the stack on its own.
+			{$i18nMessages.t(
+				"desktop:ForgeForm.chooseWhereGitButlerManagedStackInformationAppearsChanges",
+			)}
 		{/snippet}
 
 		<div data-testid="review-stacking-description-select">
 			<Select
 				value={reviewStackingDescription}
 				options={[
-					{ label: "Bottom", value: "bottom" },
-					{ label: "Top", value: "top" },
-					{ label: "Disabled", value: "disabled" },
+					{ label: $i18nMessages.t("desktop:ForgeForm.bottom"), value: "bottom" },
+					{ label: $i18nMessages.t("desktop:ForgeForm.top"), value: "top" },
+					{ label: $i18nMessages.t("desktop:ForgeForm.disabled"), value: "disabled" },
 				]}
 				wide
 				onselect={(value) => updateReviewStackingDescription(value as ReviewStackingDescription)}
@@ -215,24 +226,20 @@
 	{#if forgeInfo?.name === "github"}
 		<CardGroup.Item>
 			{#snippet title()}
-				Native GitHub stacked pull requests
+				{$i18nMessages.t("desktop:ForgeForm.nativeGitHubStackedPullRequests")}
 			{/snippet}
 
 			{#snippet caption()}
-				Register this project’s reviewed stacks with GitHub’s private-preview stacks API. Higher
-				pull requests may merge the pull requests below them. Auto falls back to description
-				metadata when the repository is not enrolled in the preview, while Native reports an error.
-				Changes apply on the next push or pull request creation. Fork-backed pull requests always
-				use description metadata.
+				{$i18nMessages.t("desktop:ForgeForm.registerThisProjectSReviewedStacksWithGitHub")}
 			{/snippet}
 
 			<div data-testid="github-stacking-mode-select">
 				<Select
 					value={githubStackingMode}
 					options={[
-						{ label: "Auto", value: "auto" },
-						{ label: "Disabled", value: "disabled" },
-						{ label: "Native", value: "native" },
+						{ label: $i18nMessages.t("desktop:ForgeForm.inlinec614ba7c4"), value: "auto" },
+						{ label: $i18nMessages.t("desktop:ForgeForm.disabled"), value: "disabled" },
+						{ label: $i18nMessages.t("desktop:ForgeForm.native"), value: "native" },
 					]}
 					wide
 					onselect={(value) => updateGitHubStackingMode(value as GitHubStackingMode)}

@@ -4,7 +4,9 @@
 	import { BASE_BRANCH_SERVICE } from "$lib/baseBranch/baseBranchService.svelte";
 	import { PROJECTS_SERVICE } from "$lib/project/projectsService";
 	import { inject } from "@gitbutler/core/context";
+	import { useTranslations } from "@gitbutler/i18n/svelte";
 	import { CardGroup } from "@gitbutler/ui";
+	const i18nMessages = useTranslations();
 
 	interface Props {
 		// Used by credential checker before target branch set
@@ -29,11 +31,12 @@
 		<CardGroup>
 			<CardGroup.Item>
 				{#snippet title()}
-					Git authentication
+					{$i18nMessages.t("desktop:KeysForm.gitAuthentication")}
 				{/snippet}
 				{#snippet caption()}
-					GitButler authenticates with your Git remote provider through the Git executable available
-					on your PATH.
+					{$i18nMessages.t(
+						"desktop:KeysForm.gitButlerAuthenticatesWithYourGitRemoteProviderThrough",
+					)}
 				{/snippet}
 				<CredentialCheck
 					{disabled}

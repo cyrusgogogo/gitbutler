@@ -70,6 +70,10 @@ fn main() -> anyhow::Result<()> {
     let mut app_settings =
         AppSettingsWithDiskSync::new_with_customization(config_dir.clone(), custom_settings)
             .expect("failed to create app settings");
+    let menu_locale = menu::MenuLocale::resolve(
+        app_settings.get()?.ui.language,
+        tauri_plugin_os::locale().as_deref(),
+    );
 
     if let Ok(updated_csp) = csp_with_extras(
         tauri_context.config().app.security.csp.as_ref().cloned(),
@@ -212,6 +216,7 @@ fn main() -> anyhow::Result<()> {
             .plugin(tauri_plugin_store::Builder::default().build())
             .plugin(log.build())
             .invoke_handler(tauri::generate_handler![
+                menu::set_menu_locale,
                 github::tauri_init_github_device_oauth::init_github_device_oauth,
                 github::tauri_check_github_auth_status::check_github_auth_status,
                 github::tauri_store_github_pat::store_github_pat,
@@ -387,7 +392,7 @@ fn main() -> anyhow::Result<()> {
                 resolve::tauri_resolve_commit_conflict_hunks::resolve_commit_conflict_hunks,
                 platform::tauri_build_type::build_type,
             ])
-            .menu(menu::build)
+            .menu(move |handle| menu::build(handle, menu_locale))
             .on_window_event(|window, event| match event {
                 #[cfg(target_os = "macos")]
                 tauri::WindowEvent::CloseRequested { .. } => {

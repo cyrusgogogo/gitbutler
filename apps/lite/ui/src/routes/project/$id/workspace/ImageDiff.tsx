@@ -1,3 +1,4 @@
+import { Message as I18nMessage, useTranslations } from "@gitbutler/i18n/react";
 import { blobFileQueryOptions, workspaceFileQueryOptions } from "#ui/api/queries.ts";
 import type { FileParent } from "#ui/addresses.ts";
 import type { TreeChange } from "@gitbutler/but-sdk";
@@ -95,24 +96,35 @@ const useImageUrl = (projectId: string, source: ImageSource | null) => {
 
 const ImagePanel: FC<{
 	url: string | null;
-	label: "Before" | "After";
+	label: string;
 	path: string;
 	isLoading: boolean;
 	isError: boolean;
-}> = ({ url, label, path, isLoading, isError }) => (
-	<div className={styles.panel}>
-		<div className={styles.imageWrapper}>
-			{isLoading ? (
-				<span className="text-13">Loading image…</span>
-			) : url !== null ? (
-				<img src={url} alt={`${path} (${label})`} />
-			) : (
-				<span className="text-13">{isError ? "Could not load image" : "No image"}</span>
-			)}
+}> = ({ url, label, path, isLoading, isError }) => {
+	const i18nMessages = useTranslations();
+	return (
+		<div className={styles.panel}>
+			<div className={styles.imageWrapper}>
+				{isLoading ? (
+					<span className="text-13">
+						<I18nMessage value={{ key: "lite:ImageDiff.loadingImage" }} />
+					</span>
+				) : url !== null ? (
+					<img src={url} alt={i18nMessages.t("lite:ImageDiff.valueValue", { path, label })} />
+				) : (
+					<span className="text-13">
+						{isError ? (
+							<I18nMessage value={{ key: "lite:ImageDiff.couldNotLoadImage" }} />
+						) : (
+							<I18nMessage value={{ key: "lite:ImageDiff.noImage" }} />
+						)}
+					</span>
+				)}
+			</div>
+			<div className="text-12">{label}</div>
 		</div>
-		<div className="text-12">{label}</div>
-	</div>
-);
+	);
+};
 
 export const ImageDiff: FC<{
 	projectId: string;
@@ -120,6 +132,7 @@ export const ImageDiff: FC<{
 	fileParent: FileParent;
 	version: number;
 }> = ({ projectId, change, fileParent, version }) => {
+	const i18nMessages = useTranslations();
 	const sources = imageSources(change, fileParent, version);
 	const before = useImageUrl(projectId, sources.before);
 	const after = useImageUrl(projectId, sources.after);
@@ -129,7 +142,7 @@ export const ImageDiff: FC<{
 			{sources.before && (
 				<ImagePanel
 					url={before.url}
-					label="Before"
+					label={i18nMessages.t("lite:ImageDiff.before")}
 					path={sources.before.path}
 					isLoading={before.isLoading}
 					isError={before.isError}
@@ -138,7 +151,7 @@ export const ImageDiff: FC<{
 			{sources.after && (
 				<ImagePanel
 					url={after.url}
-					label="After"
+					label={i18nMessages.t("lite:ImageDiff.after")}
 					path={sources.after.path}
 					isLoading={after.isLoading}
 					isError={after.isError}

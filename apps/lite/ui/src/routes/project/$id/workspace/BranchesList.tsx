@@ -1,3 +1,6 @@
+import type { LocalizedText } from "@gitbutler/i18n";
+import { message as i18nMessage } from "@gitbutler/i18n";
+import { Message as I18nMessage, useTranslations } from "@gitbutler/i18n/react";
 import rowStyles from "./Row.module.css";
 import uiStyles from "#ui/components/ui.module.css";
 import { useBranchRemove } from "#ui/api/mutations.ts";
@@ -74,10 +77,10 @@ import type { NewBranchActions } from "./useNewBranch.ts";
 import styles from "./BranchesList.module.css";
 
 /** The filter menu, in the order it is shown. */
-const filterMenuLabels: Array<[keyof BranchFilters, string]> = [
-	["showEmpty", "Include Empty Branches"],
-	["onlyLocal", "Show Only Local Branches"],
-	["onlyStacks", "Show Only Stacks"],
+const filterMenuLabels: Array<[keyof BranchFilters, LocalizedText]> = [
+	["showEmpty", i18nMessage("lite:branchFilter.showEmpty")],
+	["onlyLocal", i18nMessage("lite:branchFilter.onlyLocal")],
+	["onlyStacks", i18nMessage("lite:branchFilter.onlyStacks")],
 ];
 
 /**
@@ -104,6 +107,7 @@ const CommitItem: FC<{
 	positionInSet: number;
 	setSize: number;
 }> = ({ commit, positionInSet, setSize }) => {
+	const i18nMessages = useTranslations();
 	const address = commitAddress({ commitId: commit.id, changeId: commit.changeId });
 	const isSelected = useIsSelected(address);
 	const title = commitTitle(commit.message);
@@ -111,7 +115,7 @@ const CommitItem: FC<{
 		startKeyboardTransfer({ sources: [address], kind: "copy", placement: "above" });
 	const menuItems: Array<NativeMenuItem> = [
 		nativeMenuItem({
-			label: "Copy Commit",
+			label: i18nMessage("lite:BranchesList.copyCommit"),
 			accelerator: toElectronAccelerator(branchesHotkeys.copy.hotkey),
 			onSelect: copyCommit,
 		}),
@@ -122,7 +126,7 @@ const CommitItem: FC<{
 		<Row
 			id={treeItemId(address)}
 			role="treeitem"
-			aria-label={title ?? "(no message)"}
+			aria-label={title ?? i18nMessages.t("lite:BranchesList.noMessage")}
 			aria-level={2}
 			aria-posinset={positionInSet}
 			aria-setsize={setSize}
@@ -138,7 +142,13 @@ const CommitItem: FC<{
 			/>
 			<RowLabelContainer>
 				<RowLabel singleLine>
-					{title === undefined ? <span className={rowStyles.fadedText}>(no message)</span> : title}
+					{title === undefined ? (
+						<span className={rowStyles.fadedText}>
+							<I18nMessage value={{ key: "lite:BranchesList.noMessage" }} />
+						</span>
+					) : (
+						title
+					)}
 				</RowLabel>
 			</RowLabelContainer>
 		</Row>
@@ -162,6 +172,7 @@ const BranchCommits: FC<{
 	branchAddressIndex,
 	selectedCommitIndex,
 }) => {
+	const i18nMessages = useTranslations();
 	const getCommitKey = useCallback((index: number) => commits?.[index]?.id ?? index, [commits]);
 	const rangeExtractorWithSelected = useCallback(
 		(range: Range) =>
@@ -223,9 +234,11 @@ const BranchCommits: FC<{
 		lastRevealedCommitIndexRef.current = selectedCommitIndex;
 	}, [rowVirtualizer, selectedCommitIndex]);
 
-	if (commits === undefined) return <InertRow branch={branch} label="Loading…" />;
+	if (commits === undefined)
+		return <InertRow branch={branch} label={i18nMessages.t("lite:BranchesList.loading")} />;
 
-	if (commits.length === 0) return <InertRow branch={branch} label="No commits." />;
+	if (commits.length === 0)
+		return <InertRow branch={branch} label={i18nMessages.t("lite:BranchesList.noCommits")} />;
 
 	return (
 		// oxlint-disable-next-line jsx-a11y/prefer-tag-over-role -- Tree items need ARIA group semantics.
@@ -286,6 +299,7 @@ const BranchItem: FC<{
 	positionInSet,
 	setSize,
 }) => {
+	const i18nMessages = useTranslations();
 	const dispatch = useAppDispatch();
 	const branchRef = branch.refName.full;
 	const address = branchAddress({ branchRef: encodeBytes(branchRef) });
@@ -322,19 +336,22 @@ const BranchItem: FC<{
 		nativeMenuItem({
 			// Branches run from the tip down, so applying the top branch of a stack
 			// brings the whole stack with it — the label says so.
-			label: isTopBranch && isStacked ? "Apply Stack to Workspace" : "Apply to Workspace",
+			label:
+				isTopBranch && isStacked
+					? i18nMessage("lite:BranchesList.applyStackToWorkspace")
+					: i18nMessage("lite:BranchesList.applyToWorkspace"),
 			enabled: !isApplyPending,
 			onSelect: () => apply(branchRef),
 		}),
 		nativeMenuSeparator,
 		nativeMenuItem({
-			label: "Open Pull Request In Browser",
+			label: i18nMessage("lite:BranchesList.openPullRequestInBrowser"),
 			enabled: review !== null,
 			onSelect: openReviewInBrowser,
 		}),
 		nativeMenuSeparator,
 		nativeMenuItem({
-			label: "Delete Branch Reference",
+			label: i18nMessage("lite:BranchesList.deleteBranchReference"),
 			enabled: branch.hasLocal && !isBranchRemovePending,
 			accelerator: toElectronAccelerator(branchesHotkeys.deleteBranchRef.hotkey),
 			onSelect: () => branchRemove({ projectId, refName: encodeBytes(branchRef) }),
@@ -374,7 +391,11 @@ const BranchItem: FC<{
 				{canUnfold ? (
 					<RowFoldToggle
 						folded={!unfolded}
-						aria-label={unfolded ? "Fold commits" : "Unfold commits"}
+						aria-label={
+							unfolded
+								? i18nMessages.t("lite:BranchesList.foldCommits")
+								: i18nMessages.t("lite:BranchesList.unfoldCommits")
+						}
 						onClick={toggleUnfolded}
 						glyph={<GraphSegment glyph={railGlyph} status={branchGraphStatus(branch)} />}
 						foldedIndicator={<GraphSegment glyph="group" status={branchGraphStatus(branch)} />}
@@ -437,9 +458,12 @@ const BranchItem: FC<{
 					</RowMeta>
 				</RowLabelGroup>
 
-				<Toolbar.Root aria-label="Branch actions" render={<RowToolbar />}>
+				<Toolbar.Root
+					aria-label={i18nMessages.t("lite:BranchesList.branchActions")}
+					render={<RowToolbar />}
+				>
 					<Toolbar.Button
-						aria-label="Branch menu"
+						aria-label={i18nMessages.t("lite:BranchesList.branchMenu")}
 						onClick={(event) => {
 							void showNativeMenuFromTrigger(event.currentTarget, menuItems);
 						}}
@@ -478,6 +502,7 @@ export const BranchesList: FC<
 		newBranch: NewBranchActions;
 	} & ComponentProps<"div">
 > = ({ projectId, branches, isPending, isError, newBranch, ...restProps }) => {
+	const i18nMessages = useTranslations();
 	const dispatch = useAppDispatch();
 
 	// WorkspacePage resolves selection from this query data and passes the same data down, so
@@ -676,12 +701,15 @@ export const BranchesList: FC<
 			{branchFilter.rowProps === null ? (
 				<SectionHeaderRow
 					className={styles.header}
-					label="Recent branches"
+					label={i18nMessages.t("lite:BranchesList.recentBranches")}
 					actions={
-						<Toolbar.Root aria-label="Branch list actions" render={<RowToolbar forceVisible />}>
+						<Toolbar.Root
+							aria-label={i18nMessages.t("lite:BranchesList.branchListActions")}
+							render={<RowToolbar forceVisible />}
+						>
 							<Toolbar.Group className={styles.headerGroup}>
 								<Toolbar.Button
-									aria-label="Branch filters"
+									aria-label={i18nMessages.t("lite:BranchesList.branchFilters")}
 									className={getRowButtonClassName({ size: "regular", iconOnly: true })}
 									onClick={(evt) => showFilterMenu(evt.currentTarget)}
 								>
@@ -689,7 +717,7 @@ export const BranchesList: FC<
 								</Toolbar.Button>
 
 								<Toolbar.Button
-									aria-label="Filter branches"
+									aria-label={i18nMessages.t("lite:BranchesList.filterBranches")}
 									className={getRowButtonClassName({ size: "regular", iconOnly: true })}
 									onClick={branchFilter.open}
 								>
@@ -700,7 +728,7 @@ export const BranchesList: FC<
 							<Toolbar.Separator className={styles.headerSeparator} />
 
 							<Toolbar.Button
-								aria-label="New branch"
+								aria-label={i18nMessages.t("lite:BranchesList.newBranch")}
 								className={getRowButtonClassName({ size: "regular", iconOnly: true })}
 								onClick={(evt) => {
 									void showNativeMenuFromTrigger(evt.currentTarget, newBranch.menuItems);
@@ -726,25 +754,31 @@ export const BranchesList: FC<
 				    is empty with nothing narrowing it gets the block. */}
 				{stacks.length === 0 &&
 					(isPending ? (
-						<p className={classes("text-13", styles.msg)}>Loading branches…</p>
+						<p className={classes("text-13", styles.msg)}>
+							<I18nMessage value={{ key: "lite:BranchesList.loadingBranches" }} />
+						</p>
 					) : isError ? (
-						<p className={classes("text-13", styles.msg)}>Unable to load branches.</p>
+						<p className={classes("text-13", styles.msg)}>
+							<I18nMessage value={{ key: "lite:BranchesList.unableToLoadBranches" }} />
+						</p>
 					) : isNarrowed ? (
-						<p className={classes("text-13", styles.msg)}>No matching branches.</p>
+						<p className={classes("text-13", styles.msg)}>
+							<I18nMessage value={{ key: "lite:BranchesList.noMatchingBranches" }} />
+						</p>
 					) : (
 						<EmptyState
 							illustration="cactus"
-							title="No branches here"
+							title={i18nMessages.t("lite:BranchesList.noBranchesHere")}
 							// No button: the header's `+` already starts one, and it is the
 							// only action this state has.
-							description="Branches you are not working on show up in this list"
+							description={i18nMessages.t("lite:BranchesList.branchesYouAreNotWorkingOnShowUp")}
 						/>
 					))}
 
 				<div
 					tabIndex={0}
 					role="tree"
-					aria-label="Branches"
+					aria-label={i18nMessages.t("lite:BranchesList.branches")}
 					aria-activedescendant={selection ? treeItemId(selection) : undefined}
 					data-focus-scope={"sidebar" satisfies FocusScope}
 					className={classes(styles.tree, styles.virtualContainer)}
@@ -768,7 +802,7 @@ export const BranchesList: FC<
 								}}
 								// oxlint-disable-next-line jsx-a11y/prefer-tag-over-role -- A stack is an ARIA group of tree items.
 								role="group"
-								aria-label="Stack"
+								aria-label={i18nMessages.t("lite:BranchesList.stack")}
 							>
 								{stack.branches.map(({ branch, addressIndex, commits }, index) => {
 									const selectedCommitIndex =

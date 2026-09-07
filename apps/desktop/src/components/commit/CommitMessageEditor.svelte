@@ -16,10 +16,11 @@
 	import { UI_STATE } from "$lib/state/uiState.svelte";
 	import { WORKTREE_SERVICE } from "$lib/worktree/worktreeService.svelte";
 	import { inject } from "@gitbutler/core/context";
+	import { useTranslations } from "@gitbutler/i18n/svelte";
 	import { Button, TestId } from "@gitbutler/ui";
 	import { IME_COMPOSITION_HANDLER } from "@gitbutler/ui/utils/imeHandling";
-
 	import { tick, untrack } from "svelte";
+	const i18nMessages = useTranslations();
 
 	type Props = {
 		projectId: string;
@@ -49,9 +50,12 @@
 		loading,
 		title,
 		description,
-		floatingBoxHeader = "Create commit",
+		floatingBoxHeader: providedFloatingBoxHeader,
 		existingCommitId,
 	}: Props = $props();
+	const floatingBoxHeader = $derived(
+		providedFloatingBoxHeader ?? $i18nMessages.t("desktop:CommitMessageEditor.default0fa7c13a3"),
+	);
 
 	const uiState = inject(UI_STATE);
 	const aiService = inject(AI_SERVICE);
@@ -166,7 +170,7 @@
 		testId={TestId.CommitDrawerTitleInput}
 		bind:ref={titleInput}
 		bind:value={title}
-		placeholder="Commit title (required)"
+		placeholder={$i18nMessages.t("desktop:CommitMessageEditor.commitTitleRequired")}
 		onchange={(value) => {
 			onChange?.({ title: value });
 		}}
@@ -192,7 +196,7 @@
 		testId={TestId.CommitDrawerDescriptionInput}
 		bind:this={composer}
 		initialValue={description}
-		placeholder="Commit message"
+		placeholder={$i18nMessages.t("desktop:CommitMessageEditor.commitMessage")}
 		messageType="commit"
 		enableRuler
 		{projectId}
@@ -235,7 +239,9 @@
 			style="pop"
 			onclick={emitAction}
 			disabled={disabledAction || !title.trim()}
-			tooltip={!title.trim() ? "Commit title is required" : undefined}
+			tooltip={!title.trim()
+				? $i18nMessages.t("desktop:CommitMessageEditor.inline084fb69c1")
+				: undefined}
 			hotkey="⌘↵"
 			{loading}
 			wide>{actionLabel}</Button

@@ -30,11 +30,14 @@
 	import { UI_STATE } from "$lib/state/uiState.svelte";
 	import { sleep } from "$lib/utils/sleep";
 	import { inject } from "@gitbutler/core/context";
+	import { message as i18nMessage } from "@gitbutler/i18n";
+	import { useTranslations } from "@gitbutler/i18n/svelte";
 	import { persisted } from "@gitbutler/shared/persisted";
 	import { chipToasts, TestId } from "@gitbutler/ui";
 	import { IME_COMPOSITION_HANDLER } from "@gitbutler/ui/utils/imeHandling";
 	import { tick, untrack } from "svelte";
 	import type { Commit, Segment } from "@gitbutler/but-sdk";
+	const i18nMessages = useTranslations();
 
 	type Props = {
 		projectId: string;
@@ -223,7 +226,7 @@
 	async function createPr(params: CreatePrParams): Promise<PullRequest | undefined> {
 		try {
 			if (!params.upstreamBranchName) {
-				chipToasts.error("No upstream branch name determined");
+				chipToasts.error(i18nMessage("desktop:ReviewCreation.noUpstreamBranchNameDetermined"));
 				return;
 			}
 
@@ -242,14 +245,20 @@
 
 			const unit = forgeInfo?.unit.abbr || "PR";
 			const symbol = forgeInfo?.unit.symbol || "#";
-			chipToasts.success(`${unit} ${symbol}${pr.number} created successfully`);
+			chipToasts.success(
+				i18nMessage("desktop:ReviewCreation.valueValueValueCreatedSuccessfully", {
+					unit: String(unit),
+					symbol: String(symbol),
+					number: String(pr.number),
+				}),
+			);
 
 			return pr;
 		} catch (err: any) {
 			console.error(err);
 			const toast = mapErrorToToast(err);
 			if (toast) showToast(toast);
-			else showError("Error while creating pull request", err);
+			else showError(i18nMessage("desktop:ReviewCreation.errorWhileCreatingPullRequest"), err);
 		}
 	}
 
@@ -333,7 +342,9 @@
 					onClose();
 				}
 			})}
-			placeholder="{reviewUnitAbbr} title"
+			placeholder={$i18nMessages.t("desktop:ReviewCreation.valueTitle", {
+				reviewUnitAbbr: String(reviewUnitAbbr),
+			})}
 			showCount={false}
 			oninput={imeHandler.handleInput((e: Event) => {
 				const target = e.target as HTMLInputElement;
@@ -349,7 +360,9 @@
 			initialValue={$prBody}
 			enableFileUpload
 			enableSmiles
-			placeholder="{reviewUnitAbbr} Description"
+			placeholder={$i18nMessages.t("desktop:ReviewCreation.valueDescription", {
+				reviewUnitAbbr: String(reviewUnitAbbr),
+			})}
 			messageType="pr"
 			{reviewUnitAbbr}
 			{onAiButtonClick}

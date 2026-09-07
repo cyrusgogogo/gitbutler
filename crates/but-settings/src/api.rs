@@ -56,6 +56,7 @@ but_schemars::register_sdk_type!(FetchUpdate);
 #[schemars(extend("x-input" = true))]
 /// Update request for [`crate::app_settings::UiSettings`].
 pub struct UiUpdate {
+    pub language: Option<crate::app_settings::LanguagePreference>,
     pub use_native_title_bar: Option<bool>,
     pub no_shadow: Option<bool>,
     // Note that the CLI related information cannot be set - it's set at compile time.
@@ -125,6 +126,9 @@ impl AppSettingsWithDiskSync {
 
     pub fn update_ui(&self, update: UiUpdate) -> Result<()> {
         let mut settings = self.get_mut_enforce_save()?;
+        if let Some(language) = update.language {
+            settings.ui.language = language;
+        }
         if let Some(use_native_title_bar) = update.use_native_title_bar {
             settings.ui.use_native_title_bar = use_native_title_bar;
         }
@@ -138,6 +142,55 @@ impl AppSettingsWithDiskSync {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn gui_language_updates_persist_without_changing_other_preferences() {
+        use crate::app_settings::LanguagePreference;
+        let (dir, settings) = create_test_settings();
+        let original = settings.get().unwrap().clone();
+        assert_eq!(
+            original.ui.language,
+            LanguagePreference::System,
+            "old settings follow the system"
+        );
+        settings
+            .update_ui(UiUpdate {
+                language: Some(LanguagePreference::SimplifiedChinese),
+                ..Default::default()
+            })
+            .unwrap();
+        let reloaded = AppSettingsWithDiskSync::new_with_customization(dir.path(), None).unwrap();
+        let mut expected = original;
+        expected.ui.language = LanguagePreference::SimplifiedChinese;
+        assert_eq!(
+            *reloaded.get().unwrap(),
+            expected,
+            "a language change preserves all other settings"
+        );
+        settings
+            .update_ui(UiUpdate {
+                language: Some(LanguagePreference::System),
+                ..Default::default()
+            })
+            .unwrap();
+        let reloaded = AppSettingsWithDiskSync::new_with_customization(dir.path(), None).unwrap();
+        assert_eq!(
+            reloaded.get().unwrap().ui.language,
+            LanguagePreference::System,
+            "following the system can be restored"
+        );
+    }
+
+    #[test]
+    fn unknown_gui_language_is_forward_compatible() {
+        let preference: crate::app_settings::LanguagePreference =
+            serde_json::from_str("\"fr\"").unwrap();
+        assert_eq!(
+            preference,
+            crate::app_settings::LanguagePreference::System,
+            "a future language does not prevent settings from loading"
+        );
+    }
 
     fn create_test_settings() -> (tempfile::TempDir, AppSettingsWithDiskSync) {
         let temp_dir = tempfile::TempDir::new().unwrap();

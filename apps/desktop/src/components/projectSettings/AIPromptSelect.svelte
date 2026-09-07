@@ -1,10 +1,12 @@
 <script lang="ts">
 	import { PROMPT_SERVICE } from "$lib/ai/aiPromptService";
 	import { inject } from "@gitbutler/core/context";
+	import { useTranslations } from "@gitbutler/i18n/svelte";
 	import { Select, SelectItem } from "@gitbutler/ui";
 	import { onMount, untrack } from "svelte";
 	import type { Prompts, UserPrompt } from "$lib/ai/types";
 	import type { Persisted } from "@gitbutler/shared/persisted";
+	const i18nMessages = useTranslations();
 
 	type Props = {
 		projectId: string;
@@ -33,7 +35,11 @@
 
 	function setAllPrompts(userPrompts: UserPrompt[]) {
 		allPrompts = [
-			{ name: "Default Prompt", id: defaultId, prompt: prompts.defaultPrompt },
+			{
+				name: $i18nMessages.t("desktop:AIPromptSelect.detailfa3dbde80"),
+				id: defaultId,
+				prompt: prompts.defaultPrompt,
+			},
 			...userPrompts,
 		];
 	}
@@ -52,7 +58,9 @@
 <Select
 	value={$selectedPromptId}
 	options={allPrompts.map((p) => ({ label: p.name, value: p.id }))}
-	label={promptUse === "commits" ? "Commit message" : "Branch name"}
+	label={promptUse === "commits"
+		? $i18nMessages.t("desktop:AIPromptSelect.inlinea63595768")
+		: $i18nMessages.t("desktop:AIPromptSelect.inline748f3d06e")}
 	wide={true}
 	searchable
 	disabled={allPrompts.length === 1}

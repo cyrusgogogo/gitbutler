@@ -1,3 +1,5 @@
+import { createI18n } from "@gitbutler/i18n";
+import { resources } from "@gitbutler/i18n/catalogs/lite";
 import {
 	buildPrDescriptionPrompt,
 	prDescriptionGenerationButtonState,
@@ -8,45 +10,52 @@ import { describe, expect, test } from "vitest";
 
 const commit = (message: string) => ({ message }) as Commit;
 
+const english = createI18n(resources, "en");
+const buttonStateInEnglish = (input: Parameters<typeof prDescriptionGenerationButtonState>[0]) => {
+	const state = prDescriptionGenerationButtonState(input);
+	return { ...state, hint: state.hint === null ? null : english.text(state.hint) };
+};
+
 describe("prDescriptionGenerationButtonState", () => {
 	const base = { enabled: true, configured: true, busy: false, commitCount: 1 };
 
 	test("reports an unconfigured provider ahead of a disabled project setting", () => {
-		expect(
-			prDescriptionGenerationButtonState({ ...base, configured: false, enabled: false }),
-		).toEqual({ disabled: true, hint: "Set up AI in Settings → Application → AI" });
+		expect(buttonStateInEnglish({ ...base, configured: false, enabled: false })).toEqual({
+			disabled: true,
+			hint: "Set up AI in Settings → Application → AI",
+		});
 	});
 
 	test("asks for the project setting once a provider exists", () => {
-		expect(prDescriptionGenerationButtonState({ ...base, enabled: false })).toEqual({
+		expect(buttonStateInEnglish({ ...base, enabled: false })).toEqual({
 			disabled: true,
 			hint: "Enable AI in Settings → Project → AI",
 		});
 	});
 
 	test("says nothing while the branch's commits are still loading", () => {
-		expect(prDescriptionGenerationButtonState({ ...base, commitCount: undefined })).toEqual({
+		expect(buttonStateInEnglish({ ...base, commitCount: undefined })).toEqual({
 			disabled: true,
 			hint: null,
 		});
 	});
 
 	test("has nothing to describe without commits", () => {
-		expect(prDescriptionGenerationButtonState({ ...base, commitCount: 0 })).toEqual({
+		expect(buttonStateInEnglish({ ...base, commitCount: 0 })).toEqual({
 			disabled: true,
 			hint: "No commits to describe",
 		});
 	});
 
 	test("locks while busy, but keeps the plain label", () => {
-		expect(prDescriptionGenerationButtonState({ ...base, busy: true })).toEqual({
+		expect(buttonStateInEnglish({ ...base, busy: true })).toEqual({
 			disabled: true,
 			hint: null,
 		});
 	});
 
 	test("is ready when set up and idle", () => {
-		expect(prDescriptionGenerationButtonState(base)).toEqual({ disabled: false, hint: null });
+		expect(buttonStateInEnglish(base)).toEqual({ disabled: false, hint: null });
 	});
 });
 

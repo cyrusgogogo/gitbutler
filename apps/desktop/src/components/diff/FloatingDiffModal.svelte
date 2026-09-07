@@ -17,12 +17,14 @@
 	import { ScrollSelectionLock } from "$lib/selection/scrollSelectionLock.svelte";
 	import { UI_STATE } from "$lib/state/uiState.svelte";
 	import { inject } from "@gitbutler/core/context";
+	import { useTranslations } from "@gitbutler/i18n/svelte";
 	import { Button, FileViewHeader, HunkDiffSkeleton, Icon, VirtualList } from "@gitbutler/ui";
 	import { FOCUS_MANAGER } from "@gitbutler/ui/focus/focusManager";
 	import { type FocusableOptions } from "@gitbutler/ui/focus/focusTypes";
 	import { focusable } from "@gitbutler/ui/focus/focusable";
 	import { tick, untrack } from "svelte";
 	import type { TreeChange } from "@gitbutler/but-sdk";
+	const i18nMessages = useTranslations();
 
 	interface Props {
 		projectId: string;
@@ -147,7 +149,7 @@
 						<Icon name="drag-square" />
 					</div>
 					<ChangedFileStats
-						title="Files changed"
+						title={$i18nMessages.t("desktop:FloatingDiffModal.filesChanged")}
 						bind:mode={listMode}
 						persistId="floating-diff-modal"
 						fileCount={changes.length}

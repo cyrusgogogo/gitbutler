@@ -1,6 +1,8 @@
 <script lang="ts">
+	import { useTranslations } from "@gitbutler/i18n/svelte";
 	import { Button, TestId } from "@gitbutler/ui";
 	import { type Snippet } from "svelte";
+	const i18nMessages = useTranslations();
 
 	interface Props {
 		CancelButtonLabel?: string;
@@ -8,7 +10,10 @@
 		children: Snippet;
 	}
 
-	const { children, CancelButtonLabel = "Cancel", onCancel }: Props = $props();
+	const { children, CancelButtonLabel: providedCancelButtonLabel, onCancel }: Props = $props();
+	const CancelButtonLabel = $derived(
+		providedCancelButtonLabel ?? $i18nMessages.t("desktop:EditorFooter.default77dfd2135"),
+	);
 </script>
 
 <div class="editor-footer">

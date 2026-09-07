@@ -1,3 +1,4 @@
+import { Message as I18nMessage, useTranslations } from "@gitbutler/i18n/react";
 import { branchListQueryOptions } from "#ui/api/queries.ts";
 import { unappliedStacks } from "#ui/branch.ts";
 import { getButtonClassName } from "#ui/components/Button.tsx";
@@ -25,6 +26,7 @@ export const NoStacks: FC<{ projectId: string; newBranch: NewBranchActions }> = 
 	projectId,
 	newBranch,
 }) => {
+	const i18nMessages = useTranslations();
 	// The same filters the branches page lists under, so the count promises
 	// exactly what "See all" then shows.
 	const filters = useAppSelector((state) =>
@@ -50,11 +52,15 @@ export const NoStacks: FC<{ projectId: string; newBranch: NewBranchActions }> = 
 	return (
 		<EmptyState
 			illustration="cactus"
-			title={hasBranchesElsewhere ? "Your workspace is empty" : "No branches yet"}
+			title={
+				hasBranchesElsewhere
+					? i18nMessages.t("lite:NoStacks.yourWorkspaceIsEmpty")
+					: i18nMessages.t("lite:NoStacks.noBranchesYet")
+			}
 			description={
 				hasBranchesElsewhere
-					? `You have ${unappliedBranchCount} ${unappliedBranchCount === 1 ? "branch" : "branches"} to pick from`
-					: "Your first commit will start one"
+					? i18nMessages.t("lite:branches.available", { count: unappliedBranchCount })
+					: i18nMessages.t("lite:NoStacks.yourFirstCommitWillStartOne")
 			}
 		>
 			{hasBranchesElsewhere && (
@@ -66,8 +72,7 @@ export const NoStacks: FC<{ projectId: string; newBranch: NewBranchActions }> = 
 						focusScope("sidebar");
 					}}
 				>
-					See all
-					<Icon name="list" />
+					<I18nMessage value={{ key: "lite:NoStacks.seeAll" }} /> <Icon name="list" />
 				</button>
 			)}
 			<button
@@ -76,8 +81,7 @@ export const NoStacks: FC<{ projectId: string; newBranch: NewBranchActions }> = 
 				disabled={!newBranch.canCreateInWorkspace}
 				onClick={newBranch.createInWorkspace}
 			>
-				New branch
-				<Icon name="plus" />
+				<I18nMessage value={{ key: "lite:NoStacks.newBranch" }} /> <Icon name="plus" />
 			</button>
 		</EmptyState>
 	);

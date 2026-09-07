@@ -1,9 +1,12 @@
-export class ApiError extends Error {
+import { LocalizedError, type LocalizedText, type MessageDescriptor } from "@gitbutler/i18n";
+
+export class ApiError extends LocalizedError {
 	constructor(
 		message: string,
 		readonly response: Response,
+		localized: LocalizedText = message,
 	) {
-		super(message);
+		super(localized, message);
 	}
 }
 
@@ -11,6 +14,7 @@ export type SerializableError = {
 	name: string;
 	message: string;
 	stack?: string;
+	localized?: MessageDescriptor;
 };
 
 export function toSerializable(error: unknown): SerializableError {
@@ -19,6 +23,9 @@ export function toSerializable(error: unknown): SerializableError {
 			name: error.name,
 			message: error.message,
 			stack: error.stack,
+			...(error instanceof LocalizedError && typeof error.localized !== "string"
+				? { localized: error.localized }
+				: {}),
 		};
 	}
 

@@ -1,9 +1,11 @@
 <script lang="ts">
 	import { inject } from "@gitbutler/core/context";
+	import { message as i18nMessage } from "@gitbutler/i18n";
+	import { useTranslations } from "@gitbutler/i18n/svelte";
 	import { ORGANIZATION_SERVICE } from "@gitbutler/shared/organizations/organizationService";
-
 	import { Button, Modal, Textarea, Textbox, chipToasts } from "@gitbutler/ui";
 	import { slugify } from "@gitbutler/ui/utils/string";
+	const i18nMessages = useTranslations();
 
 	interface Props {
 		organizationSlug: string;
@@ -47,7 +49,9 @@
 			}
 		} catch (error) {
 			chipToasts.error(
-				`Failed to fetch organization details: ${error instanceof Error ? error.message : "Unknown error"}`,
+				i18nMessage("web:OrganizationEditModal.failedToFetchOrganizationDetailsValue", {
+					value: error instanceof Error ? error.message : i18nMessage("common:unknownError"),
+				}),
 			);
 		} finally {
 			isLoading = false;
@@ -71,7 +75,7 @@
 				description,
 			});
 
-			chipToasts.success("Organization updated successfully");
+			chipToasts.success(i18nMessage("web:OrganizationEditModal.organizationUpdatedSuccessfully"));
 
 			// Notify parent component about the update
 			onUpdate(sluggifiedSlug);
@@ -85,7 +89,9 @@
 			}
 		} catch (error) {
 			chipToasts.error(
-				`Failed to update organization: ${error instanceof Error ? error.message : "Unknown error"}`,
+				i18nMessage("web:OrganizationEditModal.failedToUpdateOrganizationValue", {
+					value: error instanceof Error ? error.message : i18nMessage("common:unknownError"),
+				}),
 			);
 		} finally {
 			isLoading = false;
@@ -104,21 +110,46 @@
 	}
 </script>
 
-<Modal bind:this={modal} title="Edit Organization" onClose={onModalClose} width="medium">
+<Modal
+	bind:this={modal}
+	title={$i18nMessages.t("web:OrganizationEditModal.editOrganization")}
+	onClose={onModalClose}
+	width="medium"
+>
 	<div class="form-container">
-		<Textbox bind:value={name} label="Name" required={submitAttempted} disabled={isLoading} />
+		<Textbox
+			bind:value={name}
+			label={$i18nMessages.t("web:OrganizationEditModal.name")}
+			required={submitAttempted}
+			disabled={isLoading}
+		/>
 
-		<Textbox bind:value={slug} label="Slug" required={submitAttempted} disabled={isLoading} />
+		<Textbox
+			bind:value={slug}
+			label={$i18nMessages.t("web:OrganizationEditModal.slug")}
+			required={submitAttempted}
+			disabled={isLoading}
+		/>
 
 		{#if slug !== sluggifiedSlug}
-			<p class="slug-note">Slug will be saved as: {sluggifiedSlug}</p>
+			<p class="slug-note">
+				{$i18nMessages.t("web:OrganizationEditModal.slugWillBeSavedAsValue", {
+					sluggifiedSlug: String(sluggifiedSlug),
+				})}
+			</p>
 		{/if}
 
-		<Textarea bind:value={description} label="Description" disabled={isLoading} />
+		<Textarea
+			bind:value={description}
+			label={$i18nMessages.t("web:OrganizationEditModal.description")}
+			disabled={isLoading}
+		/>
 	</div>
 
 	{#snippet controls(close)}
-		<Button kind="outline" onclick={close} disabled={isLoading}>Cancel</Button>
+		<Button kind="outline" onclick={close} disabled={isLoading}
+			>{$i18nMessages.t("web:OrganizationEditModal.cancel")}</Button
+		>
 
 		<Button
 			style="pop"
@@ -126,7 +157,7 @@
 			loading={isLoading}
 			onclick={() => updateOrganization(close)}
 		>
-			Save Changes
+			{$i18nMessages.t("web:OrganizationEditModal.saveChanges")}
 		</Button>
 	{/snippet}
 </Modal>

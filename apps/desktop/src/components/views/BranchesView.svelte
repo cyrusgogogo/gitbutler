@@ -28,6 +28,7 @@
 	import { STACK_SERVICE } from "$lib/stacks/stackService.svelte";
 	import { combineResults } from "$lib/state/helpers";
 	import { inject } from "@gitbutler/core/context";
+	import { useTranslations } from "@gitbutler/i18n/svelte";
 	import { persisted } from "@gitbutler/shared/persisted";
 	import { reactive } from "@gitbutler/shared/reactiveUtils.svelte";
 	import { AsyncButton, Button, Modal, TestId } from "@gitbutler/ui";
@@ -35,6 +36,8 @@
 	import { getTimeAgo } from "@gitbutler/ui/utils/timeAgo";
 	import { tick, untrack } from "svelte";
 	import type { BranchFilterOption, SidebarEntrySubject } from "$lib/branches/branchListing";
+	const i18nMessages = useTranslations();
+
 	type Props = {
 		projectId: string;
 	};
@@ -184,7 +187,7 @@
 				});
 			}}
 		>
-			Apply to workspace
+			{$i18nMessages.t("desktop:BranchesView.applyToWorkspace")}
 		</AsyncButton>
 		<Button
 			testId={TestId.BranchesViewDeleteLocalBranchButton}
@@ -194,9 +197,9 @@
 				handleDeleteLocalBranch(branchName);
 			}}
 			disabled={!hasLocal}
-			tooltip={hasLocal ? undefined : "No local branch to delete"}
+			tooltip={hasLocal ? undefined : $i18nMessages.t("desktop:BranchesView.inline3ddb4481a")}
 		>
-			Delete local
+			{$i18nMessages.t("desktop:BranchesView.deleteLocal")}
 		</Button>
 	</div>
 {/snippet}
@@ -204,7 +207,7 @@
 <Modal
 	testId={TestId.DeleteLocalBranchConfirmationModal}
 	bind:this={deleteLocalBranchModal}
-	title="Delete local branch"
+	title={$i18nMessages.t("desktop:BranchesView.deleteLocalBranch")}
 	width="small"
 	defaultItem={selection.type === "branch" ? selection.branchName : undefined}
 	onSubmit={async (close, branchName: string | undefined) => {
@@ -215,7 +218,11 @@
 	}}
 >
 	{#snippet children(branchName)}
-		<p>Are you sure you want to delete the local changes inside the branch {branchName}?</p>
+		<p>
+			{$i18nMessages.t("desktop:BranchesView.areYouSureYouWantToDeleteThe", {
+				branchName: String(branchName),
+			})}
+		</p>
 	{/snippet}
 
 	{#snippet controls(close)}
@@ -223,13 +230,13 @@
 			testId={TestId.DeleteLocalBranchConfirmationModal_Cancel}
 			kind="outline"
 			type="reset"
-			onclick={close}>Cancel</Button
+			onclick={close}>{$i18nMessages.t("desktop:BranchesView.cancel")}</Button
 		>
 		<Button
 			testId={TestId.DeleteLocalBranchConfirmationModal_Delete}
 			style="danger"
 			type="submit"
-			icon="bin">Delete</Button
+			icon="bin">{$i18nMessages.t("desktop:BranchesView.delete")}</Button
 		>
 	{/snippet}
 </Modal>
@@ -245,14 +252,16 @@
 				<ReduxResult {projectId} result={baseBranchQuery.result}>
 					{#snippet children(baseBranch)}
 						{@const lastCommit = baseBranch.recentCommits.at(0)}
-						<BranchesListGroup title="Current workspace target">
+						<BranchesListGroup
+							title={$i18nMessages.t("desktop:BranchesView.currentWorkspaceTarget")}
+						>
 							<!-- TODO: We need an API for `commitsCount`! -->
 							<CurrentOriginCard
 								originName={baseBranch.branchName}
 								lastCommit={lastCommit
 									? {
 											author: lastCommit.author,
-											ago: getTimeAgo(new Date(lastCommit.committedAt), true),
+											ago: getTimeAgo(new Date(lastCommit.committedAt), true, $i18nMessages.locale),
 											branch: baseBranch.shortName,
 											sha: lastCommit.id.slice(0, 7),
 										}
@@ -459,7 +468,9 @@
 										icon="workbench"
 										action={applyFromFork}
 									>
-										Apply {reviewUnitAbbr} to workspace
+										{$i18nMessages.t("desktop:BranchesView.applyValueToWorkspace", {
+											reviewUnitAbbr: String(reviewUnitAbbr),
+										})}
 									</AsyncButton>
 								</div>
 								<BranchesViewPr bind:this={prBranch} {projectId} {prNumber} {onerror} />

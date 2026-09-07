@@ -8,7 +8,9 @@
 	import SocialQuotes from "$home/sections/SocialQuotes.svelte";
 	import Footer from "$lib/components/marketing/Footer.svelte";
 	import { getValidReleases } from "$lib/types/releases";
+	import { useTranslations } from "@gitbutler/i18n/svelte";
 	import { onMount } from "svelte";
+	const i18nMessages = useTranslations();
 
 	let releases: any[] = $state([]);
 
@@ -27,8 +29,7 @@
 
 <Hero>
 	{#snippet descriptionContent()}
-		GitButler is the Git-backed change management tool for modern, AI&nbsp;coding workflows.
-		Parallel and stacked branches, unlimited undo, agent integrations, and more. It's Git, refined.
+		{$i18nMessages.t("web:HomePage.gitButlerIsTheGitBackedChangeManagementTool")}
 	{/snippet}
 </Hero>
 <MainFeatures />

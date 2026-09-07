@@ -1,3 +1,16 @@
+import { i18n, useHostLanguage } from "./i18n";
+import {
+	message as i18nMessage,
+	errorText,
+	type LocalizedText,
+	type Locale,
+} from "@gitbutler/i18n";
+import { formatDate } from "@gitbutler/i18n/format";
+import {
+	Message as I18nMessage,
+	RichMessage as I18nRichMessage,
+	useTranslations,
+} from "@gitbutler/i18n/react";
 import {
 	type McpUiToolResultNotification,
 	useApp,
@@ -66,8 +79,8 @@ type DetailView =
 
 type GraphStatus = "integrated" | "local" | "remote";
 
-function titleFromCommitMessage(message: string): string {
-	return message.split("\n", 1)[0]?.trim() || "(no message)";
+function titleFromCommitMessage(message: string, empty = "(no message)"): string {
+	return message.split("\n", 1)[0]?.trim() || empty;
 }
 
 function commitBody(message: string): string | null {
@@ -75,20 +88,20 @@ function commitBody(message: string): string | null {
 	return body || null;
 }
 
-function pushStatusLabel(status: PushStatus | undefined): string {
+function pushStatusLabel(status: PushStatus | undefined): LocalizedText {
 	switch (status) {
 		case "nothingToPush":
-			return "Nothing to push";
+			return i18nMessage("mcp:detail.nothingToPush");
 		case "unpushedCommits":
-			return "Some unpushed";
+			return i18nMessage("mcp:detail.someUnpushed");
 		case "unpushedCommitsRequiringForce":
-			return "Force push needed";
+			return i18nMessage("mcp:detail.forcePushNeeded");
 		case "completelyUnpushed":
-			return "Unpushed branch";
+			return i18nMessage("mcp:detail.unpushedBranch");
 		case "integrated":
-			return "Integrated";
+			return i18nMessage("mcp:detail.integrated");
 		case undefined:
-			return "Branch";
+			return i18nMessage("mcp:detail.branch");
 	}
 }
 
@@ -155,11 +168,9 @@ function selectionContext(view: WorkspaceView, selection: Selection) {
 	};
 }
 
-function textFromToolResult(result: ToolResult): string {
-	return (
-		result.content?.find((content) => content.type === "text")?.text ??
-		"Could not read this workspace."
-	);
+function errorFromToolResult(result: ToolResult): Error {
+	const raw = result.content?.find((content) => content.type === "text")?.text;
+	return raw === undefined ? i18n.error("mcp:detail.couldNotReadThisWorkspace") : new Error(raw);
 }
 
 function workspaceViewFromToolResult(result: ToolResult): WorkspaceView | null {
@@ -190,14 +201,11 @@ function detailViewFromToolResult(result: ToolResult): DetailView | null {
 	return null;
 }
 
-function formattedDate(timestamp: number | null | undefined): string | null {
+function formattedDate(timestamp: number | null | undefined, locale: Locale): string | null {
 	if (timestamp === null || timestamp === undefined) return null;
 	const date = new Date(timestamp);
 	if (Number.isNaN(date.getTime())) return null;
-	return new Intl.DateTimeFormat(undefined, {
-		dateStyle: "medium",
-		timeStyle: "short",
-	}).format(date);
+	return formatDate(locale, date, { dateStyle: "medium", timeStyle: "short" });
 }
 
 async function copyText(value: string): Promise<void> {
@@ -214,7 +222,7 @@ async function copyText(value: string): Promise<void> {
 	input.select();
 	const copied = document.execCommand("copy");
 	input.remove();
-	if (!copied) throw new Error("Clipboard access is unavailable.");
+	if (!copied) throw i18n.error("mcp:detail.clipboardAccessIsUnavailable");
 }
 
 function GraphSegment({ kind, status }: { kind: "branch" | "commit"; status: GraphStatus }) {
@@ -246,6 +254,7 @@ function CommitRow({
 	selected: boolean;
 	onSelect: () => void;
 }) {
+	const i18nMessages = useTranslations();
 	const graphStatus: GraphStatus =
 		commit.state.type === "Integrated"
 			? "integrated"
@@ -262,10 +271,14 @@ function CommitRow({
 		>
 			<GraphSegment kind="commit" status={graphStatus} />
 			<span className="row-label" title={commit.message}>
-				{titleFromCommitMessage(commit.message)}
+				{titleFromCommitMessage(commit.message, i18nMessages.t("mcp:detail.noMessage"))}
 			</span>
 			<span className="row-meta">
-				{commit.hasConflicts && <span className="conflict-badge">Conflict</span>}
+				{commit.hasConflicts && (
+					<span className="conflict-badge">
+						<I18nMessage value={{ key: "mcp:WorkspaceApp.conflict" }} />
+					</span>
+				)}
 				<code>{commit.id.slice(0, 7)}</code>
 			</span>
 		</button>
@@ -281,6 +294,7 @@ function BranchRow({
 	selected: boolean;
 	onSelect: () => void;
 }) {
+	const i18nMessages = useTranslations();
 	const pushStatus = reference.status?.pushStatus;
 
 	return (
@@ -291,11 +305,21 @@ function BranchRow({
 			type="button"
 		>
 			<GraphSegment kind="branch" status={graphStatusFromPushStatus(pushStatus)} />
-			<span className="branch-label">
-				<strong title={reference.refName.fullName}>{reference.refName.displayName}</strong>
-				<small>{pushStatusLabel(pushStatus)}</small>
-			</span>
-			<span className="branch-kind">Branch</span>
+			<I18nRichMessage
+				value={{
+					key: "mcp:WorkspaceApp.valueValueBranch",
+					values: {
+						displayName: String(reference.refName.displayName),
+						value: i18nMessages.text(pushStatusLabel(pushStatus)),
+					},
+				}}
+				components={{
+					slot1: <span className="branch-label" />,
+					slot2: <strong title={reference.refName.fullName} />,
+					slot3: <small />,
+					slot4: <span className="branch-kind" />,
+				}}
+			/>
 		</button>
 	);
 }
@@ -354,11 +378,15 @@ function WorkspaceRow({
 	);
 }
 
-function stackName(stack: DetailedGraphStack, index: number): string {
+function stackName(
+	stack: DetailedGraphStack,
+	index: number,
+	fallback = `Stack ${index + 1}`,
+): string {
 	const reference = stack.rows.find((row) => row.data.type === "Reference");
 	return reference?.data.type === "Reference"
 		? reference.data.subject.refName.displayName
-		: `Stack ${index + 1}`;
+		: fallback;
 }
 
 function StackCard({
@@ -372,10 +400,15 @@ function StackCard({
 	selection: Selection | null;
 	onSelect: (selection: Selection) => void;
 }) {
+	const i18nMessages = useTranslations();
 	const [expanded, setExpanded] = useState(true);
 	const branchCount = stack.rows.filter((row) => row.data.type === "Reference").length;
 	const commitCount = stack.rows.filter((row) => row.data.type === "Commit").length;
-	const label = stackName(stack, index);
+	const label = stackName(
+		stack,
+		index,
+		i18nMessages.t("mcp:detail.stackValue", { index: index + 1 }),
+	);
 
 	return (
 		<section className="stack-card">
@@ -395,8 +428,18 @@ function StackCard({
 				</svg>
 				<span>{label}</span>
 				<span className="stack-counts">
-					{branchCount} {branchCount === 1 ? "branch" : "branches"} · {commitCount}{" "}
-					{commitCount === 1 ? "commit" : "commits"}
+					{branchCount}{" "}
+					{branchCount === 1 ? (
+						<I18nMessage value={{ key: "mcp:WorkspaceApp.branch" }} />
+					) : (
+						<I18nMessage value={{ key: "mcp:WorkspaceApp.branches" }} />
+					)}{" "}
+					· {commitCount}{" "}
+					{commitCount === 1 ? (
+						<I18nMessage value={{ key: "mcp:WorkspaceApp.commit" }} />
+					) : (
+						<I18nMessage value={{ key: "mcp:WorkspaceApp.commits" }} />
+					)}
 				</span>
 			</button>
 
@@ -419,7 +462,9 @@ function StackCard({
 							/>
 						))
 					) : (
-						<div className="empty-stack">No branches or commits.</div>
+						<div className="empty-stack">
+							<I18nMessage value={{ key: "mcp:WorkspaceApp.noBranchesOrCommits" }} />
+						</div>
 					)}
 				</div>
 			)}
@@ -459,7 +504,7 @@ function CopyButton({
 					</>
 				)}
 			</svg>
-			<span>{copied ? "Copied" : label}</span>
+			<span>{copied ? <I18nMessage value={{ key: "mcp:WorkspaceApp.copied" }} /> : label}</span>
 		</button>
 	);
 }
@@ -473,6 +518,7 @@ function DetailActions({
 	pending: "explain" | "review" | null;
 	onAction: (action: "explain" | "review") => void;
 }) {
+	const i18nMessages = useTranslations();
 	return (
 		<footer className="detail-actions">
 			<button
@@ -480,18 +526,34 @@ function DetailActions({
 				disabled={!canMessage || pending !== null}
 				onClick={() => onAction("explain")}
 				type="button"
-				title={canMessage ? "Ask the agent to explain this selection" : "Host cannot send messages"}
+				title={
+					canMessage
+						? i18nMessages.t("mcp:WorkspaceApp.askTheAgentToExplainThisSelection")
+						: i18nMessages.t("mcp:WorkspaceApp.hostCannotSendMessages")
+				}
 			>
-				{pending === "explain" ? "Explaining…" : "Explain"}
+				{pending === "explain" ? (
+					<I18nMessage value={{ key: "mcp:WorkspaceApp.explaining" }} />
+				) : (
+					<I18nMessage value={{ key: "mcp:WorkspaceApp.explain" }} />
+				)}
 			</button>
 			<button
 				className="detail-button primary"
 				disabled={!canMessage || pending !== null}
 				onClick={() => onAction("review")}
 				type="button"
-				title={canMessage ? "Ask the agent to review this selection" : "Host cannot send messages"}
+				title={
+					canMessage
+						? i18nMessages.t("mcp:WorkspaceApp.askTheAgentToReviewThisSelection")
+						: i18nMessages.t("mcp:WorkspaceApp.hostCannotSendMessages")
+				}
 			>
-				{pending === "review" ? "Starting review…" : "Review"}
+				{pending === "review" ? (
+					<I18nMessage value={{ key: "mcp:WorkspaceApp.startingReview" }} />
+				) : (
+					<I18nMessage value={{ key: "mcp:WorkspaceApp.review" }} />
+				)}
 			</button>
 		</footer>
 	);
@@ -508,21 +570,24 @@ function CommitDetail({
 	copied: string | null;
 	onCopy: (value: string) => void;
 }) {
+	const i18nMessages = useTranslations();
 	const commit = detail?.details.commit ?? selection.commit;
 	const stats = detail?.details.stats;
 	const body = commitBody(commit.message);
-	const authoredAt = formattedDate(commit.authoredAt);
+	const authoredAt = formattedDate(commit.authoredAt, i18nMessages.locale);
 
 	return (
 		<>
 			<header className="detail-header">
-				<span className="detail-kind">Commit details</span>
-				<h2>{titleFromCommitMessage(commit.message)}</h2>
+				<span className="detail-kind">
+					<I18nMessage value={{ key: "mcp:WorkspaceApp.commitDetails" }} />
+				</span>
+				<h2>{titleFromCommitMessage(commit.message, i18nMessages.t("mcp:detail.noMessage"))}</h2>
 				<div className="identifier-row">
 					<code title={commit.id}>{commit.id}</code>
 					<CopyButton
 						value={commit.id}
-						label="Copy SHA"
+						label={i18nMessages.t("mcp:WorkspaceApp.copySHA")}
 						copied={copied === commit.id}
 						onCopy={onCopy}
 					/>
@@ -535,16 +600,25 @@ function CommitDetail({
 				<span>{commit.author.name}</span>
 				{authoredAt && <span>{authoredAt}</span>}
 				<span>{selection.branch ?? selection.stack}</span>
-				{commit.hasConflicts && <span className="danger-text">Has conflicts</span>}
+				{commit.hasConflicts && (
+					<span className="danger-text">
+						<I18nMessage value={{ key: "mcp:WorkspaceApp.hasConflicts" }} />
+					</span>
+				)}
 			</div>
 
 			{stats && (
-				<div className="change-summary" aria-label="Commit change summary">
+				<div
+					className="change-summary"
+					aria-label={i18nMessages.t("mcp:WorkspaceApp.commitChangeSummary")}
+				>
 					<span>
-						<strong>{stats.filesChanged}</strong> {stats.filesChanged === 1 ? "file" : "files"}{" "}
-						changed
+						<I18nRichMessage
+							value={{ key: "mcp:detail.filesChanged", values: { count: stats.filesChanged } }}
+							components={{ slot1: <strong /> }}
+						/>{" "}
 					</span>
-					<span className="line-stats" title="Lines added/removed">
+					<span className="line-stats" title={i18nMessages.t("mcp:WorkspaceApp.linesAddedRemoved")}>
 						{stats.linesAdded > 0 && <span className="additions">+{stats.linesAdded}</span>}
 						{stats.linesRemoved > 0 && <span className="deletions">-{stats.linesRemoved}</span>}
 					</span>
@@ -565,52 +639,84 @@ function BranchDetail({
 	copied: string | null;
 	onCopy: (value: string) => void;
 }) {
+	const i18nMessages = useTranslations();
 	const name = detail?.details.name ?? selection.reference.refName.displayName;
 	const pushStatus = detail?.details.pushStatus ?? selection.reference.status?.pushStatus;
-	const updatedAt = formattedDate(detail?.details.lastUpdatedAt);
+	const updatedAt = formattedDate(detail?.details.lastUpdatedAt, i18nMessages.locale);
 
 	return (
 		<>
 			<header className="detail-header">
-				<span className="detail-kind">Branch details</span>
+				<span className="detail-kind">
+					<I18nMessage value={{ key: "mcp:WorkspaceApp.branchDetails" }} />
+				</span>
 				<h2>{name}</h2>
 				<div className="identifier-row">
 					<code title={selection.reference.refName.fullName}>
 						{selection.reference.refName.fullName}
 					</code>
-					<CopyButton value={name} label="Copy branch" copied={copied === name} onCopy={onCopy} />
+					<CopyButton
+						value={name}
+						label={i18nMessages.t("mcp:WorkspaceApp.copyBranch")}
+						copied={copied === name}
+						onCopy={onCopy}
+					/>
 				</div>
 			</header>
 
-			<div className="branch-status">{pushStatusLabel(pushStatus)}</div>
+			<div className="branch-status">{i18nMessages.text(pushStatusLabel(pushStatus))}</div>
 
 			{detail && (
 				<dl className="branch-facts">
 					<div>
-						<dt>Target</dt>
-						<dd>{detail.target ?? "Not configured"}</dd>
+						<dt>
+							<I18nMessage value={{ key: "mcp:WorkspaceApp.target" }} />
+						</dt>
+						<dd>
+							{detail.target ?? <I18nMessage value={{ key: "mcp:WorkspaceApp.notConfigured" }} />}
+						</dd>
 					</div>
 					<div>
-						<dt>Upstream</dt>
-						<dd>{detail.details.remoteTrackingBranch ?? "Not published"}</dd>
+						<dt>
+							<I18nMessage value={{ key: "mcp:WorkspaceApp.upstream" }} />
+						</dt>
+						<dd>
+							{detail.details.remoteTrackingBranch ?? (
+								<I18nMessage value={{ key: "mcp:WorkspaceApp.notPublished" }} />
+							)}
+						</dd>
 					</div>
 					<div>
-						<dt>Commits</dt>
+						<dt>
+							<I18nMessage value={{ key: "mcp:WorkspaceApp.commits_74536b5" }} />
+						</dt>
 						<dd>{detail.details.commits}</dd>
 					</div>
 					<div>
-						<dt>State</dt>
-						<dd>{detail.details.isConflicted ? "Conflicted" : "Clean"}</dd>
+						<dt>
+							<I18nMessage value={{ key: "mcp:WorkspaceApp.state" }} />
+						</dt>
+						<dd>
+							{detail.details.isConflicted ? (
+								<I18nMessage value={{ key: "mcp:WorkspaceApp.conflicted" }} />
+							) : (
+								<I18nMessage value={{ key: "mcp:WorkspaceApp.clean" }} />
+							)}
+						</dd>
 					</div>
 					<div>
-						<dt>Tip</dt>
+						<dt>
+							<I18nMessage value={{ key: "mcp:WorkspaceApp.tip" }} />
+						</dt>
 						<dd>
 							<code>{detail.details.tip.slice(0, 7)}</code>
 						</dd>
 					</div>
 					{updatedAt && (
 						<div>
-							<dt>Updated</dt>
+							<dt>
+								<I18nMessage value={{ key: "mcp:WorkspaceApp.updated" }} />
+							</dt>
 							<dd>{updatedAt}</dd>
 						</div>
 					)}
@@ -635,7 +741,7 @@ function DetailsPanel({
 	selection: Selection;
 	detail: DetailView | null;
 	loading: boolean;
-	error: string | null;
+	error: LocalizedText | null;
 	copied: string | null;
 	canMessage: boolean;
 	pendingAction: "explain" | "review" | null;
@@ -649,7 +755,7 @@ function DetailsPanel({
 				<svg viewBox="0 0 16 16" aria-hidden="true">
 					<path d="M10 3 5 8l5 5" />
 				</svg>
-				Workspace
+				<I18nMessage value={{ key: "mcp:WorkspaceApp.workspace" }} />{" "}
 			</button>
 
 			<div className="details-content">
@@ -671,13 +777,15 @@ function DetailsPanel({
 
 				{loading && (
 					<div className="detail-loading">
-						<span className="spinner" aria-hidden="true" />
-						Loading repository details…
+						<I18nRichMessage
+							value={{ key: "mcp:WorkspaceApp.loadingRepositoryDetails" }}
+							components={{ slot1: <span className="spinner" aria-hidden="true" /> }}
+						/>{" "}
 					</div>
 				)}
 				{error && (
 					<div className="detail-error" role="alert">
-						{error}
+						<I18nMessage value={error} />
 					</div>
 				)}
 			</div>
@@ -688,10 +796,11 @@ function DetailsPanel({
 }
 
 function Workspace({ view, app }: { view: WorkspaceView; app: App }) {
+	const i18nMessages = useTranslations();
 	const [selection, setSelection] = useState<Selection | null>(null);
 	const [detail, setDetail] = useState<DetailView | null>(null);
 	const [detailLoading, setDetailLoading] = useState(false);
-	const [detailError, setDetailError] = useState<string | null>(null);
+	const [detailError, setDetailError] = useState<LocalizedText | null>(null);
 	const [copied, setCopied] = useState<string | null>(null);
 	const [pendingAction, setPendingAction] = useState<"explain" | "review" | null>(null);
 	const detailRequest = useRef(0);
@@ -720,7 +829,7 @@ function Workspace({ view, app }: { view: WorkspaceView; app: App }) {
 
 		if (!canCallTools) {
 			setDetailLoading(false);
-			setDetailError("This host cannot load additional repository details.");
+			setDetailError(i18nMessage("mcp:detail.thisHostCannotLoadAdditionalRepositoryDetails"));
 			return;
 		}
 
@@ -741,13 +850,14 @@ function Workspace({ view, app }: { view: WorkspaceView; app: App }) {
 							},
 			});
 			if (request !== detailRequest.current) return;
-			if (result.isError) throw new Error(textFromToolResult(result));
+			if (result.isError) throw errorFromToolResult(result);
 			const nextDetail = detailViewFromToolResult(result);
-			if (nextDetail === null) throw new Error("The detail result was missing structured data.");
+			if (nextDetail === null)
+				throw i18n.error("mcp:detail.theDetailResultWasMissingStructuredData");
 			setDetail(nextDetail);
 		} catch (caught) {
 			if (request !== detailRequest.current) return;
-			setDetailError(caught instanceof Error ? caught.message : "Could not load details.");
+			setDetailError(errorText(caught, i18nMessage("mcp:detail.couldNotLoadDetails")));
 		} finally {
 			if (request === detailRequest.current) setDetailLoading(false);
 		}
@@ -760,7 +870,7 @@ function Workspace({ view, app }: { view: WorkspaceView; app: App }) {
 			setCopied(value);
 			window.setTimeout(() => setCopied((current) => (current === value ? null : current)), 1600);
 		} catch (caught) {
-			setDetailError(caught instanceof Error ? caught.message : "Could not copy the identifier.");
+			setDetailError(errorText(caught, i18nMessage("mcp:detail.couldNotCopyTheIdentifier")));
 		}
 	}
 
@@ -789,11 +899,9 @@ function Workspace({ view, app }: { view: WorkspaceView; app: App }) {
 				role: "user",
 				content: [{ type: "text", text: request }],
 			});
-			if (result.isError) throw new Error("The host rejected the request.");
+			if (result.isError) throw i18n.error("mcp:detail.theHostRejectedTheRequest");
 		} catch (caught) {
-			setDetailError(
-				caught instanceof Error ? caught.message : "Could not start the agent request.",
-			);
+			setDetailError(errorText(caught, i18nMessage("mcp:detail.couldNotStartTheAgentRequest")));
 		} finally {
 			setPendingAction(null);
 		}
@@ -831,15 +939,23 @@ function Workspace({ view, app }: { view: WorkspaceView; app: App }) {
 		<main className="workspace-shell">
 			<header className="workspace-header">
 				<div className="repository">
-					<span className="eyebrow">GitButler workspace</span>
+					<span className="eyebrow">
+						<I18nMessage value={{ key: "mcp:WorkspaceApp.gitButlerWorkspace" }} />
+					</span>
 					<h1>{view.repository.name}</h1>
 					<p title={view.repository.path}>{view.repository.path}</p>
 				</div>
 
-				<div className="summary" aria-label="Workspace summary">
-					<Metric value={view.summary.stacks} label="Stacks" />
-					<Metric value={view.summary.branches} label="Branches" />
-					<Metric value={view.summary.commits} label="Commits" />
+				<div className="summary" aria-label={i18nMessages.t("mcp:WorkspaceApp.workspaceSummary")}>
+					<Metric value={view.summary.stacks} label={i18nMessages.t("mcp:WorkspaceApp.stacks")} />
+					<Metric
+						value={view.summary.branches}
+						label={i18nMessages.t("mcp:WorkspaceApp.branches_f578227")}
+					/>
+					<Metric
+						value={view.summary.commits}
+						label={i18nMessages.t("mcp:WorkspaceApp.commits_74536b5")}
+					/>
 				</div>
 			</header>
 
@@ -857,7 +973,9 @@ function Workspace({ view, app }: { view: WorkspaceView; app: App }) {
 								/>
 							))
 						) : (
-							<div className="empty-state">This workspace has no stacks yet.</div>
+							<div className="empty-state">
+								<I18nMessage value={{ key: "mcp:WorkspaceApp.thisWorkspaceHasNoStacksYet" }} />
+							</div>
 						)}
 					</div>
 				</div>
@@ -891,24 +1009,36 @@ export function WorkspaceApp() {
 		},
 	});
 	useHostStyles(app, app?.getHostContext());
+	useHostLanguage(app, isConnected);
 
 	if (error !== null) {
 		return (
 			<div className="message-state error-state">
-				Could not connect to the host: {error.message}
+				<I18nMessage
+					value={{
+						key: "mcp:WorkspaceApp.couldNotConnectToTheHostValue",
+						values: { message: String(error.message) },
+					}}
+				/>
 			</div>
 		);
 	}
 	if (!isConnected || toolResult === null || app === null) {
 		return (
 			<div className="message-state loading-state">
-				<span className="spinner" aria-hidden="true" />
-				Loading GitButler workspace…
+				<I18nRichMessage
+					value={{ key: "mcp:WorkspaceApp.loadingGitButlerWorkspace" }}
+					components={{ slot1: <span className="spinner" aria-hidden="true" /> }}
+				/>{" "}
 			</div>
 		);
 	}
 	if (toolResult.isError) {
-		return <div className="message-state error-state">{textFromToolResult(toolResult)}</div>;
+		return (
+			<div className="message-state error-state">
+				<I18nMessage value={errorText(errorFromToolResult(toolResult), "")} />
+			</div>
+		);
 	}
 
 	const view = workspaceViewFromToolResult(toolResult);
@@ -916,7 +1046,9 @@ export function WorkspaceApp() {
 		const resultText = toolResult.content?.find((content) => content.type === "text")?.text;
 		return (
 			<div className="message-state error-state">
-				{resultText || "The host did not provide workspace data for this result."}
+				{resultText || (
+					<I18nMessage value={{ key: "mcp:WorkspaceApp.theHostDidNotProvideWorkspaceDataFor" }} />
+				)}
 			</div>
 		);
 	}

@@ -1,9 +1,11 @@
 <script lang="ts">
 	import { goto } from "$app/navigation";
 	import { inject } from "@gitbutler/core/context";
+	import { useTranslations } from "@gitbutler/i18n/svelte";
 	import { WEB_ROUTES_SERVICE } from "@gitbutler/shared/routing/webRoutes.svelte";
 	import { Icon, Tooltip } from "@gitbutler/ui";
 	import type { User } from "$lib/user/userService";
+	const i18nMessages = useTranslations();
 
 	interface Props {
 		user: User | undefined | null;
@@ -13,7 +15,7 @@
 	const routes = inject(WEB_ROUTES_SERVICE);
 </script>
 
-<Tooltip text="Profile & Settings">
+<Tooltip text={$i18nMessages.t("web:UserAuthAvatar.profileSettings")}>
 	<button
 		type="button"
 		class="user-btn"

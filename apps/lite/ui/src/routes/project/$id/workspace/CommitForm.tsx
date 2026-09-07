@@ -1,3 +1,9 @@
+import { message as i18nMessage } from "@gitbutler/i18n";
+import {
+	Message as I18nMessage,
+	RichMessage as I18nRichMessage,
+	useTranslations,
+} from "@gitbutler/i18n/react";
 import { Popup, PopupItem, PopupSearch } from "#ui/components/Popup.tsx";
 import { setCursor } from "#ui/use-cursor.ts";
 import { useBranchCreate, useCommitCreate, useGenerateCommitMessage } from "#ui/api/mutations.ts";
@@ -56,7 +62,10 @@ export type CommitTargetComboboxItem = {
  * a branch on submit and land there. It has no `Address` because the branch
  * does not exist until then, and that absence is what tells the row apart.
  */
-const newBranchItem = { label: "New branch", address: null } as const;
+const newBranchItem = {
+	label: i18nMessage("lite:CommitForm.static0f0adf8cb"),
+	address: null,
+} as const;
 /** Stands in for a missing target where a target's identity key is expected. */
 const noTargetKey = "no-target";
 type CommitTargetPickerItem = CommitTargetComboboxItem | typeof newBranchItem;
@@ -72,38 +81,43 @@ const pickerItemIcon = (item: CommitTargetPickerItem | null): IconName =>
 				? "commit"
 				: "branch";
 
-const CommitTargetComboboxPopup: FC<{ current: CommitTargetPickerItem | null }> = ({ current }) => (
-	// Base UI's combobox owns its own popup part, so this cannot go through `Dropdown` — `Popup`
-	// dresses the combobox's own popup instead, and it opens the way every other dropdown does.
-	<Popup anchored className={styles.targetPopup} render={<Combobox.Popup />}>
-		<PopupSearch
-			aria-label="Search targets"
-			placeholder="Search targets..."
-			render={<Combobox.Input />}
-		/>
-		<Combobox.Empty>
-			<div className={classes("text-13", styles.targetEmpty)}>No targets found.</div>
-		</Combobox.Empty>
-		<Combobox.List className={styles.targetList}>
-			{(item: CommitTargetPickerItem) => (
-				<PopupItem
-					key={pickerItemKey(item)}
-					icon={pickerItemIcon(item)}
-					// The bullseye marks where a commit would land, so it rides only the row that is
-					// the target now — the rest of the list is where it could go instead.
-					trailing={
-						current !== null && pickerItemKey(item) === pickerItemKey(current)
-							? "bullseye"
-							: undefined
-					}
-					render={<Combobox.Item value={item} />}
-				>
-					{item.label}
-				</PopupItem>
-			)}
-		</Combobox.List>
-	</Popup>
-);
+const CommitTargetComboboxPopup: FC<{ current: CommitTargetPickerItem | null }> = ({ current }) => {
+	const i18nMessages = useTranslations();
+	return (
+		// Base UI's combobox owns its own popup part, so this cannot go through `Dropdown` — `Popup`
+		// dresses the combobox's own popup instead, and it opens the way every other dropdown does.
+		<Popup anchored className={styles.targetPopup} render={<Combobox.Popup />}>
+			<PopupSearch
+				aria-label={i18nMessages.t("lite:CommitForm.searchTargets")}
+				placeholder={i18nMessages.t("lite:CommitForm.searchTargets_9824b52")}
+				render={<Combobox.Input />}
+			/>
+			<Combobox.Empty>
+				<div className={classes("text-13", styles.targetEmpty)}>
+					<I18nMessage value={{ key: "lite:CommitForm.noTargetsFound" }} />
+				</div>
+			</Combobox.Empty>
+			<Combobox.List className={styles.targetList}>
+				{(item: CommitTargetPickerItem) => (
+					<PopupItem
+						key={pickerItemKey(item)}
+						icon={pickerItemIcon(item)}
+						// The bullseye marks where a commit would land, so it rides only the row that is
+						// the target now — the rest of the list is where it could go instead.
+						trailing={
+							current !== null && pickerItemKey(item) === pickerItemKey(current)
+								? "bullseye"
+								: undefined
+						}
+						render={<Combobox.Item value={item} />}
+					>
+						{i18nMessages.text(item.label)}
+					</PopupItem>
+				)}
+			</Combobox.List>
+		</Popup>
+	);
+};
 
 /**
  * Wires up the commit target combobox. The trigger is passed as children so the
@@ -118,28 +132,31 @@ const CommitTargetCombobox: FC<{
 	onValueChange: (item: CommitTargetPickerItem | null) => void;
 	disabled: boolean;
 	children: ReactNode;
-}> = ({ items, value, open, onOpenChange, onValueChange, disabled, children }) => (
-	<Combobox.Root<CommitTargetPickerItem>
-		items={items}
-		open={open}
-		onOpenChange={onOpenChange}
-		// Note `undefined` means uncontrolled.
-		value={value}
-		onValueChange={onValueChange}
-		itemToStringLabel={(x) => x.label}
-		itemToStringValue={pickerItemKey}
-		isItemEqualToValue={(a, b) => pickerItemKey(a) === pickerItemKey(b)}
-		autoHighlight
-		disabled={disabled}
-	>
-		{children}
-		<Combobox.Portal>
-			<Combobox.Positioner align="start" sideOffset={4}>
-				<CommitTargetComboboxPopup current={value} />
-			</Combobox.Positioner>
-		</Combobox.Portal>
-	</Combobox.Root>
-);
+}> = ({ items, value, open, onOpenChange, onValueChange, disabled, children }) => {
+	const i18nMessages = useTranslations();
+	return (
+		<Combobox.Root<CommitTargetPickerItem>
+			items={items}
+			open={open}
+			onOpenChange={onOpenChange}
+			// Note `undefined` means uncontrolled.
+			value={value}
+			onValueChange={onValueChange}
+			itemToStringLabel={(x) => i18nMessages.text(x.label)}
+			itemToStringValue={pickerItemKey}
+			isItemEqualToValue={(a, b) => pickerItemKey(a) === pickerItemKey(b)}
+			autoHighlight
+			disabled={disabled}
+		>
+			{children}
+			<Combobox.Portal>
+				<Combobox.Positioner align="start" sideOffset={4}>
+					<CommitTargetComboboxPopup current={value} />
+				</Combobox.Positioner>
+			</Combobox.Portal>
+		</Combobox.Root>
+	);
+};
 
 export const CommitForm: FC<{
 	projectId: string;
@@ -170,6 +187,7 @@ export const CommitForm: FC<{
 	worktreeChanges,
 	className,
 }) => {
+	const i18nMessages = useTranslations();
 	const store = useAppStore();
 	const { isPending: isCommitCreatePending, mutate: commitCreate } = useCommitCreate();
 	const { isPending: isBranchCreatePending, mutate: branchCreate } = useBranchCreate();
@@ -225,7 +243,7 @@ export const CommitForm: FC<{
 		...branchCannedNameQueryOptions(projectId),
 		enabled: willCreateBranch,
 	});
-	const draftBranchLabel = cannedBranchName ?? "New branch";
+	const draftBranchLabel = cannedBranchName ?? i18nMessages.t("lite:CommitForm.label0f0adf8cb");
 
 	const [open, setOpen] = useState(false);
 	const [isExpanded, setIsExpanded] = useState(false);
@@ -396,13 +414,13 @@ export const CommitForm: FC<{
 	// component uncompiled.
 	const commitMenuItems = (): Array<NativeMenuItem> => [
 		nativeMenuItem({
-			label: "Commit",
+			label: i18nMessage("lite:CommitForm.commit"),
 			enabled: canCommit,
 			accelerator: toElectronAccelerator(changesHotkeys.commit.hotkey),
 			onSelect: createCommit,
 		}),
 		nativeMenuItem({
-			label: "Amend Commit",
+			label: i18nMessage("lite:CommitForm.amendCommit"),
 			enabled: canAmend,
 			accelerator: toElectronAccelerator(changesHotkeys.amendCommit.hotkey),
 			onSelect: amendCommit,
@@ -459,7 +477,7 @@ export const CommitForm: FC<{
 		},
 	);
 
-	const commitTextareaLabel = "Compose commit message";
+	const commitTextareaLabel = i18nMessages.t("lite:commit.compose");
 
 	// The collapsed row and the expanded footer show the same picker, differing
 	// only in how the trigger is dressed. A render function rather than a
@@ -479,7 +497,11 @@ export const CommitForm: FC<{
 				<Combobox.Trigger
 					className={trigger.className}
 					aria-label={
-						willCreateBranch ? `Will create branch ${draftBranchLabel}` : "Select commit target"
+						willCreateBranch
+							? i18nMessages.t("lite:CommitForm.willCreateBranchValue_eb4b5e9", {
+									draftBranchLabel,
+								})
+							: i18nMessages.t("lite:CommitForm.selectCommitTarget")
 					}
 					render={<Button focusableWhenDisabled render={<Tooltip.Trigger />} />}
 				>
@@ -497,16 +519,32 @@ export const CommitForm: FC<{
 						>
 							{willCreateBranch ? (
 								<span className={styles.tooltipTarget}>
-									<span className={styles.tooltipTargetLabel}>Will create branch:</span>
-									<span className={styles.tooltipTargetName}>{draftBranchLabel}</span>
+									<I18nRichMessage
+										value={{
+											key: "lite:CommitForm.willCreateBranchValue",
+											values: { draftBranchLabel: String(draftBranchLabel) },
+										}}
+										components={{
+											slot1: <span className={styles.tooltipTargetLabel} />,
+											slot2: <span className={styles.tooltipTargetName} />,
+										}}
+									/>
 								</span>
 							) : commitTarget ? (
 								<span className={styles.tooltipTarget}>
-									<span className={styles.tooltipTargetLabel}>Target:</span>
-									<span className={styles.tooltipTargetName}>{commitTarget.label}</span>
+									<I18nRichMessage
+										value={{
+											key: "lite:CommitForm.targetValue",
+											values: { label: String(commitTarget.label) },
+										}}
+										components={{
+											slot1: <span className={styles.tooltipTargetLabel} />,
+											slot2: <span className={styles.tooltipTargetName} />,
+										}}
+									/>
 								</span>
 							) : (
-								"Select commit target"
+								i18nMessages.t("lite:CommitForm.label4417eb268")
 							)}
 						</Tooltip.Popup>
 					</Tooltip.Positioner>
@@ -541,14 +579,16 @@ export const CommitForm: FC<{
 					id={startCommitButtonId}
 					onClick={() => setIsExpanded(true)}
 					disabled={!noOperationPending}
-					actionTooltip={hasWorktreeChanges ? undefined : "Makes an empty commit"}
-					menuLabel="Commit options"
+					actionTooltip={
+						hasWorktreeChanges ? undefined : i18nMessages.t("lite:CommitForm.makesAnEmptyCommit")
+					}
+					menuLabel={i18nMessages.t("lite:CommitForm.commitOptions")}
 					menuDisabled={!(canAmend || canCommit)}
 					onMenuTrigger={(trigger) => {
 						void showNativeMenuFromTrigger(trigger, commitMenuItems());
 					}}
 				>
-					Start commit
+					<I18nMessage value={{ key: "lite:CommitForm.startCommit" }} />{" "}
 					<Kbd hotkey={sidebarHotkeys.composeCommitMessage.hotkey} variant="button" />
 				</DropdownButton>
 			</div>
@@ -597,7 +637,7 @@ export const CommitForm: FC<{
 						<div aria-hidden className={styles.footerSeparator} />
 						<Tooltip.Root>
 							<Tooltip.Trigger
-								aria-label="Generate commit message"
+								aria-label={i18nMessages.t("lite:CommitForm.generateCommitMessage")}
 								className={classes(
 									getButtonClassName({ variant: "ghost", iconOnly: true }),
 									styles.generateButton,
@@ -616,8 +656,15 @@ export const CommitForm: FC<{
 							<Tooltip.Portal>
 								<Tooltip.Positioner sideOffset={4}>
 									<Tooltip.Popup render={<TooltipPopup />}>
-										{generationButton.hint ??
-											(isGenerating ? "Generating message…" : "Generate message")}
+										<I18nMessage
+											value={
+												generationButton.hint ?? {
+													key: isGenerating
+														? "lite:CommitForm.generatingMessage"
+														: "lite:CommitForm.generateMessage",
+												}
+											}
+										/>
 									</Tooltip.Popup>
 								</Tooltip.Positioner>
 							</Tooltip.Portal>
@@ -646,11 +693,13 @@ export const CommitForm: FC<{
 									/>
 								}
 							>
-								Cancel
+								<I18nMessage value={{ key: "lite:CommitForm.cancel" }} />{" "}
 							</Tooltip.Trigger>
 							<Tooltip.Portal>
 								<Tooltip.Positioner sideOffset={4}>
-									<Tooltip.Popup render={<TooltipPopup kbd="Escape" />}>Hide form</Tooltip.Popup>
+									<Tooltip.Popup render={<TooltipPopup kbd="Escape" />}>
+										<I18nMessage value={{ key: "lite:CommitForm.hideForm" }} />
+									</Tooltip.Popup>
 								</Tooltip.Positioner>
 							</Tooltip.Portal>
 						</Tooltip.Root>
@@ -658,19 +707,19 @@ export const CommitForm: FC<{
 						{/* The tooltip is redundant while the label is visible. */}
 						<Tooltip.Root disabled={!commitLabelHidden}>
 							<Tooltip.Trigger
-								aria-label="Commit"
+								aria-label={i18nMessages.t("lite:CommitForm.commit")}
 								className={getButtonClassName({ variant: "pop" })}
 								render={<Button focusableWhenDisabled type="submit" disabled={!canCommit} />}
 							>
 								<span ref={observeCommitLabel} className={styles.commitButtonLabel}>
-									Commit
+									<I18nMessage value={{ key: "lite:CommitForm.commit" }} />{" "}
 								</span>
 								<Kbd hotkey={changesHotkeys.commit.hotkey} variant="button" />
 							</Tooltip.Trigger>
 							<Tooltip.Portal>
 								<Tooltip.Positioner sideOffset={4}>
 									<Tooltip.Popup render={<TooltipPopup kbd={changesHotkeys.commit.hotkey} />}>
-										Commit
+										<I18nMessage value={{ key: "lite:CommitForm.commit" }} />{" "}
 									</Tooltip.Popup>
 								</Tooltip.Positioner>
 							</Tooltip.Portal>

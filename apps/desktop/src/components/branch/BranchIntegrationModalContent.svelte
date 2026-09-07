@@ -14,9 +14,13 @@
 		type IntegrationGraphRow,
 	} from "$lib/upstream/branchIntegrationView";
 	import { inject } from "@gitbutler/core/context";
+	import { message as i18nMessage } from "@gitbutler/i18n";
+	import { useTranslations } from "@gitbutler/i18n/svelte";
 	import { Button, Icon, ModalFooter, RadioButton, TestId, Badge, chipToasts } from "@gitbutler/ui";
+	import I18nRichMessage from "@gitbutler/ui/i18n/RichMessage.svelte";
 	import type { BranchIntegrationStrategy } from "@gitbutler/but-sdk";
 	import type { IconName } from "@gitbutler/ui";
+	const i18nMessages = useTranslations();
 
 	type Props = {
 		projectId: string;
@@ -35,33 +39,41 @@
 		icon: IconName;
 		description: string;
 		recommended?: boolean;
-	}> = [
+	}> = $derived([
 		{
 			id: "pullRebase",
-			label: "Pull rebase",
+			label: $i18nMessages.t("desktop:BranchIntegrationModalContent.pullRebase"),
 			icon: "branch-top-up-arrow",
-			description: "Rebuilds the branch with remote commits first, then your local commits.",
+			description: $i18nMessages.t(
+				"desktop:BranchIntegrationModalContent.rebuildsTheBranchWithRemoteCommitsFirstThen",
+			),
 			recommended: true,
 		},
 		{
 			id: "smartSquash",
-			label: "Smart squash",
+			label: $i18nMessages.t("desktop:BranchIntegrationModalContent.smartSquash"),
 			icon: "branch-double-commit",
-			description: "Merges matching commits (by Change ID), pull-rebases the rest.",
+			description: $i18nMessages.t(
+				"desktop:BranchIntegrationModalContent.mergesMatchingCommitsByChangeIDPullRebases",
+			),
 		},
 		{
 			id: "merge",
-			label: "Merge",
+			label: $i18nMessages.t("desktop:BranchIntegrationModalContent.merge"),
 			icon: "branch-merge",
-			description: "Keeps local history and merges in the remote tip.",
+			description: $i18nMessages.t(
+				"desktop:BranchIntegrationModalContent.keepsLocalHistoryAndMergesInTheRemote",
+			),
 		},
 		{
 			id: "pickRemote",
-			label: "Pick remote",
+			label: $i18nMessages.t("desktop:BranchIntegrationModalContent.pickRemote"),
 			icon: "cherry-pick",
-			description: "Rebuilds the branch from remote commits only.",
+			description: $i18nMessages.t(
+				"desktop:BranchIntegrationModalContent.rebuildsTheBranchFromRemoteCommitsOnly",
+			),
 		},
-	];
+	]);
 	const VISIBLE_TEMPLATE_COUNT = 2;
 	let selectedTemplate = $state<BranchIntegrationStrategy>(DEFAULT_TEMPLATE);
 	const initialBranchIntegration = $derived(
@@ -157,7 +169,11 @@
 				integration,
 				dryRun: false,
 			});
-			chipToasts.success(`Successfully updated "${branchName}".`);
+			chipToasts.success(
+				i18nMessage("desktop:BranchIntegrationModalContent.successfullyUpdatedValue", {
+					branchName: String(branchName),
+				}),
+			);
 			closeModal();
 		} catch (error) {
 			previewError = formatError(error);
@@ -209,16 +225,22 @@
 		})}
 		<div class="branch-integration">
 			<p class="text-13 text-body clr-text-2">
-				This branch and its remote have diverged.
-				<br />
-				Pick an integration strategy below to combine them.
+				{#snippet i18nSlot1()}<br />{/snippet}
+				<I18nRichMessage
+					value={{
+						key: "desktop:BranchIntegrationModalContent.thisBranchAndItsRemoteHaveDivergedPick",
+					}}
+					components={{ slot1: i18nSlot1 }}
+				/>
 			</p>
 
 			<div
 				class="strategy-cards"
 				class:strategy-cards_expanded={showAllStrategies}
 				role="radiogroup"
-				aria-label="Integration strategy selection"
+				aria-label={$i18nMessages.t(
+					"desktop:BranchIntegrationModalContent.integrationStrategySelection",
+				)}
 				data-testid="branch-integration-strategies"
 			>
 				{#each visibleTemplates as template (template.id)}
@@ -242,7 +264,9 @@
 						<h3 class="text-13 text-bold strategy-card__title">
 							{template.label}
 							{#if template.recommended}
-								<span class="op-40">(Recommended)</span>
+								<span class="op-40"
+									>{$i18nMessages.t("desktop:BranchIntegrationModalContent.recommended")}</span
+								>
 							{/if}
 						</h3>
 						<p class="text-12 text-body strategy-card__caption">
@@ -263,12 +287,22 @@
 								<Icon size={20} name={template.icon} />
 							{/each}
 						</div>
-						<span class="text-12 clr-text-2">
-							{hiddenTemplates.map((t) => t.label.toLowerCase()).join(", ")}
-						</span>
-						<span class="text-12 underline-dotted strategy-card__more-link">
-							Show {hiddenTemplates.length} more
-						</span>
+						{#snippet i18nSlot3(content: import("svelte").Snippet)}<span class="text-12 clr-text-2"
+								>{@render content()}</span
+							>{/snippet}
+						{#snippet i18nSlot4(content: import("svelte").Snippet)}<span
+								class="text-12 underline-dotted strategy-card__more-link">{@render content()}</span
+							>{/snippet}
+						<I18nRichMessage
+							value={{
+								key: "desktop:BranchIntegrationModalContent.valueShowValueMore",
+								values: {
+									value: String(hiddenTemplates.map((t) => t.label.toLowerCase()).join(", ")),
+									length: String(hiddenTemplates.length),
+								},
+							}}
+							components={{ slot3: i18nSlot3, slot4: i18nSlot4 }}
+						/>
 					</button>
 				{/if}
 			</div>
@@ -278,7 +312,9 @@
 			<div class="branch-integration__sections">
 				<div class="branch-integration__section">
 					<div class="branch-integration__section-header">
-						<Badge style="gray" kind="soft" size="tag">CURRENT STATE</Badge>
+						<Badge style="gray" kind="soft" size="tag"
+							>{$i18nMessages.t("desktop:BranchIntegrationModalContent.cURRENTSTATE")}</Badge
+						>
 						<div class="section-arrow">
 							<div class="section-arrow__line"></div>
 						</div>
@@ -298,7 +334,9 @@
 
 				<div class="branch-integration__section">
 					<div class="branch-integration__section-header">
-						<Badge style="gray" size="tag">OUTPUT BRANCH</Badge>
+						<Badge style="gray" size="tag"
+							>{$i18nMessages.t("desktop:BranchIntegrationModalContent.oUTPUTBRANCH")}</Badge
+						>
 					</div>
 
 					<section class="branch-integration__graph" data-testid="branch-integration-preview">
@@ -308,11 +346,15 @@
 							</div>
 						{:else if previewRows === null}
 							<div class="branch-integration__empty" data-testid="branch-integration-empty-state">
-								Preview produced no branch segment for this ref.
+								{$i18nMessages.t(
+									"desktop:BranchIntegrationModalContent.previewProducedNoBranchSegmentForThisRef",
+								)}
 							</div>
 						{:else if previewRows.length === 0}
 							<div class="branch-integration__empty" data-testid="branch-integration-empty-state">
-								The resulting branch would be empty.
+								{$i18nMessages.t(
+									"desktop:BranchIntegrationModalContent.theResultingBranchWouldBeEmpty",
+								)}
 							</div>
 						{:else}
 							<BranchIntegrationGraph
@@ -327,7 +369,9 @@
 		</div>
 
 		<ModalFooter>
-			<Button kind="outline" type="reset" onclick={closeModal}>Cancel</Button>
+			<Button kind="outline" type="reset" onclick={closeModal}
+				>{$i18nMessages.t("desktop:BranchIntegrationModalContent.cancel")}</Button
+			>
 			<Button
 				style="pop"
 				type="button"
@@ -336,7 +380,7 @@
 				disabled={!preparedIntegration || preparedIntegration.steps.length === 0 || applying}
 				loading={applying}
 			>
-				Apply integration
+				{$i18nMessages.t("desktop:BranchIntegrationModalContent.applyIntegration")}
 			</Button>
 		</ModalFooter>
 	{/snippet}

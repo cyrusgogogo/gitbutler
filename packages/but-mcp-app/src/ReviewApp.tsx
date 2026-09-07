@@ -1,4 +1,17 @@
+import { i18n, useHostLanguage } from "./i18n";
 import { BranchIcon, CiIcon, ForgeIcon, OpenInBrowserIcon } from "./icons";
+import {
+	message as i18nMessage,
+	errorText,
+	type LocalizedText,
+	type Locale,
+} from "@gitbutler/i18n";
+import { formatDate } from "@gitbutler/i18n/format";
+import {
+	Message as I18nMessage,
+	RichMessage as I18nRichMessage,
+	useTranslations,
+} from "@gitbutler/i18n/react";
 import {
 	type McpUiToolResultNotification,
 	useApp,
@@ -62,11 +75,9 @@ type ReviewView = {
 type ToolResult = McpUiToolResultNotification["params"];
 const REVIEW_POLL_INTERVAL_MS = 30_000;
 
-function textFromToolResult(result: ToolResult): string {
-	return (
-		result.content?.find((content) => content.type === "text")?.text ??
-		"The review operation failed."
-	);
+function errorFromToolResult(result: ToolResult): Error {
+	const raw = result.content?.find((content) => content.type === "text")?.text;
+	return raw === undefined ? i18n.error("mcp:detail.theReviewOperationFailed") : new Error(raw);
 }
 
 function reviewViewFromToolResult(result: ToolResult): ReviewView | null {
@@ -83,16 +94,16 @@ function reviewViewFromToolResult(result: ToolResult): ReviewView | null {
 	return value as ReviewView;
 }
 
-function reviewStateLabel(state: ReviewState): string {
+function reviewStateLabel(state: ReviewState): LocalizedText {
 	switch (state) {
 		case "closed":
-			return "Closed";
+			return i18nMessage("mcp:detail.closed");
 		case "draft":
-			return "Draft";
+			return i18nMessage("mcp:detail.draft");
 		case "merged":
-			return "Merged";
+			return i18nMessage("mcp:detail.merged");
 		case "open":
-			return "Ready";
+			return i18nMessage("mcp:detail.ready");
 	}
 }
 
@@ -100,35 +111,33 @@ function displayPerson(person: ReviewPerson): string {
 	return person.name?.trim() || `@${person.login}`;
 }
 
-function createdLabel(value?: string | null): string | null {
+function createdLabel(value: string | null | undefined, locale: Locale): string | null {
 	if (!value) return null;
 	const date = new Date(value);
 	if (Number.isNaN(date.getTime())) return null;
-	return new Intl.DateTimeFormat(undefined, {
-		dateStyle: "medium",
-	}).format(date);
+	return formatDate(locale, date, { dateStyle: "medium" });
 }
 
-function ciLabel(ci: ReviewCi): string {
+function ciLabel(ci: ReviewCi): LocalizedText {
 	switch (ci.status) {
 		case "actionRequired":
-			return "Action required";
+			return i18nMessage("mcp:detail.actionRequired");
 		case "cancelled":
-			return "CI cancelled";
+			return i18nMessage("mcp:detail.ciCancelled");
 		case "failure":
-			return "CI failed";
+			return i18nMessage("mcp:detail.ciFailed");
 		case "inProgress":
-			return "CI running";
+			return i18nMessage("mcp:detail.ciRunning");
 		case "noChecks":
-			return "No checks";
+			return i18nMessage("mcp:detail.noChecks");
 		case "success":
-			return "CI passed";
+			return i18nMessage("mcp:detail.ciPassed");
 		case "unknown":
-			return "CI unknown";
+			return i18nMessage("mcp:detail.ciUnknown");
 		case "unavailable":
-			return "CI unavailable";
+			return i18nMessage("mcp:detail.ciUnavailable");
 		case "unsupported":
-			return "CI unsupported";
+			return i18nMessage("mcp:detail.ciUnsupported");
 	}
 }
 
@@ -151,23 +160,28 @@ function ciIcon(ci: ReviewCi): "cross" | "question" | "spinner" | "tick" | "warn
 	}
 }
 
-function ciTitle(ci: ReviewCi): string {
-	if (ci.status === "failure" && ci.failingCheckNames.length > 0) {
-		return `Failed checks: ${ci.failingCheckNames.join(", ")}`;
-	}
-	if (ci.total > 0) {
-		return `${ciLabel(ci)} · ${ci.passing} passed · ${ci.pending} pending · ${ci.failing} failed`;
-	}
-	return ciLabel(ci);
+function ciTitle(ci: ReviewCi, messages: ReturnType<typeof useTranslations>): string {
+	if (ci.status === "failure" && ci.failingCheckNames.length > 0)
+		return messages.t("mcp:detail.failedChecksValue", { checks: ci.failingCheckNames.join(", ") });
+	const status = messages.text(ciLabel(ci));
+	return ci.total > 0
+		? messages.t("mcp:detail.valueValuePassedValuePendingValueFailed", {
+				status,
+				passing: ci.passing,
+				pending: ci.pending,
+				failing: ci.failing,
+			})
+		: status;
 }
 
 function CiStatus({ ci }: { ci: ReviewCi }) {
+	const i18nMessages = useTranslations();
 	if (ci.status === "unsupported") return null;
 
 	return (
-		<span className="ci-status" data-state={ci.status} title={ciTitle(ci)}>
+		<span className="ci-status" data-state={ci.status} title={ciTitle(ci, i18nMessages)}>
 			<CiIcon kind={ciIcon(ci)} />
-			<span>{ciLabel(ci)}</span>
+			<span>{i18nMessages.text(ciLabel(ci))}</span>
 		</span>
 	);
 }
@@ -206,7 +220,8 @@ function ReviewCard({
 	onMarkReady: () => void;
 	onOpen: () => void;
 }) {
-	const created = createdLabel(review.createdAt);
+	const i18nMessages = useTranslations();
+	const created = createdLabel(review.createdAt, i18nMessages.locale);
 
 	return (
 		<article className="review-card">
@@ -221,15 +236,17 @@ function ReviewCard({
 				<div className="review-card-controls">
 					<CiStatus ci={review.ci} />
 					<span className="review-status" data-state={review.state}>
-						{reviewStateLabel(review.state)}
+						{i18nMessages.text(reviewStateLabel(review.state))}
 					</span>
 					<button
 						className="icon-button"
 						disabled={pending}
 						onClick={onOpen}
 						type="button"
-						title={`Open ${forge.unit.abbr} in browser`}
-						aria-label={`Open ${forge.unit.abbr} in browser`}
+						title={i18nMessages.t("mcp:ReviewApp.openValueInBrowser", { value: forge.unit.abbr })}
+						aria-label={i18nMessages.t("mcp:ReviewApp.openValueInBrowser", {
+							value: forge.unit.abbr,
+						})}
 					>
 						<OpenInBrowserIcon />
 					</button>
@@ -238,7 +255,13 @@ function ReviewCard({
 
 			<h2>{review.title}</h2>
 
-			<div className="branch-flow" title={`${review.sourceBranch} → ${review.targetBranch}`}>
+			<div
+				className="branch-flow"
+				title={i18nMessages.t("mcp:ReviewApp.valueValue", {
+					value: review.sourceBranch,
+					value1: review.targetBranch,
+				})}
+			>
 				<BranchIcon />
 				<code>{review.sourceBranch}</code>
 				<svg className="branch-arrow" viewBox="0 0 16 16" aria-hidden="true">
@@ -248,15 +271,15 @@ function ReviewCard({
 			</div>
 
 			<div className="review-facts">
-				<span>{review.author ? displayPerson(review.author) : "Unknown author"}</span>
-				<span aria-hidden="true">·</span>
 				<span>
-					{review.reviewers.length === 0
-						? "No reviewers"
-						: `${review.reviewers.length} ${
-								review.reviewers.length === 1 ? "reviewer" : "reviewers"
-							}`}
+					{review.author ? (
+						displayPerson(review.author)
+					) : (
+						<I18nMessage value={{ key: "mcp:ReviewApp.unknownAuthor" }} />
+					)}
 				</span>
+				<span aria-hidden="true">·</span>
+				<span>{i18nMessages.t("mcp:detail.reviewers", { count: review.reviewers.length })}</span>
 				{created && (
 					<>
 						<span aria-hidden="true">·</span>
@@ -266,7 +289,7 @@ function ReviewCard({
 			</div>
 
 			{review.labels.length > 0 && (
-				<div className="review-labels" aria-label="Labels">
+				<div className="review-labels" aria-label={i18nMessages.t("mcp:ReviewApp.labels")}>
 					{review.labels.map((label) => (
 						<span key={label}>{label}</span>
 					))}
@@ -282,7 +305,11 @@ function ReviewCard({
 						type="button"
 					>
 						{pending && <span className="spinner" aria-hidden="true" />}
-						{pending ? "Marking ready…" : "Ready for review"}
+						{pending ? (
+							<I18nMessage value={{ key: "mcp:ReviewApp.markingReady" }} />
+						) : (
+							<I18nMessage value={{ key: "mcp:ReviewApp.readyForReview" }} />
+						)}
 					</button>
 				)}
 			</footer>
@@ -291,10 +318,11 @@ function ReviewCard({
 }
 
 export function ReviewApp() {
+	const i18nMessages = useTranslations();
 	const [view, setView] = useState<ReviewView | null>(null);
-	const [resultError, setResultError] = useState<string | null>(null);
-	const [actionError, setActionError] = useState<string | null>(null);
-	const [pollingError, setPollingError] = useState<string | null>(null);
+	const [resultError, setResultError] = useState<LocalizedText | null>(null);
+	const [actionError, setActionError] = useState<LocalizedText | null>(null);
+	const [pollingError, setPollingError] = useState<LocalizedText | null>(null);
 	const [pendingReview, setPendingReview] = useState<number | null>(null);
 	const { app, isConnected, error } = useApp({
 		appInfo: { name: "GitButler review", version: "1.0.0" },
@@ -302,12 +330,12 @@ export function ReviewApp() {
 		onAppCreated: (createdApp) => {
 			createdApp.addEventListener("toolresult", (result) => {
 				if (result.isError) {
-					setResultError(textFromToolResult(result));
+					setResultError(errorText(errorFromToolResult(result), ""));
 					return;
 				}
 				const nextView = reviewViewFromToolResult(result);
 				if (nextView === null) {
-					setResultError("The review result did not contain structured data.");
+					setResultError(i18nMessage("mcp:detail.theReviewResultDidNotContainStructuredData"));
 					return;
 				}
 				setView(nextView);
@@ -317,6 +345,7 @@ export function ReviewApp() {
 		},
 	});
 	useHostStyles(app, app?.getHostContext());
+	useHostLanguage(app, isConnected);
 
 	useEffect(() => {
 		if (
@@ -343,17 +372,15 @@ export function ReviewApp() {
 					},
 				});
 				if (cancelled || result === undefined) return;
-				if (result.isError) throw new Error(textFromToolResult(result));
+				if (result.isError) throw errorFromToolResult(result);
 				const refreshed = reviewViewFromToolResult(result);
 				if (refreshed === null) {
-					throw new Error("The refreshed reviews were missing from the response.");
+					throw i18n.error("mcp:detail.theRefreshedReviewsWereMissingFromTheResponse");
 				}
 				setView((current) => (current === null ? current : mergeReviewViews(current, refreshed)));
 			} catch (pollCause) {
 				if (cancelled) return;
-				setPollingError(
-					pollCause instanceof Error ? pollCause.message : "Could not refresh CI status.",
-				);
+				setPollingError(errorText(pollCause, i18nMessage("mcp:detail.couldNotRefreshCIStatus")));
 			}
 		}
 
@@ -367,18 +394,29 @@ export function ReviewApp() {
 	if (error !== null) {
 		return (
 			<div className="message-state error-state">
-				Could not connect to the host: {error.message}
+				<I18nMessage
+					value={{
+						key: "mcp:ReviewApp.couldNotConnectToTheHostValue",
+						values: { message: String(error.message) },
+					}}
+				/>
 			</div>
 		);
 	}
 	if (resultError !== null) {
-		return <div className="message-state error-state">{resultError}</div>;
+		return (
+			<div className="message-state error-state">
+				<I18nMessage value={resultError} />
+			</div>
+		);
 	}
 	if (!isConnected || view === null || app === null) {
 		return (
 			<div className="message-state loading-state">
-				<span className="spinner" aria-hidden="true" />
-				Loading GitButler review…
+				<I18nRichMessage
+					value={{ key: "mcp:ReviewApp.loadingGitButlerReview" }}
+					components={{ slot1: <span className="spinner" aria-hidden="true" /> }}
+				/>{" "}
 			</div>
 		);
 	}
@@ -398,17 +436,15 @@ export function ReviewApp() {
 					reviewNumber: review.number,
 				},
 			});
-			if (result.isError) throw new Error(textFromToolResult(result));
+			if (result.isError) throw errorFromToolResult(result);
 			const updatedView = reviewViewFromToolResult(result);
 			const updatedReview = updatedView?.reviews[0];
-			if (!updatedReview) throw new Error("The updated review was missing from the response.");
+			if (!updatedReview) throw i18n.error("mcp:detail.theUpdatedReviewWasMissingFromTheResponse");
 			setView((current) =>
 				current === null || updatedView === null ? current : mergeReviewViews(current, updatedView),
 			);
 		} catch (actionCause) {
-			setActionError(
-				actionCause instanceof Error ? actionCause.message : "Could not mark the review ready.",
-			);
+			setActionError(errorText(actionCause, i18nMessage("mcp:detail.couldNotMarkTheReviewReady")));
 		} finally {
 			setPendingReview(null);
 		}
@@ -419,9 +455,7 @@ export function ReviewApp() {
 		try {
 			await connectedApp.openLink({ url: review.url });
 		} catch (actionCause) {
-			setActionError(
-				actionCause instanceof Error ? actionCause.message : "Could not open the review.",
-			);
+			setActionError(errorText(actionCause, i18nMessage("mcp:detail.couldNotOpenTheReview")));
 		}
 	}
 
@@ -429,22 +463,31 @@ export function ReviewApp() {
 		<main className="review-shell">
 			<header className="review-context">
 				<div>
-					<span className="eyebrow">GitButler review</span>
+					<span className="eyebrow">
+						<I18nMessage value={{ key: "mcp:ReviewApp.gitButlerReview" }} />
+					</span>
 					<h1>{view.repository.name}</h1>
 				</div>
 				<span className="review-count">
-					{view.reviews.length} {view.reviews.length === 1 ? "review" : "reviews"}
+					<I18nMessage
+						value={{ key: "mcp:review.count", values: { count: view.reviews.length } }}
+					/>
 				</span>
 			</header>
 
 			{actionError && (
 				<div className="action-error" role="alert">
-					{actionError}
+					<I18nMessage value={actionError} />
 				</div>
 			)}
 			{pollingError && (
 				<div className="polling-error" role="status">
-					CI status stopped updating: {pollingError}
+					<I18nMessage
+						value={{
+							key: "mcp:ReviewApp.cIStatusStoppedUpdatingValue",
+							values: { pollingError: i18nMessages.text(pollingError) },
+						}}
+					/>
 				</div>
 			)}
 

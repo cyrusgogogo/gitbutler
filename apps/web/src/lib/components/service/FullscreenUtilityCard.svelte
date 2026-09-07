@@ -1,7 +1,7 @@
 <script lang="ts">
 	import linksJson from "$lib/data/links.json";
+	import I18nRichMessage from "@gitbutler/ui/i18n/RichMessage.svelte";
 	import type { Snippet } from "svelte";
-
 	interface Props {
 		title: string;
 		children: Snippet;
@@ -23,16 +23,32 @@
 		<div class="text-12 service-form__footer">
 			<p>
 				{#if backlink}
-					← Back to
-					<a href={backlink.href}>{backlink.label}</a>
+					{#snippet i18nSlot1(content: import("svelte").Snippet)}<a href={backlink.href}
+							>{@render content()}</a
+						>{/snippet}
+					<I18nRichMessage
+						value={{
+							key: "web:FullscreenUtilityCard.backToValue",
+							values: { label: String(backlink.label) },
+						}}
+						components={{ slot1: i18nSlot1 }}
+					/>
 				{/if}
 			</p>
 
 			<p>
-				Need help?
-				<a href={linksJson.other.support.url} target="_blank" rel="noopener noreferrer">
-					{linksJson.other.support.label}
-				</a>
+				{#snippet i18nSlot2(content: import("svelte").Snippet)}<a
+						href={linksJson.other.support.url}
+						target="_blank"
+						rel="noopener noreferrer">{@render content()}</a
+					>{/snippet}
+				<I18nRichMessage
+					value={{
+						key: "web:FullscreenUtilityCard.needHelpValue",
+						values: { label: String(linksJson.other.support.label) },
+					}}
+					components={{ slot2: i18nSlot2 }}
+				/>
 			</p>
 		</div>
 	</form>

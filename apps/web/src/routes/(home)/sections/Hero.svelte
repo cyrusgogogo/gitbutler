@@ -4,7 +4,9 @@
 	import contentJson from "$home/data/content.json";
 	import HeroHeader from "$home/sections/HeroHeader.svelte";
 	import Header from "$lib/components/marketing/Header.svelte";
+	import { useTranslations } from "@gitbutler/i18n/svelte";
 	import { type Snippet } from "svelte";
+	const i18nMessages = useTranslations();
 
 	interface Props {
 		currentPage?: "home" | "cli";
@@ -38,7 +40,7 @@
 				type="button"
 				class="video-preview"
 				onclick={openVideoOverlay}
-				aria-label="Watch demo video"
+				aria-label={$i18nMessages.t("web:Hero.watchDemoVideo")}
 				onmouseenter={(e) => e.currentTarget.querySelector("video")?.play()}
 				onmouseleave={(e) => {
 					const video = e.currentTarget.querySelector("video");

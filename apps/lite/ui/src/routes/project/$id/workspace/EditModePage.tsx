@@ -1,3 +1,6 @@
+import { useTranslations } from "@gitbutler/i18n/react";
+import { message as i18nMessage } from "@gitbutler/i18n";
+import { Message as I18nMessage } from "@gitbutler/i18n/react";
 import { useQueries, useQuery, useQueryClient } from "@tanstack/react-query";
 import { type FC, type ReactNode, useEffect, useState } from "react";
 import {
@@ -45,7 +48,12 @@ const EditModeFileRow: FC<{
 	const menuItems = [
 		...pathMenuItems,
 		...(onMarkResolved
-			? [nativeMenuItem({ label: "Mark as Resolved", onSelect: onMarkResolved })]
+			? [
+					nativeMenuItem({
+						label: i18nMessage("lite:EditModePage.markAsResolved"),
+						onSelect: onMarkResolved,
+					}),
+				]
 			: []),
 	];
 
@@ -71,6 +79,7 @@ export const EditModePage: FC<{ projectId: string; metadata: EditModeMetadata }>
 	projectId,
 	metadata,
 }) => {
+	const i18nMessages = useTranslations();
 	const queryClient = useQueryClient();
 	const { data: initialFiles } = useQuery(editInitialIndexStateQueryOptions(projectId));
 	const { data: changedFiles, dataUpdatedAt } = useQuery(
@@ -169,11 +178,7 @@ export const EditModePage: FC<{ projectId: string; metadata: EditModeMetadata }>
 		const unresolved = await unresolvedOnDisk();
 		if (
 			unresolved > 0 &&
-			!window.confirm(
-				`${unresolved} conflicted ${
-					unresolved === 1 ? "file is" : "files are"
-				} not resolved. Save the commit with the conflicts still in?`,
-			)
+			!window.confirm(i18nMessages.t("lite:edit.saveConflicts", { count: unresolved }))
 		)
 			return;
 		saveEdit(projectId);
@@ -186,22 +191,26 @@ export const EditModePage: FC<{ projectId: string; metadata: EditModeMetadata }>
 			...editChangesFromInitialQueryOptions(projectId),
 			staleTime: 0,
 		});
-		if (changed.length > 0 && !window.confirm("Discard the changes made in edit mode?")) return;
+		if (changed.length > 0 && !window.confirm(i18nMessages.t("lite:edit.discard"))) return;
 		abortEdit({ projectId, force: true });
 	};
 
 	return (
 		<div className={styles.page}>
 			<div className={styles.panel}>
-				<h1 className={styles.title}>Editing commit</h1>
+				<h1 className={styles.title}>
+					<I18nMessage value={{ key: "lite:EditModePage.editingCommit" }} />
+				</h1>
 				<span className={styles.commitRef}>{metadata.commitOid.slice(0, 10)}</span>
 				<p className={styles.explainer}>
-					This commit is checked out in your working directory. Edit its files with any tool —
-					resolve conflicts, tweak the change — then save to rewrite the commit. Everything that was
-					stacked on top gets rebased onto the result.
+					<I18nMessage
+						value={{ key: "lite:EditModePage.thisCommitIsCheckedOutInYourWorking" }}
+					/>{" "}
 				</p>
 
-				<h2 className={styles.sectionTitle}>Files in this commit</h2>
+				<h2 className={styles.sectionTitle}>
+					<I18nMessage value={{ key: "lite:EditModePage.filesInThisCommit" }} />
+				</h2>
 				<div className={styles.files}>
 					{(initialFiles ?? []).map(([change, presence]) => (
 						<EditModeFileRow
@@ -218,9 +227,13 @@ export const EditModePage: FC<{ projectId: string; metadata: EditModeMetadata }>
 							hint={
 								presence != null &&
 								(stateOf(change.path) === "resolved" ? (
-									<span className={styles.resolvedHint}>resolved</span>
+									<span className={styles.resolvedHint}>
+										<I18nMessage value={{ key: "lite:control.resolved" }} />
+									</span>
 								) : (
-									<span className={styles.conflictHint}>{conflictHint(presence)}</span>
+									<span className={styles.conflictHint}>
+										<I18nMessage value={conflictHint(presence)} />
+									</span>
 								))
 							}
 							onMarkResolved={
@@ -230,10 +243,16 @@ export const EditModePage: FC<{ projectId: string; metadata: EditModeMetadata }>
 							}
 						/>
 					))}
-					{initialFiles?.length === 0 && <div className={styles.empty}>An empty commit.</div>}
+					{initialFiles?.length === 0 && (
+						<div className={styles.empty}>
+							<I18nMessage value={{ key: "lite:EditModePage.anEmptyCommit" }} />
+						</div>
+					)}
 				</div>
 
-				<h2 className={styles.sectionTitle}>Changed since entering edit mode</h2>
+				<h2 className={styles.sectionTitle}>
+					<I18nMessage value={{ key: "lite:EditModePage.changedSinceEnteringEditMode" }} />
+				</h2>
 				<div className={styles.files}>
 					{(changedFiles ?? []).map((change) => (
 						<EditModeFileRow
@@ -243,7 +262,11 @@ export const EditModePage: FC<{ projectId: string; metadata: EditModeMetadata }>
 							icon={<FileIcon fileName={fileName(change.path)} />}
 						/>
 					))}
-					{changedFiles?.length === 0 && <div className={styles.empty}>No changes yet.</div>}
+					{changedFiles?.length === 0 && (
+						<div className={styles.empty}>
+							<I18nMessage value={{ key: "lite:EditModePage.noChangesYet" }} />
+						</div>
+					)}
 				</div>
 
 				<div className={styles.buttons}>
@@ -264,7 +287,7 @@ export const EditModePage: FC<{ projectId: string; metadata: EditModeMetadata }>
 						disabled={busy}
 						onClick={() => void save()}
 					>
-						Save and return
+						<I18nMessage value={{ key: "lite:EditModePage.saveAndReturn" }} />
 					</button>
 					<button
 						type="button"
@@ -272,7 +295,7 @@ export const EditModePage: FC<{ projectId: string; metadata: EditModeMetadata }>
 						disabled={busy}
 						onClick={() => void cancel()}
 					>
-						Cancel edit
+						<I18nMessage value={{ key: "lite:EditModePage.cancelEdit" }} />
 					</button>
 				</div>
 			</div>

@@ -1,10 +1,11 @@
+import { message as i18nMessage } from "@gitbutler/i18n";
 import { useOpenInProgram } from "#ui/api/mutations.ts";
 import {
 	guiSettingsQueryOptions,
 	listEditorsQueryOptions,
 	listProjectsQueryOptions,
 } from "#ui/api/queries.ts";
-import { changesFileHotkeys, revealInFolderLabel, toElectronAccelerator } from "#ui/hotkeys.ts";
+import { changesFileHotkeys, toElectronAccelerator } from "#ui/hotkeys.ts";
 import { type NativeMenuItem, nativeMenuItem } from "#ui/native-menu.ts";
 import { useRevealInFolder } from "./useRevealInFolder.ts";
 import { useQuery, useSuspenseQuery } from "@tanstack/react-query";
@@ -39,7 +40,7 @@ export const usePathMenuItems = ({
 	return [
 		preferredEditor
 			? nativeMenuItem({
-					label: `Open in ${preferredEditor.name}`,
+					label: i18nMessage("lite:usePathMenuItems.openInValue", { value: preferredEditor.name }),
 					enabled: !isOpenInProgramPending,
 					accelerator: toElectronAccelerator(changesFileHotkeys.openInEditor.hotkey),
 					onSelect: () =>
@@ -51,7 +52,7 @@ export const usePathMenuItems = ({
 						}),
 				})
 			: nativeMenuItem({
-					label: "Open In Editor",
+					label: i18nMessage("lite:usePathMenuItems.openInEditor"),
 					submenu:
 						editors?.map((editor) =>
 							nativeMenuItem({
@@ -68,22 +69,22 @@ export const usePathMenuItems = ({
 						) ?? [],
 				}),
 		nativeMenuItem({
-			label: revealInFolderLabel,
+			label: i18nMessage(changesFileHotkeys.revealInFolder.meta.i18nKey),
 			accelerator: toElectronAccelerator(changesFileHotkeys.revealInFolder.hotkey),
 			onSelect: () => revealInFolder(path),
 		}),
 		nativeMenuItem({
-			label: "Copy Path",
+			label: i18nMessage("lite:usePathMenuItems.copyPath"),
 			submenu: [
 				nativeMenuItem({
-					label: "Absolute Path",
+					label: i18nMessage("lite:usePathMenuItems.absolutePath"),
 					onSelect: async () => {
 						const absolutePath = await window.lite.pathJoin(selectedProject.path, path);
 						await window.lite.clipboardWriteText(absolutePath);
 					},
 				}),
 				nativeMenuItem({
-					label: "Relative Path",
+					label: i18nMessage("lite:usePathMenuItems.relativePath"),
 					onSelect: () => window.lite.clipboardWriteText(path),
 				}),
 			],

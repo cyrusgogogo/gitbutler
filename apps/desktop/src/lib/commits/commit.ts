@@ -1,5 +1,7 @@
 import { splitMessage } from "$lib/commits/commitMessage";
+import { message as i18nMessage } from "@gitbutler/i18n";
 import type { RemoteCommit } from "@gitbutler/but-sdk";
+import type { LocalizedText } from "@gitbutler/i18n";
 
 export function descriptionTitle(commit: { description: string }): string | undefined {
 	return splitMessage(commit.description).title || undefined;
@@ -27,18 +29,18 @@ export enum CommitStatus {
 
 export type CommitStatusType = keyof typeof CommitStatus;
 
-export function commitStatusLabel(status: CommitStatusType): string {
+export function commitStatusLabel(status: CommitStatusType): LocalizedText {
 	switch (status) {
 		case CommitStatus.LocalOnly:
-			return "Local";
+			return i18nMessage("desktop:detail.dc99d54d99");
 		case CommitStatus.LocalAndRemote:
-			return "Local and remote";
+			return i18nMessage("desktop:detail.2185c2dd43");
 		case CommitStatus.Integrated:
-			return "Integrated";
+			return i18nMessage("desktop:detail.1766eae98d");
 		case CommitStatus.Remote:
-			return "Remote";
+			return i18nMessage("desktop:detail.c93f6536dc");
 		case CommitStatus.Base:
-			return "Base";
+			return i18nMessage("desktop:detail.077fe9c54e");
 		default:
 			return status;
 	}

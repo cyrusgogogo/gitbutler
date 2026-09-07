@@ -10,6 +10,8 @@
 		type EmojiInfo,
 	} from "$components/emoji/utils";
 	import ScrollableContainer from "$components/scroll/ScrollableContainer.svelte";
+	import { useTranslations } from "@gitbutler/i18n/svelte";
+	const i18nMessages = useTranslations();
 
 	type Props = {
 		onEmojiSelect: (emoji: EmojiInfo) => void;
@@ -46,7 +48,11 @@
 
 <div class="emoji-picker">
 	<div class="emoji-picker__header">
-		<Textbox placeholder="Search emojis..." iconLeft="search" bind:value={searchVal} />
+		<Textbox
+			placeholder={$i18nMessages.t("ui:EmojiPicker.searchEmojis")}
+			iconLeft="search"
+			bind:value={searchVal}
+		/>
 
 		<div class="emoji-picker__categories">
 			{#each groups as group}
@@ -70,7 +76,7 @@
 				{#if searchVal && searchResults}
 					{#if searchResults.length === 0}
 						<div class="emoji-picker__placeholder">
-							<span class="text-13">No emojis found ¯\_(ツ)_/¯ </span>
+							<span class="text-13">{$i18nMessages.t("ui:EmojiPicker.noEmojisFound")}</span>
 						</div>
 					{:else}
 						<div class="emoji-picker__group">

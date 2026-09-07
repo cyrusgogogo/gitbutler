@@ -8,7 +8,9 @@
 		updateIntegrationStepDraftCommit,
 		updateIntegrationStepDraftMessage,
 	} from "$lib/upstream/branchIntegrationEditor";
+	import { useTranslations } from "@gitbutler/i18n/svelte";
 	import { Button } from "@gitbutler/ui";
+	const i18nMessages = useTranslations();
 
 	type Props = {
 		stepDrafts: IntegrationStepDraft[];
@@ -48,7 +50,7 @@
 		onclick={() => (stepDrafts = [])}
 		icon="bin"
 	>
-		Clear steps
+		{$i18nMessages.t("desktop:BranchIntegrationSteps.clearSteps")}
 	</Button>
 
 	<Button
@@ -59,14 +61,14 @@
 		disabled={commitOptions.length === 0}
 		onclick={() => (stepDrafts = [...stepDrafts, createDefaultIntegrationStepDraft(commitOptions)])}
 	>
-		Add step
+		{$i18nMessages.t("desktop:BranchIntegrationSteps.addStep")}
 	</Button>
 </div>
 
 <div class="branch-integration__steps">
 	{#if stepDrafts.length === 0}
 		<div class="branch-integration__empty">
-			No integration steps yet. Add a step to build the plan.
+			{$i18nMessages.t("desktop:BranchIntegrationSteps.noIntegrationStepsYetAddAStepTo")}
 		</div>
 	{:else}
 		{#each stepDrafts as step, index (step.id)}
@@ -77,7 +79,11 @@
 				data-branch-integration-step-index={index}
 			>
 				<div class="branch-integration__step-toolbar">
-					<span class="text-11 clr-text-2">Step {index + 1}</span>
+					<span class="text-11 clr-text-2"
+						>{$i18nMessages.t("desktop:BranchIntegrationSteps.stepValue", {
+							value: String(index + 1),
+						})}</span
+					>
 					<div class="branch-integration__step-actions">
 						<Button
 							kind="outline"
@@ -93,14 +99,16 @@
 							disabled={index === stepDrafts.length - 1}
 							onclick={() => moveStep(step.id, 1)}
 						/>
-						<Button kind="outline" size="tag" onclick={() => deleteStep(step.id)}>Delete</Button>
+						<Button kind="outline" size="tag" onclick={() => deleteStep(step.id)}
+							>{$i18nMessages.t("desktop:BranchIntegrationSteps.delete")}</Button
+						>
 					</div>
 				</div>
 
 				<div class="branch-integration__step-fields">
 					<label class="branch-integration__field">
 						<select
-							aria-label="Integration step type"
+							aria-label={$i18nMessages.t("desktop:BranchIntegrationSteps.integrationStepType")}
 							value={step.kind}
 							onchange={(event) =>
 								(stepDrafts = stepDrafts.map((candidate) =>
@@ -113,9 +121,13 @@
 										: candidate,
 								))}
 						>
-							<option value="pick">Pick</option>
-							<option value="merge">Merge</option>
-							<option value="squash">Squash</option>
+							<option value="pick">{$i18nMessages.t("desktop:BranchIntegrationSteps.pick")}</option>
+							<option value="merge"
+								>{$i18nMessages.t("desktop:BranchIntegrationSteps.merge")}</option
+							>
+							<option value="squash"
+								>{$i18nMessages.t("desktop:BranchIntegrationSteps.squash")}</option
+							>
 						</select>
 					</label>
 
@@ -123,7 +135,9 @@
 						{#each step.commitIds as commitId, commitIndex}
 							<label class="branch-integration__field">
 								<select
-									aria-label={`Squash commit ${commitIndex + 1}`}
+									aria-label={$i18nMessages.t("desktop:BranchIntegrationSteps.inline7d1231ab5", {
+										value1: String(commitIndex + 1),
+									})}
 									value={commitId}
 									onchange={(event) =>
 										(stepDrafts = stepDrafts.map((candidate) =>
@@ -146,7 +160,7 @@
 						{/each}
 						<label class="branch-integration__field branch-integration__field--full">
 							<textarea
-								aria-label="Squash commit message"
+								aria-label={$i18nMessages.t("desktop:BranchIntegrationSteps.squashCommitMessage")}
 								rows="3"
 								value={step.message}
 								oninput={(event) =>
@@ -163,7 +177,7 @@
 					{:else}
 						<label class="branch-integration__field branch-integration__field--full">
 							<select
-								aria-label="Integration commit"
+								aria-label={$i18nMessages.t("desktop:BranchIntegrationSteps.integrationCommit")}
 								value={step.commitId}
 								onchange={(event) =>
 									(stepDrafts = stepDrafts.map((candidate) =>

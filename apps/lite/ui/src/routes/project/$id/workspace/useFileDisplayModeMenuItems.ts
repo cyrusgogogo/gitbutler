@@ -1,3 +1,4 @@
+import { message as i18nMessage } from "@gitbutler/i18n";
 import { useSaveGUISettings } from "#ui/api/mutations.ts";
 import { type NativeMenuItem, nativeMenuItem } from "#ui/native-menu.ts";
 import { useFileDisplayMode } from "./useFileDisplayMode.ts";
@@ -13,12 +14,12 @@ export const useFileDisplayModeMenuItems = (): Array<NativeMenuItem> => {
 
 	return [
 		nativeMenuItem({
-			label: "View as List",
+			label: i18nMessage("lite:useFileDisplayModeMenuItems.viewAsList"),
 			checked: mode === "list",
 			onSelect: () => saveGUISettings({ fileDisplayMode: "list" }),
 		}),
 		nativeMenuItem({
-			label: "View as Tree",
+			label: i18nMessage("lite:useFileDisplayModeMenuItems.viewAsTree"),
 			checked: mode === "tree",
 			onSelect: () => saveGUISettings({ fileDisplayMode: "tree" }),
 		}),

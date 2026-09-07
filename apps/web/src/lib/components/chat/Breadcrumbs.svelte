@@ -2,8 +2,10 @@
 	import { goto } from "$app/navigation";
 	import { USER_SERVICE } from "$lib/user/userService";
 	import { inject } from "@gitbutler/core/context";
+	import { useTranslations } from "@gitbutler/i18n/svelte";
 	import { WEB_ROUTES_SERVICE } from "@gitbutler/shared/routing/webRoutes.svelte";
 	import { Button, Icon } from "@gitbutler/ui";
+	const i18nMessages = useTranslations();
 
 	const routes = inject(WEB_ROUTES_SERVICE);
 	// get user's project page params
@@ -12,14 +14,20 @@
 
 	function getRootLabel() {
 		if ($user?.login === routes.isProjectReviewBranchPageSubset?.ownerSlug) {
-			return "My Projects";
+			return $i18nMessages.t("web:detail.5ca5a2ab58");
 		} else {
-			return "My Reviews";
+			return $i18nMessages.t("web:detail.e53c716761");
 		}
 	}
 </script>
 
-{#snippet backButton({ href, label = "Back" }: { href: string; label: string })}
+{#snippet backButton({
+	href,
+	label = $i18nMessages.t("web:Breadcrumbs.inlineb52b36b72"),
+}: {
+	href: string;
+	label: string;
+})}
 	<a {href} class="breadcrumbs__back-btn">
 		<div class="breadcrumbs__back-btn__icon">
 			<Icon name="chevron-left" />
@@ -33,9 +41,13 @@
 <div class="breadcrumbs">
 	<div class="breadcrumbs__path">
 		{#if !routes.isProjectReviewBranchPageSubset}
-			<span class="text-15 text-bold">Dashboard </span>
+			<span class="text-15 text-bold">{$i18nMessages.t("web:Breadcrumbs.dashboard")}</span>
 		{:else}
-			<Button kind="ghost" onclick={() => goto(routes.projectsPath())} tooltip="Go to Dashboard">
+			<Button
+				kind="ghost"
+				onclick={() => goto(routes.projectsPath())}
+				tooltip={$i18nMessages.t("web:Breadcrumbs.goToDashboard")}
+			>
 				<span class="text-15 text-bold truncate breadcrumbs__path-label">
 					{getRootLabel()} <span>/</span>
 					{routes.isProjectReviewPageSubset?.ownerSlug}</span
@@ -46,12 +58,12 @@
 
 	{#if routes.isProjectReviewBranchCommitPageSubset}
 		{@render backButton({
-			label: "Back",
+			label: $i18nMessages.t("web:Breadcrumbs.inlineb52b36b72"),
 			href: routes.projectReviewBranchPath(routes.isProjectReviewBranchCommitPageSubset),
 		})}
 	{:else if routes.isProjectReviewBranchPageSubset}
 		{@render backButton({
-			label: "Back",
+			label: $i18nMessages.t("web:Breadcrumbs.inlineb52b36b72"),
 			href: `${routes.projectPath(routes.isProjectReviewBranchPageSubset)}/reviews`,
 		})}
 	{/if}

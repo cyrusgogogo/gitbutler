@@ -1,3 +1,6 @@
+import type { LocalizedText } from "@gitbutler/i18n";
+import { message as i18nMessage } from "@gitbutler/i18n";
+import { useTranslations } from "@gitbutler/i18n/react";
 import { getButtonClassName } from "#ui/components/Button.tsx";
 import { classes } from "#ui/components/classes.ts";
 import { Icon } from "#ui/components/Icon.tsx";
@@ -27,18 +30,18 @@ const reactionGlyphs: Array<[string, string]> = [
 
 const glyphByKind = new Map(reactionGlyphs);
 
-const reactionNames: Record<string, string> = {
-	"+1": "thumbs up",
-	"-1": "thumbs down",
-	laugh: "laugh",
-	hooray: "hooray",
-	confused: "confused",
-	heart: "heart",
-	rocket: "rocket",
-	eyes: "eyes",
+const reactionNames: Record<string, LocalizedText> = {
+	"+1": i18nMessage("lite:reaction.thumbsup"),
+	"-1": i18nMessage("lite:reaction.thumbsdown"),
+	laugh: i18nMessage("lite:reaction.laugh"),
+	hooray: i18nMessage("lite:reaction.hooray"),
+	confused: i18nMessage("lite:reaction.confused"),
+	heart: i18nMessage("lite:reaction.heart"),
+	rocket: i18nMessage("lite:reaction.rocket"),
+	eyes: i18nMessage("lite:reaction.eyes"),
 };
 
-const reactionName = (kind: string): string => reactionNames[kind] ?? kind;
+const reactionName = (kind: string): LocalizedText => reactionNames[kind] ?? kind;
 
 /** One listed reaction: who left it, and the id that addresses removal. */
 export type ReactionEntry = { id: number; login: string };
@@ -68,6 +71,7 @@ export const Reactions: FC<{
 	 */
 	onToggle?: (kind: string, myReactionId: number | null) => void;
 }> = ({ reactions, reactors, myLogin, onToggle }) => {
+	const i18nMessages = useTranslations();
 	const [pickerOpen, setPickerOpen] = useState(false);
 
 	const mineFor = (kind: string) =>
@@ -111,7 +115,9 @@ export const Reactions: FC<{
 						<button
 							key={chip.kind}
 							type="button"
-							aria-label={`Toggle ${reactionName(chip.kind)} reaction`}
+							aria-label={i18nMessages.t("lite:PullRequestReactions.toggleValueReaction", {
+								value: reactionName(chip.kind),
+							})}
 							className={classes(
 								"text-12",
 								styles.reactionChip,
@@ -147,7 +153,7 @@ export const Reactions: FC<{
 					className={styles.reactionPicker}
 					trigger={
 						<button
-							aria-label="Add reaction"
+							aria-label={i18nMessages.t("lite:PullRequestReactions.addReaction")}
 							className={getButtonClassName({ variant: "ghost", iconOnly: true })}
 							type="button"
 						>
@@ -160,7 +166,9 @@ export const Reactions: FC<{
 						return (
 							<button
 								key={kind}
-								aria-label={`React with ${reactionName(kind)}`}
+								aria-label={i18nMessages.t("lite:PullRequestReactions.reactWithValue", {
+									value: reactionName(kind),
+								})}
 								aria-pressed={mine !== undefined}
 								className={classes(styles.pickerItem, mine !== undefined && styles.pickerItemMine)}
 								onClick={() => {

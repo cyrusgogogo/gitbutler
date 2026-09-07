@@ -4,12 +4,15 @@
 	import { CLIPBOARD_SERVICE } from "$lib/backend/clipboard";
 	import { STACK_SERVICE } from "$lib/stacks/stackService.svelte";
 	import { inject } from "@gitbutler/core/context";
+	import { message as i18nMessage } from "@gitbutler/i18n";
+	import { useTranslations } from "@gitbutler/i18n/svelte";
 	import {
 		ModalHeader,
 		ScrollableContainer,
 		SimpleCommitRow,
 		SimpleCommitRowSkeleton,
 	} from "@gitbutler/ui";
+	const i18nMessages = useTranslations();
 
 	type AutoCommitEvent =
 		| { type: "started"; steps_length: number }
@@ -92,7 +95,7 @@
 
 <div class="auto-commit-modal__wrapper">
 	<ModalHeader sticky={!isScrollTopVisible} closeButton={isDone} oncloseclick={close}
-		>Auto commit changes</ModalHeader
+		>{$i18nMessages.t("desktop:AutoCommitModalContent.autoCommitChanges")}</ModalHeader
 	>
 
 	<AppScrollableContainer
@@ -112,7 +115,9 @@
 							{@const commit = stackService.commitDetails(data.projectId, commitId)}
 							<ReduxResult projectId={data.projectId} result={commit.result}>
 								{#snippet children(commit)}
-									{@const commitTitle = commit.message.split("\n")[0] ?? "No commit message"}
+									{@const commitTitle =
+										commit.message.split("\n")[0] ??
+										$i18nMessages.t("desktop:AutoCommitModalContent.inline02d4f43f6")}
 									{@const date = new Date(Number(commit.committedAt))}
 
 									<SimpleCommitRow
@@ -122,7 +127,9 @@
 										{date}
 										author={commit.author.name}
 										onCopy={() =>
-											clipboardService.write(commit.id, { message: "Commit hash copied" })}
+											clipboardService.write(commit.id, {
+												message: i18nMessage("desktop:AutoCommitModalContent.inlinefb6ebf38a"),
+											})}
 									/>
 								{/snippet}
 
@@ -134,7 +141,9 @@
 
 						{#if parentOfCommitBeingGenerated && !isDone && !isCurrentGenerationComplete}
 							{@const currentMessage = commitMessageMap.get(parentOfCommitBeingGenerated)}
-							{@const title = currentMessage?.split("\n")[0] ?? "Generating commit message..."}
+							{@const title =
+								currentMessage?.split("\n")[0] ??
+								$i18nMessages.t("desktop:AutoCommitModalContent.inline49a3cf0fd")}
 							<SimpleCommitRow {title} sha="..." date={new Date()} aiMessage={currentMessage} />
 						{/if}
 

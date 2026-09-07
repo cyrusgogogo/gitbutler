@@ -1,3 +1,4 @@
+import { useTranslations } from "@gitbutler/i18n/react";
 import { classes } from "#ui/components/classes.ts";
 import { getButtonClassName } from "#ui/components/Button.tsx";
 import { Icon } from "./Icon.tsx";
@@ -45,39 +46,42 @@ export const Snackbar: FC<
 		onDismiss?: () => void;
 		dismissLabel?: string;
 	} & ComponentProps<"div">
-> = ({ variant = "info", icon, onDismiss, dismissLabel = "Dismiss", children, ...props }) => (
-	<div
-		// A failure interrupts; the other two are there to be read whenever the reader gets to them.
-		role={variant === "danger" ? "alert" : "status"}
-		{...props}
-		className={classes(
-			props.className,
-			styles.snackbar,
-			"text-12",
-			Match.value(variant).pipe(
-				Match.when("info", () => styles.info),
-				Match.when("danger", () => styles.danger),
-				Match.when("safe", () => styles.safe),
-				Match.exhaustive,
-			),
-		)}
-	>
-		<Icon name={icon ?? defaultIcon(variant)} size={14} className={styles.icon} />
-		<span className={styles.message}>{children}</span>
-		{onDismiss !== undefined && (
-			<>
-				<div aria-hidden className={styles.divider} />
-				<Button
-					aria-label={dismissLabel}
-					className={classes(
-						getButtonClassName({ variant: "ghost", size: "small", iconOnly: true }),
-						styles.dismiss,
-					)}
-					onClick={onDismiss}
-				>
-					<Icon name="cross" />
-				</Button>
-			</>
-		)}
-	</div>
-);
+> = ({ variant = "info", icon, onDismiss, dismissLabel, children, ...props }) => {
+	const translations = useTranslations();
+	return (
+		<div
+			// A failure interrupts; the other two are there to be read whenever the reader gets to them.
+			role={variant === "danger" ? "alert" : "status"}
+			{...props}
+			className={classes(
+				props.className,
+				styles.snackbar,
+				"text-12",
+				Match.value(variant).pipe(
+					Match.when("info", () => styles.info),
+					Match.when("danger", () => styles.danger),
+					Match.when("safe", () => styles.safe),
+					Match.exhaustive,
+				),
+			)}
+		>
+			<Icon name={icon ?? defaultIcon(variant)} size={14} className={styles.icon} />
+			<span className={styles.message}>{children}</span>
+			{onDismiss !== undefined && (
+				<>
+					<div aria-hidden className={styles.divider} />
+					<Button
+						aria-label={dismissLabel ?? translations.t("common:dismiss")}
+						className={classes(
+							getButtonClassName({ variant: "ghost", size: "small", iconOnly: true }),
+							styles.dismiss,
+						)}
+						onClick={onDismiss}
+					>
+						<Icon name="cross" />
+					</Button>
+				</>
+			)}
+		</div>
+	);
+};

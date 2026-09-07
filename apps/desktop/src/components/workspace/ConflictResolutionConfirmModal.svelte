@@ -1,5 +1,7 @@
 <script lang="ts">
+	import { useTranslations } from "@gitbutler/i18n/svelte";
 	import { AsyncButton, Button, Modal } from "@gitbutler/ui";
+	const i18nMessages = useTranslations();
 
 	interface Props {
 		onSubmit: () => void;
@@ -19,18 +21,28 @@
 
 <Modal bind:this={modalEl} width="small">
 	<div>
-		<p>It's generally better to start resolving conflicts from the bottom up.</p>
+		<p>
+			{$i18nMessages.t(
+				"desktop:ConflictResolutionConfirmModal.itSGenerallyBetterToStartResolvingConflicts",
+			)}
+		</p>
 		<br />
-		<p>Are you sure you want to resolve conflicts for this commit?</p>
+		<p>
+			{$i18nMessages.t(
+				"desktop:ConflictResolutionConfirmModal.areYouSureYouWantToResolveConflicts",
+			)}
+		</p>
 	</div>
 	{#snippet controls(close)}
-		<Button kind="outline" type="reset" onclick={close}>Cancel</Button>
+		<Button kind="outline" type="reset" onclick={close}
+			>{$i18nMessages.t("desktop:ConflictResolutionConfirmModal.cancel")}</Button
+		>
 		<AsyncButton
 			style="pop"
 			action={async () => {
 				await onSubmit();
 				close();
-			}}>Yes</AsyncButton
+			}}>{$i18nMessages.t("desktop:ConflictResolutionConfirmModal.yes")}</AsyncButton
 		>
 	{/snippet}
 </Modal>

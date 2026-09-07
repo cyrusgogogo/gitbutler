@@ -1,7 +1,9 @@
+import { formatDate } from "@gitbutler/i18n/format";
 import dayjs from "dayjs";
+import type { Locale } from "@gitbutler/i18n";
 
-export function toHumanReadableTime(d: Date) {
-	return d.toLocaleTimeString("en-US", {
+export function toHumanReadableTime(d: Date, locale: Locale = "en") {
+	return formatDate(locale, d, {
 		hour: "numeric",
 		minute: "numeric",
 	});

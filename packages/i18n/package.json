@@ -1,0 +1,46 @@
+{
+	"name": "@gitbutler/i18n",
+	"version": "0.0.1",
+	"private": true,
+	"type": "module",
+	"description": "GitButler message catalogs and locale runtime",
+	"scripts": {
+		"package": "tsc -p tsconfig.build.json",
+		"check": "node scripts/check-catalogs.mjs && tsc -p tsconfig.json --noEmit",
+		"test": "vitest run"
+	},
+	"exports": {
+		".": {
+			"types": "./dist/index.d.ts",
+			"import": "./dist/index.js"
+		},
+		"./*": {
+			"types": "./dist/*.d.ts",
+			"import": "./dist/*.js"
+		}
+	},
+	"dependencies": {
+		"i18next": "26.4.2",
+		"react-i18next": "17.0.13",
+		"html-parse-stringify": "4.0.1"
+	},
+	"peerDependencies": {
+		"react": "^19.2.4",
+		"svelte": "catalog:svelte"
+	},
+	"peerDependenciesMeta": {
+		"react": {
+			"optional": true
+		},
+		"svelte": {
+			"optional": true
+		}
+	},
+	"devDependencies": {
+		"@types/react": "^19.2.14",
+		"react": "^19.2.4",
+		"svelte": "catalog:svelte",
+		"typescript": "catalog:",
+		"vitest": "catalog:"
+	}
+}

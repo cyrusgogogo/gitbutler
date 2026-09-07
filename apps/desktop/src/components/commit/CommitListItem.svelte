@@ -4,11 +4,12 @@
 	import { URL_SERVICE } from "$lib/backend/url";
 	import { type CommitStatusType } from "$lib/commits/commit";
 	import { inject } from "@gitbutler/core/context";
+	import { useTranslations } from "@gitbutler/i18n/svelte";
 	import { Avatar, Icon, TestId } from "@gitbutler/ui";
 	import { focusable } from "@gitbutler/ui/focus/focusable";
-
 	import { slide } from "svelte/transition";
 	import type { Snippet } from "svelte";
+	const i18nMessages = useTranslations();
 
 	type BaseProps = {
 		type: CommitStatusType;
@@ -118,7 +119,7 @@
 		bind:this={container}
 		role="button"
 		tabindex="0"
-		aria-label="Commit row"
+		aria-label={$i18nMessages.t("desktop:CommitListItem.commitRow")}
 		class="commit-row"
 		class:selected
 		class:active
@@ -184,7 +185,9 @@
 							role="button"
 							tabindex="0"
 							onclick={openGerritReview}
-							title="Open Gerrit review #{reviewId}"
+							title={$i18nMessages.t("desktop:CommitListItem.openGerritReviewValue", {
+								reviewId: String(reviewId),
+							})}
 						>
 							<span class="text-11 text-semibold">{reviewId}</span>
 						</div>

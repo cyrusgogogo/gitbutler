@@ -1,3 +1,5 @@
+import type { LocalizedText } from "@gitbutler/i18n";
+import { Message as I18nMessage, useTranslations } from "@gitbutler/i18n/react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useEffect, useRef, useState, type FC } from "react";
 import type { UserProfile } from "@gitbutler/but-sdk";
@@ -27,9 +29,10 @@ const readAsBase64 = (file: File): Promise<string> =>
 	});
 
 const SignedOut: FC = () => {
+	const i18nMessages = useTranslations();
 	const client = useQueryClient();
 	const [signingIn, setSigningIn] = useState(false);
-	const [error, setError] = useState<string | null>(null);
+	const [error, setError] = useState<LocalizedText | null>(null);
 	const inFlight = useRef<AbortController | null>(null);
 
 	// Closing the dialog abandons the sign-in, so the poll should go with it.
@@ -76,9 +79,11 @@ const SignedOut: FC = () => {
 	return (
 		<Section>
 			<Row
-				label="GitButler account"
+				label={i18nMessages.t("lite:Account.gitButlerAccount")}
 				hint={
-					error ?? "Opens gitbutler.com to sign in. Your access token stays in the app's backend."
+					error !== null
+						? i18nMessages.text(error)
+						: i18nMessages.t("lite:Account.opensGitbutlerComToSignInYourAccess")
 				}
 			>
 				<button
@@ -87,7 +92,11 @@ const SignedOut: FC = () => {
 					disabled={signingIn}
 					onClick={() => void signIn()}
 				>
-					{signingIn ? "Waiting for browser…" : "Sign in"}
+					{signingIn ? (
+						<I18nMessage value={{ key: "lite:Account.waitingForBrowser" }} />
+					) : (
+						<I18nMessage value={{ key: "lite:Account.signIn" }} />
+					)}
 				</button>
 			</Row>
 		</Section>
@@ -104,6 +113,7 @@ export const AccountSection: FC<{ profile: UserProfile | null }> = ({ profile })
 };
 
 const SignedIn: FC<{ profile: UserProfile }> = ({ profile }) => {
+	const i18nMessages = useTranslations();
 	const client = useQueryClient();
 	const pictureInput = useRef<HTMLInputElement>(null);
 
@@ -113,7 +123,7 @@ const SignedIn: FC<{ profile: UserProfile }> = ({ profile }) => {
 	);
 	const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 	const [saving, setSaving] = useState(false);
-	const [error, setError] = useState<string | null>(null);
+	const [error, setError] = useState<LocalizedText | null>(null);
 
 	// An object URL is held by the document, not by the state that named it, so each one
 	// has to be handed back when it is replaced, cleared on save, or unmounted.
@@ -178,15 +188,19 @@ const SignedIn: FC<{ profile: UserProfile }> = ({ profile }) => {
 				<button
 					type="button"
 					className={styles.avatarButton}
-					aria-label="Change profile picture"
+					aria-label={i18nMessages.t("lite:Account.changeProfilePicture")}
 					onClick={() => pictureInput.current?.click()}
 				>
 					{(previewUrl ?? profile.picture) !== "" ? (
 						<img src={previewUrl ?? profile.picture} alt="" className={styles.avatar} />
 					) : (
-						<span className={classes("text-12", styles.avatarEmpty)}>Choose</span>
+						<span className={classes("text-12", styles.avatarEmpty)}>
+							<I18nMessage value={{ key: "lite:Account.choose" }} />
+						</span>
 					)}
-					<span className={classes("text-12", styles.avatarOverlay)}>Change</span>
+					<span className={classes("text-12", styles.avatarOverlay)}>
+						<I18nMessage value={{ key: "lite:Account.change" }} />
+					</span>
 				</button>
 				<input
 					ref={pictureInput}
@@ -204,7 +218,7 @@ const SignedIn: FC<{ profile: UserProfile }> = ({ profile }) => {
 
 				<div className={styles.fields}>
 					<label className={classes("text-12", styles.fieldLabel)} htmlFor="account-name">
-						Full name
+						<I18nMessage value={{ key: "lite:Account.fullName" }} />{" "}
 					</label>
 					<input
 						id="account-name"
@@ -215,7 +229,7 @@ const SignedIn: FC<{ profile: UserProfile }> = ({ profile }) => {
 					/>
 
 					<label className={classes("text-12", styles.fieldLabel)} htmlFor="account-email">
-						Email
+						<I18nMessage value={{ key: "lite:Account.email" }} />{" "}
 					</label>
 					<input
 						id="account-email"
@@ -223,18 +237,26 @@ const SignedIn: FC<{ profile: UserProfile }> = ({ profile }) => {
 						className={classes("text-13", styles.field, styles.fieldReadonly)}
 						value={profile.email ?? ""}
 						readOnly
-						title="Changed on gitbutler.com"
+						title={i18nMessages.t("lite:Account.changedOnGitbutlerCom")}
 					/>
 
 					<div className={styles.formActions}>
-						{error !== null && <span className={classes("text-12", styles.error)}>{error}</span>}
+						{error !== null && (
+							<span className={classes("text-12", styles.error)}>
+								<I18nMessage value={error} />
+							</span>
+						)}
 						<button
 							type="button"
 							className={getButtonClassName({ variant: "pop" })}
 							disabled={!dirty || saving}
 							onClick={() => void save()}
 						>
-							{saving ? "Updating…" : "Update profile"}
+							{saving ? (
+								<I18nMessage value={{ key: "lite:Account.updating" }} />
+							) : (
+								<I18nMessage value={{ key: "lite:Account.updateProfile" }} />
+							)}
 						</button>
 					</div>
 				</div>
@@ -242,15 +264,15 @@ const SignedIn: FC<{ profile: UserProfile }> = ({ profile }) => {
 
 			<Section>
 				<Row
-					label="Forget credentials and log out"
-					hint="Clears the account from this machine. Your repositories are untouched."
+					label={i18nMessages.t("lite:Account.forgetCredentialsAndLogOut")}
+					hint={i18nMessages.t("lite:Account.clearsTheAccountFromThisMachineYourRepositories")}
 				>
 					<button
 						type="button"
 						className={getButtonClassName({ size: "small" })}
 						onClick={() => void signOut()}
 					>
-						Forget credentials
+						<I18nMessage value={{ key: "lite:Account.forgetCredentials" }} />
 					</button>
 				</Row>
 			</Section>

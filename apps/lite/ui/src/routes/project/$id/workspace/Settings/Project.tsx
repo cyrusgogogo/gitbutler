@@ -1,3 +1,4 @@
+import { Message as I18nMessage, useTranslations } from "@gitbutler/i18n/react";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
 import { useState, type FC } from "react";
@@ -10,6 +11,7 @@ import { changing } from "./project-settings.ts";
 import { Row, Section } from "./Section.tsx";
 
 export const Project: FC<{ projectId: string }> = ({ projectId }) => {
+	const i18nMessages = useTranslations();
 	const { data: projects } = useSuspenseQuery(listProjectsQueryOptions);
 	const project = assert(projects.find((candidate) => candidate.id === projectId));
 	const { mutate: updateProjectSettings } = useUpdateProjectSettings(projectId);
@@ -35,7 +37,7 @@ export const Project: FC<{ projectId: string }> = ({ projectId }) => {
 
 	return (
 		<Section>
-			<Row label="Name" htmlFor="project-title">
+			<Row label={i18nMessages.t("lite:Project.name")} htmlFor="project-title">
 				<input
 					id="project-title"
 					type="text"
@@ -46,7 +48,7 @@ export const Project: FC<{ projectId: string }> = ({ projectId }) => {
 				/>
 			</Row>
 
-			<Row label="Description" htmlFor="project-description">
+			<Row label={i18nMessages.t("lite:Project.description")} htmlFor="project-description">
 				<input
 					id="project-description"
 					type="text"
@@ -60,15 +62,18 @@ export const Project: FC<{ projectId: string }> = ({ projectId }) => {
 				/>
 			</Row>
 
-			<Row label="Path" hint="Where the repository lives. Set when the project was added.">
+			<Row
+				label={i18nMessages.t("lite:Project.path")}
+				hint={i18nMessages.t("lite:Project.whereTheRepositoryLivesSetWhenTheProject")}
+			>
 				<span className={styles.path} title={project.path}>
 					{project.path}
 				</span>
 			</Row>
 
 			<Row
-				label="Remove project"
-				hint="Forgets its GitButler configuration. The repository on disk is untouched."
+				label={i18nMessages.t("lite:Project.removeProject")}
+				hint={i18nMessages.t("lite:Project.forgetsItsGitButlerConfigurationTheRepositoryOnDisk")}
 			>
 				{confirmingRemove ? (
 					<div className={styles.confirm}>
@@ -78,7 +83,11 @@ export const Project: FC<{ projectId: string }> = ({ projectId }) => {
 							disabled={isRemoving}
 							onClick={removeProject}
 						>
-							{isRemoving ? "Removing…" : "Confirm"}
+							{isRemoving ? (
+								<I18nMessage value={{ key: "lite:Project.removing" }} />
+							) : (
+								<I18nMessage value={{ key: "lite:Project.confirm" }} />
+							)}
 						</button>
 						<button
 							type="button"
@@ -86,7 +95,7 @@ export const Project: FC<{ projectId: string }> = ({ projectId }) => {
 							disabled={isRemoving}
 							onClick={() => setConfirmingRemove(false)}
 						>
-							Cancel
+							<I18nMessage value={{ key: "lite:Project.cancel" }} />
 						</button>
 					</div>
 				) : (
@@ -95,7 +104,7 @@ export const Project: FC<{ projectId: string }> = ({ projectId }) => {
 						className={getButtonClassName({ variant: "danger", size: "small" })}
 						onClick={() => setConfirmingRemove(true)}
 					>
-						Remove…
+						<I18nMessage value={{ key: "lite:Project.remove" }} />
 					</button>
 				)}
 			</Row>

@@ -4,7 +4,9 @@
 	import { FORGE_INFO_SERVICE } from "$lib/forge/forgeInfo.svelte";
 	import { LISTING_SERVICE } from "$lib/forge/listingService.svelte";
 	import { inject } from "@gitbutler/core/context";
+	import { useTranslations } from "@gitbutler/i18n/svelte";
 	import { Button, TimeAgo, Icon, TestId } from "@gitbutler/ui";
+	const i18nMessages = useTranslations();
 
 	interface Props {
 		projectId: string;
@@ -41,7 +43,7 @@
 	testId={TestId.SyncButton}
 	kind="outline"
 	width="auto"
-	tooltip="Last fetch from upstream"
+	tooltip={$i18nMessages.t("desktop:SyncButton.lastFetchFromUpstream")}
 	{loading}
 	{disabled}
 	icon="refresh"
@@ -65,11 +67,11 @@
 >
 	<span>
 		{#if loading}
-			Fetching...
+			{$i18nMessages.t("desktop:SyncButton.fetching")}
 		{:else if lastFetched}
 			<TimeAgo date={lastFetched} addSuffix={true} capitalize={true} />
 		{:else}
-			Refetch
+			{$i18nMessages.t("desktop:SyncButton.refetch")}
 		{/if}
 	</span>
 

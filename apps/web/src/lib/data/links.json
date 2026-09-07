@@ -35,27 +35,37 @@
 		"downloads": {
 			"id": "downloads",
 			"url": "/downloads",
-			"label": "Downloads"
+			"label": {
+				"key": "web:links.resources.downloads.label"
+			}
 		},
 		"documentation": {
 			"id": "documentation",
 			"url": "https://docs.gitbutler.com",
-			"label": "Docs"
+			"label": {
+				"key": "web:links.resources.documentation.label"
+			}
 		},
 		"source": {
 			"id": "source",
 			"url": "https://github.com/gitbutlerapp/gitbutler",
-			"label": "Source"
+			"label": {
+				"key": "web:links.resources.source.label"
+			}
 		},
 		"jobs": {
 			"id": "jobs",
 			"url": "https://jobs.gitbutler.com",
-			"label": "Jobs"
+			"label": {
+				"key": "web:links.resources.jobs.label"
+			}
 		},
 		"blog": {
 			"id": "blog",
 			"url": "https://blog.gitbutler.com",
-			"label": "Blog"
+			"label": {
+				"key": "web:links.resources.blog.label"
+			}
 		}
 	},
 	"social": {
@@ -94,12 +104,16 @@
 		"privacyPolicy": {
 			"id": "privacyPolicy",
 			"url": "https://gitbutler.notion.site/GitButler-Privacy-Policy-2f05a4bfdeac802dbd85db29c6d96536",
-			"label": "Privacy Policy"
+			"label": {
+				"key": "web:links.legal.privacyPolicy.label"
+			}
 		},
 		"termsOfService": {
 			"id": "termsOfService",
 			"url": "https://gitbutler.notion.site/GitButler-Terms-of-Use-2f05a4bfdeac8062ba2af2d36f0cb3f4",
-			"label": "Terms of Use"
+			"label": {
+				"key": "web:links.legal.termsOfService.label"
+			}
 		}
 	},
 	"events": {
@@ -113,12 +127,16 @@
 		"youtube-demo": {
 			"id": "youtube-demo",
 			"url": "https://youtu.be/agfyTN3HpRM?si=jVyMeMrWIaMa0Jdp",
-			"label": "YouTube Demo"
+			"label": {
+				"key": "web:links.other.youtube-demo.label"
+			}
 		},
 		"support": {
 			"id": "help",
 			"url": "https://github.com/gitbutlerapp/gitbutler/issues/new?template=BLANK_ISSUE",
-			"label": "Submit a ticket"
+			"label": {
+				"key": "web:links.other.support.label"
+			}
 		}
 	}
 }

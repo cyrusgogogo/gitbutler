@@ -1,3 +1,4 @@
+import { useTranslations } from "@gitbutler/i18n/react";
 import { getButtonClassName } from "#ui/components/Button.tsx";
 import { Icon } from "#ui/components/Icon.tsx";
 import { TooltipPopup } from "#ui/components/Tooltip.tsx";
@@ -16,6 +17,7 @@ const ActivitySpinner: FC<{
 	/** Suppressed while the fetch button shows its own spinner, to avoid two spinners at once. */
 	suppressed: boolean;
 }> = (p) => {
+	const i18nMessages = useTranslations();
 	const fetchingCount = useIsFetching();
 	const mutatingCount = useIsMutating();
 
@@ -23,9 +25,11 @@ const ActivitySpinner: FC<{
 	const isMutating = mutatingCount > 0;
 
 	const status = Match.value({ isFetching, isMutating }).pipe(
-		Match.when({ isFetching: true, isMutating: true }, () => "Syncing"),
-		Match.when({ isFetching: true }, () => "Loading"),
-		Match.when({ isMutating: true }, () => "Saving"),
+		Match.when({ isFetching: true, isMutating: true }, () =>
+			i18nMessages.t("lite:SidebarHeader.label4ae6fa22b"),
+		),
+		Match.when({ isFetching: true }, () => i18nMessages.t("lite:SidebarHeader.label8f26c6520")),
+		Match.when({ isMutating: true }, () => i18nMessages.t("lite:SidebarHeader.label369c534df")),
 		Match.orElse(() => null),
 	);
 
@@ -43,6 +47,7 @@ const FetchFromRemotesButton: FC<{
 	lastSuccessfulMs?: number | null;
 	onFetch: () => void;
 }> = (p) => {
+	const i18nMessages = useTranslations();
 	const [tooltipNow, setTooltipNow] = useState(() => Date.now());
 
 	return (
@@ -52,7 +57,7 @@ const FetchFromRemotesButton: FC<{
 			}}
 		>
 			<Tooltip.Trigger
-				aria-label={workspaceHotkeys.fetchFromRemotes.meta.name}
+				aria-label={i18nMessages.t(workspaceHotkeys.fetchFromRemotes.meta.i18nKey)}
 				className={getButtonClassName({ iconOnly: true, variant: "ghost" })}
 				onClick={p.onFetch}
 				// We pass `disabled` here because we want to disable the button, not
@@ -64,9 +69,9 @@ const FetchFromRemotesButton: FC<{
 			<Tooltip.Portal>
 				<Tooltip.Positioner sideOffset={4}>
 					<Tooltip.Popup render={<TooltipPopup kbd={workspaceHotkeys.fetchFromRemotes.hotkey} />}>
-						{workspaceHotkeys.fetchFromRemotes.meta.name}
+						{i18nMessages.t(workspaceHotkeys.fetchFromRemotes.meta.i18nKey)}
 						{p.lastSuccessfulMs != null &&
-							` (${formatRelativeTime(p.lastSuccessfulMs, tooltipNow)})`}
+							` (${formatRelativeTime(p.lastSuccessfulMs, tooltipNow, i18nMessages.locale)})`}
 					</Tooltip.Popup>
 				</Tooltip.Positioner>
 			</Tooltip.Portal>
@@ -90,43 +95,46 @@ export const SidebarHeader: FC<{
 	onOpenSettings: () => void;
 	/** The notification bell, which decides its own visibility. */
 	bell?: ReactNode;
-}> = (p) => (
-	<header className={styles.workspaceControls}>
-		<TopLeftControls />
+}> = (p) => {
+	const i18nMessages = useTranslations();
+	return (
+		<header className={styles.workspaceControls}>
+			<TopLeftControls />
 
-		<div className={styles.workspaceControlsLeft}>
-			<ProjectPicker project={p.project} />
-			<ActivitySpinner suppressed={p.isFetchPending} />
-		</div>
+			<div className={styles.workspaceControlsLeft}>
+				<ProjectPicker project={p.project} />
+				<ActivitySpinner suppressed={p.isFetchPending} />
+			</div>
 
-		<div className={styles.workspaceControlsActions}>
-			<FetchFromRemotesButton
-				canFetch={p.canFetch}
-				isPending={p.isFetchPending}
-				lastSuccessfulMs={p.lastSuccessfulFetchMs}
-				onFetch={p.onFetch}
-			/>
+			<div className={styles.workspaceControlsActions}>
+				<FetchFromRemotesButton
+					canFetch={p.canFetch}
+					isPending={p.isFetchPending}
+					lastSuccessfulMs={p.lastSuccessfulFetchMs}
+					onFetch={p.onFetch}
+				/>
 
-			<Tooltip.Root>
-				<Tooltip.Trigger
-					aria-label={workspaceHotkeys.settings.meta.name}
-					className={getButtonClassName({ iconOnly: true, variant: "ghost" })}
-					onClick={p.onOpenSettings}
-					// We pass `disabled` here because we want to disable the button, not
-					// the tooltip. Other props should be passed above.
-					render={<Button focusableWhenDisabled disabled={!p.canOpenSettings} />}
-				>
-					<Icon name="settings" />
-				</Tooltip.Trigger>
-				<Tooltip.Portal>
-					<Tooltip.Positioner sideOffset={4}>
-						<Tooltip.Popup render={<TooltipPopup kbd={workspaceHotkeys.settings.hotkey} />}>
-							{workspaceHotkeys.settings.meta.name}
-						</Tooltip.Popup>
-					</Tooltip.Positioner>
-				</Tooltip.Portal>
-			</Tooltip.Root>
-			{p.bell}
-		</div>
-	</header>
-);
+				<Tooltip.Root>
+					<Tooltip.Trigger
+						aria-label={i18nMessages.t(workspaceHotkeys.settings.meta.i18nKey)}
+						className={getButtonClassName({ iconOnly: true, variant: "ghost" })}
+						onClick={p.onOpenSettings}
+						// We pass `disabled` here because we want to disable the button, not
+						// the tooltip. Other props should be passed above.
+						render={<Button focusableWhenDisabled disabled={!p.canOpenSettings} />}
+					>
+						<Icon name="settings" />
+					</Tooltip.Trigger>
+					<Tooltip.Portal>
+						<Tooltip.Positioner sideOffset={4}>
+							<Tooltip.Popup render={<TooltipPopup kbd={workspaceHotkeys.settings.hotkey} />}>
+								{i18nMessages.t(workspaceHotkeys.settings.meta.i18nKey)}
+							</Tooltip.Popup>
+						</Tooltip.Positioner>
+					</Tooltip.Portal>
+				</Tooltip.Root>
+				{p.bell}
+			</div>
+		</header>
+	);
+};

@@ -1,5 +1,7 @@
 <script lang="ts">
+	import { useTranslations } from "@gitbutler/i18n/svelte";
 	import { ContextMenuItem, ContextMenuSection, KebabButton, TestId } from "@gitbutler/ui";
+	const i18nMessages = useTranslations();
 
 	type Props = {
 		onCherryPick: () => void;
@@ -13,7 +15,7 @@
 	{#snippet contextMenu({ close })}
 		<ContextMenuSection>
 			<ContextMenuItem
-				label="Cherry-pick commit"
+				label={$i18nMessages.t("desktop:BranchesViewCommitContextMenu.cherryPickCommit")}
 				icon="cherry-pick"
 				onclick={() => {
 					close();

@@ -1,3 +1,6 @@
+import { message as i18nMessage } from "@gitbutler/i18n";
+import { createElement as createI18nElement } from "react";
+import { Message as I18nMessage, useTranslations } from "@gitbutler/i18n/react";
 import { useWorkspaceIntegrateUpstream } from "#ui/api/mutations.ts";
 import { setPage, usePage } from "#ui/use-cursor.ts";
 import {
@@ -115,6 +118,7 @@ export const Sidebar: FC<{
 	project,
 	projectId,
 }) => {
+	const i18nMessages = useTranslations();
 	const dispatch = useAppDispatch();
 	const toastManager = Toast.useToastManager();
 	const noOperationPending = useAppSelector(
@@ -157,8 +161,8 @@ export const Sidebar: FC<{
 			console.error(error);
 			toastManager.add({
 				type: "error",
-				title: "Failed to fetch",
-				description: errorMessageForToast(error),
+				title: createI18nElement(I18nMessage, { value: i18nMessage("lite:Sidebar.failedToFetch") }),
+				description: createI18nElement(I18nMessage, { value: errorMessageForToast(error) }),
 				priority: "high",
 			});
 		});
@@ -274,26 +278,30 @@ export const Sidebar: FC<{
 
 				<ToggleGroup
 					render={<ToggleGroupStyles />}
-					aria-label="Pages"
+					aria-label={i18nMessages.t("lite:Sidebar.pages")}
 					value={[page]}
 					onValueChange={selectPage}
 				>
 					<Toggle
 						render={<ToggleStyles />}
 						value={"workspace" satisfies PageId}
-						aria-label="Workspace"
+						aria-label={i18nMessages.t("lite:Sidebar.workspace")}
 					>
 						<Icon name="workbench" />
-						<span className={styles.tabLabel}>Workspace</span>
+						<span className={styles.tabLabel}>
+							<I18nMessage value={{ key: "lite:Sidebar.workspace" }} />
+						</span>
 						<WorkspaceActivityBadge projectId={projectId} />
 					</Toggle>
 					<Toggle
 						render={<ToggleStyles />}
 						value={"upstream" satisfies PageId}
-						aria-label="Upstream"
+						aria-label={i18nMessages.t("lite:Sidebar.upstream")}
 					>
 						<Icon name="inbox" />
-						<span className={styles.tabLabel}>Upstream</span>
+						<span className={styles.tabLabel}>
+							<I18nMessage value={{ key: "lite:Sidebar.upstream" }} />
+						</span>
 						{upstreamList.incomingCount > 0 && (
 							<Badge variant="fillGray">
 								{upstreamList.incomingCount > maxBadgeCount
@@ -305,10 +313,12 @@ export const Sidebar: FC<{
 					<Toggle
 						render={<ToggleStyles />}
 						value={"branches" satisfies PageId}
-						aria-label="Branches"
+						aria-label={i18nMessages.t("lite:Sidebar.branches")}
 					>
 						<Icon name="branch" />
-						<span className={styles.tabLabel}>Branches</span>
+						<span className={styles.tabLabel}>
+							<I18nMessage value={{ key: "lite:Sidebar.branches" }} />
+						</span>
 					</Toggle>
 				</ToggleGroup>
 			</div>
@@ -349,7 +359,7 @@ export const Sidebar: FC<{
 						<RowToolbar forceVisible>
 							<Tooltip.Root>
 								<Tooltip.Trigger
-									aria-label="New branch"
+									aria-label={i18nMessages.t("lite:Sidebar.newBranch")}
 									className={getRowButtonClassName({ size: "regular", iconOnly: true })}
 									onClick={(event) => {
 										void showNativeMenuFromTrigger(event.currentTarget, newBranch.menuItems);
@@ -369,7 +379,7 @@ export const Sidebar: FC<{
 												<TooltipPopup kbd={workspaceHotkeys.createIndependentBranch.hotkey} />
 											}
 										>
-											New branch
+											<I18nMessage value={{ key: "lite:control.Newbranch" }} />
 										</Tooltip.Popup>
 									</Tooltip.Positioner>
 								</Tooltip.Portal>

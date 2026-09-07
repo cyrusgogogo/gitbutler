@@ -50,6 +50,9 @@ jobs:
               - 'pnpm-lock.yaml'
             ui:
               - 'packages/ui/**'
+              - 'packages/i18n/**'
+              - 'packages/but-mcp-app/**'
+              - 'crates/but/src/command/mcp/**'
             but_sdk:
               - 'crates/**'
               - *workflows
@@ -65,9 +68,11 @@ jobs:
             rust: &any-rust
               - *rust
               - 'crates/**'
+              - 'packages/i18n/src/locales/**'
             lite_e2e:
               - *workflows
               - 'apps/lite/**'
+              - 'packages/i18n/**'
               - 'crates/**'
               - 'e2e/playwright/fixtures/**'
               - 'e2e/playwright/scripts/**'
@@ -738,6 +743,13 @@ jobs:
           BUILDKITE_ANALYTICS_KEY: ${{ github.run_id }}-${{ github.run_attempt }}
           BUILDKITE_ANALYTICS_BRANCH: ${{ github.head_ref || github.ref_name }}
           BUILDKITE_ANALYTICS_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+      - name: Check shared translations and MCP cards
+        run: |
+          pnpm --filter @gitbutler/i18n package
+          pnpm --filter @gitbutler/i18n check
+          pnpm --filter @gitbutler/i18n test
+          pnpm --filter @gitbutler/but-mcp-app test
+          pnpm --filter @gitbutler/but-mcp-app test:browser
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         if: ${{ !cancelled() }}
         with:
@@ -745,6 +757,7 @@ jobs:
           path: |
             ./packages/ui/playwright-report/
             ./packages/ui/test-results/
+            ./packages/but-mcp-app/test-results/
           retention-days: 30
 
   lite-e2e:
@@ -772,6 +785,7 @@ jobs:
           save-if: ${{ github.ref == 'refs/heads/master' }}
       - name: Build dependencies
         run: |
+          pnpm --filter @gitbutler/i18n package
           pnpm --filter @gitbutler/but-sdk build:napi
           cargo build -p but
       # Ubuntu restricts the user namespaces used by unpackaged Chromium builds. Configure

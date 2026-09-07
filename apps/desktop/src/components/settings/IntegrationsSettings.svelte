@@ -4,7 +4,9 @@
 	import GitlabIntegration from "$components/settings/GitlabIntegration.svelte";
 	import { SETTINGS_SERVICE } from "$lib/settings/appSettings";
 	import { inject } from "@gitbutler/core/context";
+	import { useTranslations } from "@gitbutler/i18n/svelte";
 	import { CardGroup, Spacer, Toggle } from "@gitbutler/ui";
+	const i18nMessages = useTranslations();
 
 	const settingsService = inject(SETTINGS_SERVICE);
 	const appSettings = settingsService.appSettings;
@@ -23,10 +25,10 @@
 <CardGroup>
 	<CardGroup.Item labelFor="autoFillPrDescription">
 		{#snippet title()}
-			Auto-fill PR/MR descriptions from commit
+			{$i18nMessages.t("desktop:IntegrationsSettings.autoFillPRMRDescriptionsFromCommit")}
 		{/snippet}
 		{#snippet caption()}
-			Set the title and description from the commit for single-commit branches.
+			{$i18nMessages.t("desktop:IntegrationsSettings.setTheTitleAndDescriptionFromTheCommit")}
 		{/snippet}
 		{#snippet actions()}
 			<Toggle

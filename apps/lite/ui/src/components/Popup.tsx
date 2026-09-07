@@ -1,3 +1,4 @@
+import { useTranslations } from "@gitbutler/i18n/react";
 import { classes } from "#ui/components/classes.ts";
 import { Icon } from "#ui/components/Icon.tsx";
 import type { IconName } from "#ui/components/iconNames.ts";
@@ -217,6 +218,7 @@ export const PopupSearch: FC<{ onClear?: () => void } & useRender.ComponentProps
 	onClear,
 	...props
 }) => {
+	const i18nMessages = useTranslations();
 	const input = useRender({
 		render: render ?? <input />,
 		props: mergeProps<"input">(props, {
@@ -230,7 +232,12 @@ export const PopupSearch: FC<{ onClear?: () => void } & useRender.ComponentProps
 			{onClear === undefined ? (
 				<Icon name="search" className={styles.searchIcon} />
 			) : (
-				<button type="button" className={styles.searchClear} onClick={onClear} aria-label="Clear">
+				<button
+					type="button"
+					className={styles.searchClear}
+					onClick={onClear}
+					aria-label={i18nMessages.t("lite:Popup.clear")}
+				>
 					<Icon name="cross-circle" />
 				</button>
 			)}

@@ -2,10 +2,11 @@
 	import FloatingModal from "$lib/floating/FloatingModal.svelte";
 	import { UI_STATE } from "$lib/state/uiState.svelte";
 	import { inject } from "@gitbutler/core/context";
+	import { useTranslations } from "@gitbutler/i18n/svelte";
 	import { Icon } from "@gitbutler/ui";
-
 	import { type Snippet } from "svelte";
 	import type { SnapPositionName } from "$lib/floating/types";
+	const i18nMessages = useTranslations();
 
 	interface Props {
 		children: Snippet;
@@ -56,7 +57,9 @@
 </FloatingModal>
 
 <button class="exit-floating-mode" type="button" onclick={onExitFloatingModeClick}>
-	<span class="text-12 text-semibold underline-dotted">Exit floating mode</span>
+	<span class="text-12 text-semibold underline-dotted"
+		>{$i18nMessages.t("desktop:FloatingCommitBox.exitFloatingMode")}</span
+	>
 </button>
 
 <style>

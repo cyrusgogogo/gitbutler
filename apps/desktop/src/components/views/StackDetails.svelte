@@ -33,12 +33,14 @@
 	import { getStackContext } from "$lib/stacks/stackController.svelte";
 	import { STACK_SERVICE } from "$lib/stacks/stackService.svelte";
 	import { inject } from "@gitbutler/core/context";
+	import { useTranslations } from "@gitbutler/i18n/svelte";
 	import { TestId } from "@gitbutler/ui";
 	import { focusable } from "@gitbutler/ui/focus/focusable";
 	import { isDefined } from "@gitbutler/ui/utils/typeguards";
 	import { get } from "svelte/store";
 	import { fly } from "svelte/transition";
 	import type { Segment } from "@gitbutler/but-sdk";
+	const i18nMessages = useTranslations();
 	type Props = {
 		segments: Segment[];
 		onWidthChange: (width: number) => void;
@@ -177,8 +179,8 @@
 				{@const label =
 					handler instanceof AmendCommitWithChangeDzHandler ||
 					handler instanceof AmendCommitWithHunkDzHandler
-						? "Amend"
-						: "Squash"}
+						? $i18nMessages.t("desktop:drag.amend")
+						: $i18nMessages.t("desktop:drag.squash")}
 				<DropzoneOverlay {hovered} {activated} {label} />
 			{/snippet}
 			<div class="details-view__inner">

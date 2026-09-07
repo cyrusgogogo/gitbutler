@@ -6,6 +6,7 @@
 	import MentionSuggestions from "$lib/components/chat/MentionSuggestions.svelte";
 	import { USER_SERVICE } from "$lib/user/userService";
 	import { inject } from "@gitbutler/core/context";
+	import { useTranslations } from "@gitbutler/i18n/svelte";
 	import { getChatChannelParticipants } from "@gitbutler/shared/chat/chatChannelsPreview.svelte";
 	import { CHAT_CHANNELS_SERVICE } from "@gitbutler/shared/chat/chatChannelsService";
 	import { uploadFiles } from "@gitbutler/shared/dom";
@@ -13,7 +14,6 @@
 	import { APP_STATE } from "@gitbutler/shared/redux/store.svelte";
 	import { UPLOADS_SERVICE } from "@gitbutler/shared/uploads/uploadsService";
 	import { NEW_USER_SERVICE } from "@gitbutler/shared/users/userService";
-
 	import {
 		Button,
 		ContextMenuItem,
@@ -26,10 +26,10 @@
 	import FileUploadPlugin, {
 		type DropFileResult,
 	} from "@gitbutler/ui/richText/plugins/FileUpload.svelte";
-
 	import { isDefined } from "@gitbutler/ui/utils/typeguards";
 	import type { PatchCommit } from "@gitbutler/shared/patches/types";
 	import { env } from "$env/dynamic/public";
+	const i18nMessages = useTranslations();
 
 	const ACCEPTED_FILE_TYPES = ["image/*", "application/*", "text/*", "audio/*", "video/*"];
 
@@ -135,11 +135,11 @@
 		await handleSendMessage();
 	}
 
-	const actionLabels = {
-		approve: "Approve commit",
-		openIssue: "Open issue",
-		requestChanges: "Request changes",
-	} as const;
+	const actionLabels = $derived({
+		approve: $i18nMessages.t("web:detail.a2076a8de7"),
+		openIssue: $i18nMessages.t("web:detail.f435c34668"),
+		requestChanges: $i18nMessages.t("web:detail.bbd0717f18"),
+	} as const);
 
 	type Action = keyof typeof actionLabels;
 
@@ -245,7 +245,7 @@
 
 			<RichTextEditor
 				styleContext="chat-input"
-				placeholder="Write your message"
+				placeholder={$i18nMessages.t("web:ChatInput.writeYourMessage")}
 				bind:this={richText.richTextEditor}
 				namespace="ChatInput"
 				onError={console.error}
@@ -275,7 +275,9 @@
 							shrinkable
 							width="100%"
 						>
-							<span style="opacity: 0.4">Paste or drop to add files</span>
+							<span style="opacity: 0.4"
+								>{$i18nMessages.t("web:ChatInput.pasteOrDropToAddFiles")}</span
+							>
 						</Button>
 					</div>
 				</div>
@@ -321,7 +323,7 @@
 						style="pop"
 						loading={isSendingMessage || isExecuting}
 						disabled={!messageHandler.message}
-						onclick={handleClickSend}>Comment</Button
+						onclick={handleClickSend}>{$i18nMessages.t("web:ChatInput.comment")}</Button
 					>
 				</div>
 			</div>
@@ -329,8 +331,8 @@
 	</div>
 {:else}
 	<div class="chat-input-notlooged">
-		<p class="text-12">🔒 You must be logged in to join the conversation</p>
-		<Button style="pop" onclick={login}>Log in to comment</Button>
+		<p class="text-12">{$i18nMessages.t("web:ChatInput.youMustBeLoggedInToJoinThe")}</p>
+		<Button style="pop" onclick={login}>{$i18nMessages.t("web:ChatInput.logInToComment")}</Button>
 	</div>
 {/if}
 

@@ -12,16 +12,19 @@ import { getCurrent, onOpenUrl } from "@tauri-apps/plugin-deep-link";
 import { open as filePickerTauri, type OpenDialogOptions } from "@tauri-apps/plugin-dialog";
 import { readFile as tauriReadFile } from "@tauri-apps/plugin-fs";
 import { error as logErrorToFile } from "@tauri-apps/plugin-log";
-import { platform } from "@tauri-apps/plugin-os";
+import { platform, locale } from "@tauri-apps/plugin-os";
 import { relaunch as relaunchTauri } from "@tauri-apps/plugin-process";
 import { Store } from "@tauri-apps/plugin-store";
 import { check as tauriCheck } from "@tauri-apps/plugin-updater";
 import { readable } from "svelte/store";
 import type { AppInfo, DeepLinkHandlers, DiskStore, IBackend } from "$lib/backend/backend";
+import type { Locale } from "@gitbutler/i18n";
 import type { EventCallback, EventName } from "@tauri-apps/api/event";
 
 export default class Tauri implements IBackend {
 	platformName = platform();
+	getSystemLocale = locale;
+	setMenuLocale = async (locale: Locale) => await this.invoke<void>("set_menu_locale", { locale });
 	private appWindow: Window | undefined;
 
 	systemTheme = readable<string | null>(null, (set) => {

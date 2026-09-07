@@ -17,13 +17,16 @@
 	import { UI_STATE } from "$lib/state/uiState.svelte";
 	import { useUserAvatarUrl } from "$lib/user/userAvatar.svelte";
 	import { inject } from "@gitbutler/core/context";
-
+	import { useTranslations } from "@gitbutler/i18n/svelte";
 	import { AsyncButton, Avatar, Badge, Button, InfoButton, Modal, TestId } from "@gitbutler/ui";
+	import I18nRichMessage from "@gitbutler/ui/i18n/RichMessage.svelte";
 	import { SvelteMap, SvelteSet } from "svelte/reactivity";
 	import type { ConflictState } from "$lib/files/conflictEntryPresence";
 	import type { EditModeMetadata, TreeChange } from "@gitbutler/but-sdk";
 	import type { ConflictEntryPresence } from "@gitbutler/but-sdk";
+	import type { LocalizedText } from "@gitbutler/i18n";
 	import type { FileStatus } from "@gitbutler/ui/components/file/types";
+	const i18nMessages = useTranslations();
 
 	type Props = {
 		projectId: string;
@@ -59,7 +62,7 @@
 		path: string;
 		status?: FileStatus;
 		conflicted: boolean;
-		conflictHint?: string;
+		conflictHint?: LocalizedText;
 		conflictEntryPresence?: ConflictEntryPresence;
 	}
 
@@ -184,25 +187,25 @@
 	bind:this={abortModal}
 	type="warning"
 	width={420}
-	title="Are you sure you want to abort edit mode?"
+	title={$i18nMessages.t("desktop:EditCommitPanel.areYouSureYouWantToAbortEdit")}
 >
 	<p>
-		There are changes that differ from the commit you started editing. Aborting edit mode now will
-		remove those changes.
+		{$i18nMessages.t("desktop:EditCommitPanel.thereAreChangesThatDifferFromTheCommit")}
 	</p>
 	<br />
 	<p class="clr-text-2">
-		If you want to keep the changes but place them elsewhere, you can save and exit and then
-		reorganize the changes via drag and drop.
+		{$i18nMessages.t("desktop:EditCommitPanel.ifYouWantToKeepTheChangesBut")}
 	</p>
 	{#snippet controls(close)}
-		<Button kind="outline" onclick={close}>Cancel</Button>
+		<Button kind="outline" onclick={close}
+			>{$i18nMessages.t("desktop:EditCommitPanel.cancel")}</Button
+		>
 		<AsyncButton
 			style="danger"
 			action={async () => {
 				await abort(true);
 				close();
-			}}>Abort Edit Mode</AsyncButton
+			}}>{$i18nMessages.t("desktop:EditCommitPanel.abortEditMode")}</AsyncButton
 		>
 	{/snippet}
 </Modal>
@@ -212,12 +215,18 @@
 		{#snippet children(project)}
 			<div class="editmode__container">
 				<h2 class="editmode__title text-18 text-body text-bold">
-					You are editing commit <span class="code-string">
-						{editModeMetadata.commitOid.slice(0, 7)}
-					</span>
-					<InfoButton title="Edit Mode">
-						Edit Mode lets you modify an existing commit in isolation or resolve conflicts. Any
-						changes made, including new files, will be added to the selected commit.
+					{#snippet i18nSlot1(content: import("svelte").Snippet)}<span class="code-string"
+							>{@render content()}</span
+						>{/snippet}
+					<I18nRichMessage
+						value={{
+							key: "desktop:EditCommitPanel.youAreEditingCommitValue",
+							values: { value: String(editModeMetadata.commitOid.slice(0, 7)) },
+						}}
+						components={{ slot1: i18nSlot1 }}
+					/>
+					<InfoButton title={$i18nMessages.t("desktop:EditCommitPanel.editMode")}>
+						{$i18nMessages.t("desktop:EditCommitPanel.editModeLetsYouModifyAnExistingCommit")}
 					</InfoButton>
 				</h2>
 
@@ -230,7 +239,7 @@
 									: undefined}
 								{@const title = splitMessage(commit.message).title}
 								<h3 class="text-13 text-semibold text-body commit-card__title">
-									{title || "Undefined commit"}
+									{title || $i18nMessages.t("desktop:EditCommitPanel.undefinedCommit")}
 								</h3>
 
 								{#if commit}
@@ -256,7 +265,9 @@
 
 					<div bind:this={filesList} class="card files">
 						<div class="header" class:show-border={isCommitListScrolled}>
-							<h3 class="text-15 text-semibold">Commit files</h3>
+							<h3 class="text-15 text-semibold">
+								{$i18nMessages.t("desktop:EditCommitPanel.commitFiles")}
+							</h3>
 							<Badge>{files.length}</Badge>
 						</div>
 						<ScrollableContainer
@@ -289,9 +300,11 @@
 				</div>
 
 				<p class="text-12 text-body editmode__helptext">
-					⚠ Please don't make any commits while in edit mode.
-					<br />
-					To exit edit mode, use the provided actions.
+					{#snippet i18nSlot2()}<br />{/snippet}
+					<I18nRichMessage
+						value={{ key: "desktop:EditCommitPanel.pleaseDonTMakeAnyCommitsWhileIn" }}
+						components={{ slot2: i18nSlot2 }}
+					/>
 				</p>
 
 				<div class="editmode__actions">
@@ -303,10 +316,10 @@
 								reversedDirection
 								onclick={() => openAllConflictedFiles(project.path)}
 								tooltip={conflictedFiles.length === 1
-									? "Open the conflicted file in your editor"
-									: "Open all files with conflicts in your editor"}
+									? $i18nMessages.t("desktop:EditCommitPanel.inline06ac0ebcb")
+									: $i18nMessages.t("desktop:EditCommitPanel.inlinecd57343d5")}
 							>
-								Open conflicted files
+								{$i18nMessages.t("desktop:EditCommitPanel.openConflictedFiles")}
 							</Button>
 						{/if}
 					</div>
@@ -314,14 +327,14 @@
 						{#snippet children(uncommittedFiles, { projectId: _projectId })}
 							{#if uncommittedFiles.length === 0}
 								<Button kind="outline" onclick={() => abort(false)} disabled={loading} {loading}
-									>Abort</Button
+									>{$i18nMessages.t("desktop:EditCommitPanel.abort")}</Button
 								>
 							{:else}
 								<Button
 									kind="outline"
 									onclick={() => abortModal?.show()}
 									disabled={loading}
-									{loading}>Abort</Button
+									{loading}>{$i18nMessages.t("desktop:EditCommitPanel.abort")}</Button
 								>
 							{/if}
 						{/snippet}
@@ -334,7 +347,7 @@
 						disabled={loading}
 						{loading}
 					>
-						Save changes and exit
+						{$i18nMessages.t("desktop:EditCommitPanel.saveChangesAndExit")}
 					</Button>
 				</div>
 			</div>
@@ -353,7 +366,7 @@
 
 <Modal
 	bind:this={confirmSaveModal}
-	title="Save and exit"
+	title={$i18nMessages.t("desktop:EditCommitPanel.saveAndExit")}
 	type="warning"
 	width="small"
 	onSubmit={async (close) => {
@@ -362,12 +375,15 @@
 	}}
 >
 	<p class="text-13 text-body helper-text">
-		There are still some files that look to be conflicted. Are you sure that you want to save and
-		exit?
+		{$i18nMessages.t("desktop:EditCommitPanel.thereAreStillSomeFilesThatLookTo")}
 	</p>
 	{#snippet controls(close)}
-		<Button kind="outline" type="reset" onclick={close}>Cancel</Button>
-		<Button style="danger" type="submit" {loading}>Save and exit</Button>
+		<Button kind="outline" type="reset" onclick={close}
+			>{$i18nMessages.t("desktop:EditCommitPanel.cancel")}</Button
+		>
+		<Button style="danger" type="submit" {loading}
+			>{$i18nMessages.t("desktop:EditCommitPanel.saveAndExit")}</Button
+		>
 	{/snippet}
 </Modal>
 

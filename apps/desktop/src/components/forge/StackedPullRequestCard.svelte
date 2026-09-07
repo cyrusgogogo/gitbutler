@@ -7,10 +7,11 @@
 	import { REPO_SERVICE } from "$lib/forge/repoService.svelte";
 	import { pullRequestTargetsBaseBranch } from "$lib/forge/shared/pullRequestTargets";
 	import { inject } from "@gitbutler/core/context";
+	import { useTranslations } from "@gitbutler/i18n/svelte";
 	import { AsyncButton, TestId } from "@gitbutler/ui";
-
 	import type { MergeMethod } from "$lib/forge/interface/types";
 	import type { Segment } from "@gitbutler/but-sdk";
+	const i18nMessages = useTranslations();
 
 	interface Props {
 		projectId: string;
@@ -106,7 +107,7 @@
 		{#if !pr.closedAt && !pr.mergedAt}
 			{#if pr.draft}
 				<AsyncButton wide kind="outline" action={() => setDraft(false)}
-					>Ready for review</AsyncButton
+					>{$i18nMessages.t("desktop:StackedPullRequestCard.readyForReview")}</AsyncButton
 				>
 			{:else}
 				<MergeButton

@@ -1,3 +1,4 @@
+import { Message as I18nMessage, useTranslations } from "@gitbutler/i18n/react";
 /**
  * The workspace route's page — the app's hub, and the place to start
  * reading. Everything above (main → App → routes.tsx) is bootstrap,
@@ -256,6 +257,7 @@ const useWorkspaceHotkeys = (projectId: string) => {
 };
 
 const PageBody: FC<{ projectId: string }> = ({ projectId }) => {
+	const i18nMessages = useTranslations();
 	useReconcileState(projectId);
 	useReviewActivityInbox(projectId);
 	useStampReviewsSeen(projectId);
@@ -530,16 +532,16 @@ const PageBody: FC<{ projectId: string }> = ({ projectId }) => {
 				() =>
 					detailsFor[detailsList] ?? (
 						<DetailsPlaceholder
-							title="Nothing to show yet"
-							description="Details of whatever you select appear in this pane"
+							title={i18nMessages.t("lite:Page.nothingToShowYet")}
+							description={i18nMessages.t("lite:Page.detailsOfWhateverYouSelectAppearInThis")}
 						/>
 					),
 			),
 			Match.when("upstream", () =>
 				upstreamSelection === null ? (
 					<DetailsPlaceholder
-						title="Upstream commits appear here"
-						description="Whatever lands on your target branch before you bring it in"
+						title={i18nMessages.t("lite:Page.upstreamCommitsAppearHere")}
+						description={i18nMessages.t("lite:Page.whateverLandsOnYourTargetBranchBeforeYou")}
 					/>
 				) : (
 					<Details selection={upstreamSelection} review={upstreamReview} {...viewProps} />
@@ -548,8 +550,8 @@ const PageBody: FC<{ projectId: string }> = ({ projectId }) => {
 			Match.when("branches", () =>
 				branchesSelection === null ? (
 					<DetailsPlaceholder
-						title="Branch details appear here"
-						description="The commits, files and pull request of whichever branch you pick"
+						title={i18nMessages.t("lite:Page.branchDetailsAppearHere")}
+						description={i18nMessages.t("lite:Page.theCommitsFilesAndPullRequestOfWhichever")}
 					/>
 				) : (
 					<Details selection={branchesSelection} review={null} {...viewProps} />
@@ -568,6 +570,7 @@ const PageBody: FC<{ projectId: string }> = ({ projectId }) => {
 		upstreamReview,
 		upstreamSelection,
 		activeList,
+		i18nMessages,
 	]);
 
 	const deferredDetails = useDeferredValue(details);
@@ -737,7 +740,13 @@ export const Page: FC = () => {
 	const { data: projects } = useSuspenseQuery(listProjectsQueryOptions);
 	const { data: headAndMode } = useQuery(operatingModeQueryOptions(projectId));
 	const project = projects.find((project) => project.id === projectId);
-	if (!project) return <p className={styles.notFound}>Project not found.</p>;
+	if (!project) {
+		return (
+			<p className={styles.notFound}>
+				<I18nMessage value={{ key: "lite:Page.projectNotFound" }} />
+			</p>
+		);
+	}
 
 	// Edit mode is repository state, not navigation: the whole surface swaps
 	// while HEAD is parked on the edit ref, and swaps back when it returns —

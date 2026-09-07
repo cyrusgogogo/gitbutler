@@ -530,6 +530,7 @@ impl Sandbox {
                 auto_fill_pr_description_from_commit: false,
             },
             ui: UiSettings {
+                language: but_settings::app_settings::LanguagePreference::English,
                 use_native_title_bar: false,
                 no_shadow: false,
                 cli_is_managed_by_package_manager: false,

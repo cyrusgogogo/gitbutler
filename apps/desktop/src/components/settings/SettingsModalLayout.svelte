@@ -1,8 +1,9 @@
 <script lang="ts" module>
+	import type { LocalizedText } from "@gitbutler/i18n";
 	// This module script is necessary to make Svelte recognize the generics in the component
 	export type Page = {
 		id: string;
-		label: string;
+		label: LocalizedText;
 		icon: IconName;
 		adminOnly?: boolean;
 		[key: string]: any; // Allow additional properties for flexibility
@@ -11,9 +12,11 @@
 
 <script lang="ts" generics="T extends Page">
 	import AppScrollableContainer from "$components/shared/AppScrollableContainer.svelte";
+	import { useTranslations } from "@gitbutler/i18n/svelte";
 	import { Icon, type IconName } from "@gitbutler/ui";
 	import { focusable } from "@gitbutler/ui/focus/focusable";
 	import { type Snippet } from "svelte";
+	const translations = useTranslations();
 
 	type PageId = T["id"];
 
@@ -61,7 +64,7 @@
 						<div class="settings-sidebar__links-item__icon">
 							<Icon name={page.icon} />
 						</div>
-						<span>{page.label}</span>
+						<span>{$translations.text(page.label)}</span>
 					</button>
 				{/each}
 			</div>

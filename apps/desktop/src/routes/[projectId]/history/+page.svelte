@@ -15,9 +15,11 @@
 	import { FILE_SELECTION_MANAGER } from "$lib/selection/fileSelectionManager.svelte";
 	import { createSnapshotSelection, type SelectionId } from "$lib/selection/key";
 	import { inject } from "@gitbutler/core/context";
+	import { useTranslations } from "@gitbutler/i18n/svelte";
 	import { EmptyStatePlaceholder, Icon, Button } from "@gitbutler/ui";
 	import { focusable } from "@gitbutler/ui/focus/focusable";
 	import type { Snapshot } from "$lib/history/types";
+	const i18nMessages = useTranslations();
 
 	// TODO: Refactor so we don't need non-null assertion.
 	const projectId = $derived(page.params.projectId!);
@@ -86,11 +88,10 @@
 	{#if $snapshots.length === 0 && !$loading}
 		<EmptyStatePlaceholder image={emptyFolderSvg} bottomMargin={48}>
 			{#snippet title()}
-				No snapshots yet
+				{$i18nMessages.t("desktop:page.noSnapshotsYet")}
 			{/snippet}
 			{#snippet caption()}
-				Gitbutler saves your work, including file changes, so your progress is always secure. Adjust
-				snapshot settings in project settings.
+				{$i18nMessages.t("desktop:page.gitbutlerSavesYourWorkIncludingFileChangesSo")}
 			{/snippet}
 		</EmptyStatePlaceholder>
 	{/if}
@@ -112,10 +113,10 @@
 					}}
 				>
 					{#each $snapshots as entry, idx (entry.commitId)}
-						{#if idx === 0 || createdOnDay(entry.createdAt) !== createdOnDay($snapshots[idx - 1]?.createdAt ?? 0)}
+						{#if idx === 0 || createdOnDay(entry.createdAt, $i18nMessages.locale) !== createdOnDay($snapshots[idx - 1]?.createdAt ?? 0, $i18nMessages.locale)}
 							<div class="history-view__snapshots__date-header">
 								<h4 class="text-12 text-semibold">
-									{createdOnDay(entry.createdAt)}
+									{createdOnDay(entry.createdAt, $i18nMessages.locale)}
 								</h4>
 							</div>
 						{/if}
@@ -147,7 +148,9 @@
 				<!-- LOAD MORE -->
 				{#if $loading}
 					<div class="load-more">
-						<span class="text-13 text-body"> Loading more snapshots… </span>
+						<span class="text-13 text-body"
+							>{$i18nMessages.t("desktop:page.loadingMoreSnapshots")}</span
+						>
 					</div>
 				{/if}
 
@@ -158,10 +161,11 @@
 							<Icon name="finish" />
 						</div>
 						<div class="welcome-point__content">
-							<p class="text-13 text-semibold">Welcome to history!</p>
+							<p class="text-13 text-semibold">
+								{$i18nMessages.t("desktop:page.welcomeToHistory")}
+							</p>
 							<p class="welcome-point__caption text-12 text-body">
-								Gitbutler saves your work, including file changes, so your progress is always
-								secure. Adjust snapshot settings in project settings.
+								{$i18nMessages.t("desktop:page.gitbutlerSavesYourWorkIncludingFileChangesSo")}
 							</p>
 						</div>
 					</div>
@@ -176,15 +180,17 @@
 		<div class="relative overflow-hidden radius-ml">
 			<div bind:this={sidebarEl} class="history-view__snapshots" use:focusable={{ vertical: true }}>
 				<div class="history-view__snapshots-header">
-					<h3 class="history-view__snapshots-header-title text-15 text-bold">Operations history</h3>
+					<h3 class="history-view__snapshots-header-title text-15 text-bold">
+						{$i18nMessages.t("desktop:page.operationsHistory")}
+					</h3>
 					<Button
 						size="tag"
 						kind="outline"
 						icon="camera"
-						tooltip="Create a manual snapshot of your current state"
+						tooltip={$i18nMessages.t("desktop:page.createAManualSnapshotOfYourCurrentState")}
 						onclick={() => createSnapshotModal?.show()}
 					>
-						Create snapshot
+						{$i18nMessages.t("desktop:page.createSnapshot")}
 					</Button>
 				</div>
 				{@render historyEntries()}

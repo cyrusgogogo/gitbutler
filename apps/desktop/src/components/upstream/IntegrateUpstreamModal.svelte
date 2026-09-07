@@ -12,6 +12,8 @@
 	import { UPSTREAM_INTEGRATION_SERVICE } from "$lib/upstream/upstreamIntegrationService.svelte";
 	import { debounce } from "$lib/utils/debounce";
 	import { inject } from "@gitbutler/core/context";
+	import { message as i18nMessage } from "@gitbutler/i18n";
+	import { useTranslations } from "@gitbutler/i18n/svelte";
 	import {
 		Badge,
 		Button,
@@ -23,7 +25,9 @@
 		TestId,
 		AsyncButton,
 	} from "@gitbutler/ui";
+	import I18nRichMessage from "@gitbutler/ui/i18n/RichMessage.svelte";
 	import { tick } from "svelte";
+	const i18nMessages = useTranslations();
 
 	type OperationState = "inert" | "loading" | "completed";
 
@@ -182,9 +186,11 @@
 		{#if base}
 			<div class="section">
 				<h3 class="text-14 text-semibold section-title">
-					<span>Incoming {base.upstreamCommits.length === 1 ? "change" : "changes"}</span><Badge
-						>{base.upstreamCommits.length}</Badge
-					>
+					<span
+						>{$i18nMessages.t("desktop:upstream.incoming", {
+							count: base.upstreamCommits.length,
+						})}</span
+					><Badge>{base.upstreamCommits.length}</Badge>
 				</h3>
 				<div class="scroll-wrap">
 					<ScrollableContainer maxHeight="16.5rem">
@@ -197,7 +203,10 @@
 								author={commit.author.name}
 								{url}
 								onOpen={(url) => urlService.openExternalUrl(url)}
-								onCopy={() => clipboardService.write(commit.id, { message: "Commit hash copied" })}
+								onCopy={() =>
+									clipboardService.write(commit.id, {
+										message: i18nMessage("desktop:IntegrateUpstreamModal.inlinefb6ebf38a"),
+									})}
 							/>
 						{/each}
 					</ScrollableContainer>
@@ -210,12 +219,26 @@
 				<img class="target-icon" src="/images/domain-icons/trunk.svg" alt="" />
 
 				<div class="target-divergence-about">
-					<h3 class="text-14 text-semibold">Target branch divergence</h3>
+					<h3 class="text-14 text-semibold">
+						{$i18nMessages.t("desktop:IntegrateUpstreamModal.targetBranchDivergence")}
+					</h3>
 					<p class="text-12 text-body target-divergence-description">
-						<span class="text-bold">{base?.branchName ?? "The target branch"}</span> has diverged
-						from the workspace.
-						<br />
-						Resolve target branch divergence before updating the workspace.
+						{#snippet i18nSlot2(content: import("svelte").Snippet)}<span class="text-bold"
+								>{@render content()}</span
+							>{/snippet}
+						{#snippet i18nSlot3()}<br />{/snippet}
+						<I18nRichMessage
+							value={{
+								key: "desktop:IntegrateUpstreamModal.valueHasDivergedFromTheWorkspaceResolveTarget",
+								values: {
+									value: String(
+										base?.branchName ??
+											$i18nMessages.t("desktop:IntegrateUpstreamModal.inline4845b4cad"),
+									),
+								},
+							}}
+							components={{ slot2: i18nSlot2, slot3: i18nSlot3 }}
+						/>
 					</p>
 				</div>
 			</div>
@@ -223,7 +246,9 @@
 		<!-- STACKS AND BRANCHES TO UPDATE -->
 		{#if statuses.length > 0}
 			<div class="section">
-				<h3 class="text-14 text-semibold">To be updated:</h3>
+				<h3 class="text-14 text-semibold">
+					{$i18nMessages.t("desktop:IntegrateUpstreamModal.toBeUpdated")}
+				</h3>
 				<div class="scroll-wrap">
 					<ScrollableContainer maxHeight="15rem">
 						{#each statuses as status}
@@ -235,12 +260,17 @@
 		{/if}
 		{#if worktreeConflicts.length > 0}
 			<div class="worktree-conflicts" data-testid={TestId.IntegrateUpstreamWorktreeConflicts}>
-				<h3 class="text-14 text-semibold">Uncommitted changes conflict</h3>
+				<h3 class="text-14 text-semibold">
+					{$i18nMessages.t("desktop:IntegrateUpstreamModal.uncommittedChangesConflict")}
+				</h3>
 				<p class="text-12 text-body worktree-conflicts-description">
-					These files will conflict when your current uncommitted changes are applied onto the
-					updated workspace.
-					<br />
-					You're free to proceed, but conflict markers will be added to your uncommitted work.
+					{#snippet i18nSlot4()}<br />{/snippet}
+					<I18nRichMessage
+						value={{
+							key: "desktop:IntegrateUpstreamModal.theseFilesWillConflictWhenYourCurrentUncommitted",
+						}}
+						components={{ slot4: i18nSlot4 }}
+					/>
 				</p>
 				<div class="scroll-wrap">
 					<ScrollableContainer maxHeight="10rem">
@@ -249,7 +279,7 @@
 								filePath={path}
 								clickable={false}
 								conflicted
-								conflictHint="May conflict"
+								conflictHint={$i18nMessages.t("desktop:IntegrateUpstreamModal.mayConflict")}
 								isLast={i === worktreeConflicts.length - 1}
 							/>
 						{/each}
@@ -261,7 +291,9 @@
 
 	{#snippet controls()}
 		<div class="controls">
-			<Button onclick={() => modal?.close()} kind="outline">Cancel</Button>
+			<Button onclick={() => modal?.close()} kind="outline"
+				>{$i18nMessages.t("desktop:IntegrateUpstreamModal.cancel")}</Button
+			>
 			<AsyncButton
 				testId={TestId.IntegrateUpstreamActionButton}
 				wide
@@ -274,7 +306,7 @@
 					await integrate();
 				}}
 			>
-				Update workspace
+				{$i18nMessages.t("desktop:IntegrateUpstreamModal.updateWorkspace")}
 			</AsyncButton>
 		</div>
 	{/snippet}

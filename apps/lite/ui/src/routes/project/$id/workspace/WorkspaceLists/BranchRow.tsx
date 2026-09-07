@@ -1,3 +1,5 @@
+import { message as i18nMessage } from "@gitbutler/i18n";
+import { Message as I18nMessage, useTranslations } from "@gitbutler/i18n/react";
 import rowStyles from "../Row.module.css";
 import {
 	currentParams,
@@ -73,26 +75,27 @@ import { type DownstackPushStatus, downstackPushStatusDisabled } from "#ui/segme
 export type PushActivity = "idle" | "blocked" | "pushing";
 
 const CIBubble: FC<{ checks: AggregateCIChecks }> = (p) => {
+	const i18nMessages = useTranslations();
 	switch (p.checks.status) {
 		case "success":
 			return (
-				<Badge aria-label="CI checks succeeded" variant="safe">
+				<Badge aria-label={i18nMessages.t("lite:BranchRow.cIChecksSucceeded")} variant="safe">
 					<Icon name="tick" size={12} />
 				</Badge>
 			);
 		case "failure":
 			return (
-				<Badge aria-label="CI checks failed" variant="danger">
+				<Badge aria-label={i18nMessages.t("lite:BranchRow.cIChecksFailed")} variant="danger">
 					<Icon name="cross" size={12} />
 				</Badge>
 			);
 		case "in_progress": {
 			const [variant, label]: [BadgeVariant, string] =
 				p.checks.failure.length > 0
-					? ["danger", "CI checks in progress, some failed"]
+					? ["danger", i18nMessages.t("lite:ci.CIchecksinprogresssomefailed")]
 					: p.checks.actionRequired.length > 0
-						? ["warn", "CI checks in progress, some action required"]
-						: ["lightGray", "CI checks in progress"];
+						? ["warn", i18nMessages.t("lite:ci.CIchecksinprogresssomeactionrequired")]
+						: ["lightGray", i18nMessages.t("lite:ci.CIchecksinprogress")];
 			return (
 				<Badge aria-label={label} variant={variant}>
 					<Icon name="spinner" size={12} />
@@ -101,19 +104,22 @@ const CIBubble: FC<{ checks: AggregateCIChecks }> = (p) => {
 		}
 		case "cancelled":
 			return (
-				<Badge aria-label="CI checks cancelled" variant="lightGray">
+				<Badge aria-label={i18nMessages.t("lite:BranchRow.cIChecksCancelled")} variant="lightGray">
 					<Icon name="cross" size={12} />
 				</Badge>
 			);
 		case "action_required":
 			return (
-				<Badge aria-label="CI checks action required" variant="warn">
+				<Badge aria-label={i18nMessages.t("lite:BranchRow.cIChecksActionRequired")} variant="warn">
 					<Icon name="warning" size={12} />
 				</Badge>
 			);
 		case "unknown":
 			return (
-				<Badge aria-label="CI checks status unknown" variant="lightGray">
+				<Badge
+					aria-label={i18nMessages.t("lite:BranchRow.cIChecksStatusUnknown")}
+					variant="lightGray"
+				>
 					<Icon name="question" size={12} />
 				</Badge>
 			);
@@ -157,6 +163,7 @@ export const BranchRow: FC<
 	stack,
 	...restProps
 }) => {
+	const i18nMessages = useTranslations();
 	const { data: forgeInfo } = useQuery(forgeInfoOptions(projectId));
 	const { data: headInfoIndex } = useQuery({
 		...headInfoQueryOptions(projectId),
@@ -329,13 +336,15 @@ export const BranchRow: FC<
 
 	const pushMenuLabel = pushesMultipleBranches
 		? downstackPushStatus.anyPushRequiresForce
-			? "Force Push With Branches Below"
-			: "Push With Branches Below"
+			? i18nMessages.t("lite:BranchRow.label1bb2bd76d")
+			: i18nMessages.t("lite:BranchRow.labeled5893f1f")
 		: downstackPushStatus.anyPushRequiresForce
-			? "Force Push Branch"
-			: "Push Branch";
+			? i18nMessages.t("lite:BranchRow.labelc91db089b")
+			: i18nMessages.t("lite:BranchRow.labelcf2cfe717");
 
-	const foldLabel = isFolded ? "Unfold commits" : "Fold commits";
+	const foldLabel = isFolded
+		? i18nMessages.t("lite:BranchRow.label96827942d")
+		: i18nMessages.t("lite:BranchRow.label540821932");
 	const toggleFolded = () => {
 		// Hand the selection over only when folding would hide it — the selected
 		// commit sits in this segment. Unrelated selections (and the details pane
@@ -363,7 +372,9 @@ export const BranchRow: FC<
 
 	const menuItems: Array<NativeMenuItem> = [
 		nativeMenuItem({
-			label: isFolded ? "Unfold Commits" : "Fold Commits",
+			label: isFolded
+				? i18nMessage("lite:BranchRow.unfoldCommits")
+				: i18nMessage("lite:BranchRow.foldCommits"),
 			enabled: commitCount > 0,
 			accelerator: toElectronAccelerator(sidebarHotkeys.toggleFoldBranch.hotkey),
 			onSelect: toggleFolded,
@@ -377,23 +388,23 @@ export const BranchRow: FC<
 		}),
 		nativeMenuSeparator,
 		nativeMenuItem({
-			label: "Rename Branch",
+			label: i18nMessage("lite:BranchRow.renameBranch"),
 			enabled: !isRenamePending,
 			accelerator: toElectronAccelerator(sidebarHotkeys.renameBranch.hotkey),
 			onSelect: startEditing,
 		}),
 		nativeMenuItem({
-			label: "Cut Branch",
+			label: i18nMessage("lite:BranchRow.cutBranch"),
 			onSelect: cutBranch,
 			accelerator: toElectronAccelerator(selectionOperationHotkeys.cut.hotkey),
 		}),
 		nativeMenuItem({
-			label: "Copy Branch Name",
+			label: i18nMessage("lite:BranchRow.copyBranchName"),
 			onSelect: () => window.lite.clipboardWriteText(optimisticBranchDisplayName),
 		}),
 		nativeMenuSeparator,
 		nativeMenuItem({
-			label: "Open Pull Request In Browser",
+			label: i18nMessage("lite:BranchRow.openPullRequestInBrowser"),
 			enabled: mforgeUrl != null,
 			accelerator: toElectronAccelerator(sidebarHotkeys.openPRInBrowser.hotkey),
 			onSelect: openPRInBrowser,
@@ -401,27 +412,27 @@ export const BranchRow: FC<
 		insertBlankCommitMenuItem(insertBlankCommit, "below"),
 		nativeMenuSeparator,
 		nativeMenuItem({
-			label: "Create Branch",
+			label: i18nMessage("lite:BranchRow.createBranch"),
 			submenu: [
 				nativeMenuItem({
-					label: "Above",
+					label: i18nMessage("lite:BranchRow.above"),
 					accelerator: toElectronAccelerator(sidebarHotkeys.createDependentBranchAbove.hotkey),
 					onSelect: () => createDependentBranch("above"),
 				}),
 				nativeMenuItem({
-					label: "Below",
+					label: i18nMessage("lite:BranchRow.below"),
 					onSelect: () => createDependentBranch("below"),
 				}),
 			],
 		}),
 		nativeMenuSeparator,
 		nativeMenuItem({
-			label: "Tear Off Branch",
+			label: i18nMessage("lite:BranchRow.tearOffBranch"),
 			enabled: canTearOffBranch && !isTearOffBranchPending,
 			onSelect: tearOff,
 		}),
 		nativeMenuItem({
-			label: "Delete Branch Reference",
+			label: i18nMessage("lite:BranchRow.deleteBranchReference"),
 			enabled: canRemoveBranch && !isBranchRemovePending,
 			accelerator: toElectronAccelerator(sidebarHotkeys.deleteBranchRef.hotkey),
 			onSelect: () =>
@@ -491,7 +502,7 @@ export const BranchRow: FC<
 					multiline={false}
 					heading
 					value={optimisticBranchDisplayName}
-					label="Branch name"
+					label={i18nMessages.t("lite:BranchRow.branchName")}
 					onMount={(el) => {
 						el.select();
 					}}
@@ -528,11 +539,19 @@ export const BranchRow: FC<
 						>
 							<span className={rowStyles.metaItemText}>
 								{Match.value(pushStatus).pipe(
-									Match.when("nothingToPush", () => "Nothing to push"),
-									Match.when("unpushedCommits", () => "Some unpushed"),
-									Match.when("completelyUnpushed", () => "Unpushed branch"),
-									Match.when("unpushedCommitsRequiringForce", () => "Some unpushed"),
-									Match.when("integrated", () => "Integrated"),
+									Match.when("nothingToPush", () =>
+										i18nMessages.t("lite:BranchRow.label20e9272b3"),
+									),
+									Match.when("unpushedCommits", () =>
+										i18nMessages.t("lite:BranchRow.label9f054d867"),
+									),
+									Match.when("completelyUnpushed", () =>
+										i18nMessages.t("lite:BranchRow.labelb76a79c02"),
+									),
+									Match.when("unpushedCommitsRequiringForce", () =>
+										i18nMessages.t("lite:BranchRow.label9f054d867"),
+									),
+									Match.when("integrated", () => i18nMessages.t("lite:BranchRow.label1766eae98")),
 									Match.exhaustive,
 								)}
 							</span>
@@ -545,14 +564,20 @@ export const BranchRow: FC<
 								<RowMetaSeparator />
 								<span
 									className={classes(rowStyles.fadedText, rowStyles.metaItem)}
-									title={reviewUnread ? "New activity on this pull request" : undefined}
+									title={
+										reviewUnread
+											? i18nMessages.t("lite:BranchRow.newActivityOnThisPullRequest")
+											: undefined
+									}
 								>
 									<Icon size={14} name="pr" />
-									PR
+									<I18nMessage value={{ key: "lite:BranchRow.pR" }} />{" "}
 									{reviewUnread && (
 										<span className={rowStyles.unreadDot}>
 											<span className={rowStyles.unreadLabel}>
-												New activity on this pull request
+												<I18nMessage
+													value={{ key: "lite:BranchRow.newActivityOnThisPullRequest" }}
+												/>{" "}
 											</span>
 										</span>
 									)}
@@ -577,17 +602,17 @@ export const BranchRow: FC<
 										: pushActivity === "blocked"
 											? "another push is in progress"
 											: downstackPushStatus.anyHasConflicts
-												? "disabled due to conflicts"
+												? i18nMessages.t("lite:BranchRow.label21010ec3a")
 												: null;
 
 								const pushButtonLabel = `${
 									pushesMultipleBranches
 										? downstackPushStatus.anyPushRequiresForce
-											? "Force push this and all branches below"
-											: "Push this and all branches below"
+											? i18nMessages.t("lite:BranchRow.labelead0464ad")
+											: i18nMessages.t("lite:BranchRow.label5304846e6")
 										: downstackPushStatus.anyPushRequiresForce
-											? "Force push branch"
-											: "Push branch"
+											? i18nMessages.t("lite:BranchRow.labelbc7a63fba")
+											: i18nMessages.t("lite:BranchRow.labeld1d1260f3")
 								}${workspaceBranchAndAncestorsPushDisabledReason !== null ? ` (${workspaceBranchAndAncestorsPushDisabledReason})` : ""}`;
 
 								return (
@@ -608,7 +633,7 @@ export const BranchRow: FC<
 												/>
 											}
 										>
-											Push
+											<I18nMessage value={{ key: "lite:BranchRow.push" }} />
 											{pushActivity === "pushing" ? (
 												<Icon name="spinner" />
 											) : pushesMultipleBranches ? (
@@ -639,9 +664,12 @@ export const BranchRow: FC<
 			)}
 
 			{noOperationPending && (
-				<Toolbar.Root aria-label="Branch actions" render={<RowToolbar />}>
+				<Toolbar.Root
+					aria-label={i18nMessages.t("lite:BranchRow.branchActions")}
+					render={<RowToolbar />}
+				>
 					<Toolbar.Button
-						aria-label="Branch menu"
+						aria-label={i18nMessages.t("lite:BranchRow.branchMenu")}
 						onClick={(event) => {
 							void showNativeMenuFromTrigger(event.currentTarget, menuItems);
 						}}

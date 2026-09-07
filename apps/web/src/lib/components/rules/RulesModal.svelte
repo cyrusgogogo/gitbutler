@@ -2,12 +2,13 @@
 	import { BUTLER_AI_CLIENT, MessageRole } from "$lib/ai/service";
 	import { parseDiffPatchToDiffString } from "$lib/chat/diffPatch";
 	import { inject } from "@gitbutler/core/context";
-
+	import { useTranslations } from "@gitbutler/i18n/svelte";
 	import { RULES_SERVICE } from "@gitbutler/shared/rules/rulesService";
 	import { Button, Modal, ScrollableContainer, Textarea } from "@gitbutler/ui";
 	import { tick } from "svelte";
 	import type { ChatMessage } from "@gitbutler/shared/chat/types";
 	import type { CreateRuleParams } from "@gitbutler/shared/rules/types";
+	const i18nMessages = useTranslations();
 
 	type Props = {
 		projectSlug: string;
@@ -212,7 +213,7 @@
 		<Textarea
 			value={ruleTitle}
 			unstyled
-			placeholder="Rule title"
+			placeholder={$i18nMessages.t("web:RulesModal.ruleTitle")}
 			fontSize={13}
 			fontWeight="semibold"
 			padding={{ top: 0, right: 0, bottom: 0, left: 0 }}
@@ -234,7 +235,7 @@
 		<Textarea
 			value={ruleDescription}
 			unstyled
-			placeholder="Rule description"
+			placeholder={$i18nMessages.t("web:RulesModal.ruleDescription")}
 			fontSize={13}
 			padding={{ top: 0, right: 0, bottom: 0, left: 0 }}
 			disabled={isGenerating}
@@ -251,7 +252,7 @@
 {/snippet}
 
 {#snippet negativeExampleInput()}
-	<p>Don't do this</p>
+	<p>{$i18nMessages.t("web:RulesModal.donTDoThis")}</p>
 	<div class="rules-modal__input text-input" class:disabled={isGenerating}>
 		<Textarea
 			value={effectiveNegativeExample}
@@ -272,7 +273,7 @@
 {/snippet}
 
 {#snippet positiveExampleInput()}
-	<p>Do this</p>
+	<p>{$i18nMessages.t("web:RulesModal.doThis")}</p>
 	<div class="rules-modal__input text-input" class:disabled={isGenerating}>
 		<Textarea
 			value={effectivePositiveExample}
@@ -292,15 +293,21 @@
 	</div>
 {/snippet}
 
-<Modal bind:this={modal} title="Create a rule" onSubmit={createRule}>
+<Modal
+	bind:this={modal}
+	title={$i18nMessages.t("web:RulesModal.createARule")}
+	onSubmit={createRule}
+>
 	<div class="rules-modal-wrapper">
 		<ScrollableContainer whenToShow="hover">
 			<div class="rules-modal">
-				<p class="text-16">Enter the information about the rule that should be created</p>
+				<p class="text-16">
+					{$i18nMessages.t("web:RulesModal.enterTheInformationAboutTheRuleThatShould")}
+				</p>
 				{@render titleInput()}
 				{@render descriptionInput()}
 				{#if shouldShowExample}
-					<p class="text-14">Examples</p>
+					<p class="text-14">{$i18nMessages.t("web:RulesModal.examples")}</p>
 					{@render negativeExampleInput()}
 					{@render positiveExampleInput()}
 				{/if}
@@ -308,8 +315,12 @@
 		</ScrollableContainer>
 	</div>
 	{#snippet controls(close)}
-		<Button kind="outline" type="reset" onclick={close}>Cancel</Button>
-		<Button style="pop" type="submit" loading={isGenerating}>Create rule</Button>
+		<Button kind="outline" type="reset" onclick={close}
+			>{$i18nMessages.t("web:RulesModal.cancel")}</Button
+		>
+		<Button style="pop" type="submit" loading={isGenerating}
+			>{$i18nMessages.t("web:RulesModal.createRule")}</Button
+		>
 	{/snippet}
 </Modal>
 

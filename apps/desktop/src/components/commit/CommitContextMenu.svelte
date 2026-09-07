@@ -63,6 +63,8 @@
 	import { dismissToast, showToast } from "$lib/notifications/toasts";
 	import { STACK_SERVICE } from "$lib/stacks/stackService.svelte";
 	import { inject, injectOptional } from "@gitbutler/core/context";
+	import { message as i18nMessage } from "@gitbutler/i18n";
+	import { useTranslations } from "@gitbutler/i18n/svelte";
 	import {
 		ContextMenuItem,
 		ContextMenuItemSubmenu,
@@ -70,6 +72,7 @@
 		KebabButton,
 		TestId,
 	} from "@gitbutler/ui";
+	const i18nMessages = useTranslations();
 
 	type Props = {
 		showOnHover?: boolean;
@@ -169,8 +172,8 @@
 		showToast({
 			id: progressToastId,
 			style: "info",
-			title: "Resolving conflicts with AI…",
-			message: "This can take a moment. The resolution is applied when it completes.",
+			title: i18nMessage("desktop:CommitContextMenu.resolvingConflictsWithAI"),
+			message: i18nMessage("desktop:CommitContextMenu.thisCanTakeAMomentTheResolutionIs"),
 		});
 		try {
 			const result = await resolveConflictsAi({ projectId, stackId, commitId });
@@ -180,14 +183,17 @@
 				.join("\n");
 			showToast({
 				style: "success",
-				title: "Conflicts resolved with AI",
-				message: `${result.summary ?? ""}\n\n${fileList}\n\nIf this isn't right, undo it from the operations history.`,
+				title: i18nMessage("desktop:CommitContextMenu.conflictsResolvedWithAI"),
+				message: i18nMessage("desktop:CommitContextMenu.valueValueIfThisIsnTRightUndo", {
+					value: String(result.summary ?? ""),
+					fileList: String(fileList),
+				}),
 			});
 		} catch (error: unknown) {
 			dismissToast(progressToastId);
 			showToast({
 				style: "danger",
-				title: "Failed to resolve conflicts with AI",
+				title: i18nMessage("desktop:CommitContextMenu.failedToResolveConflictsWithAI"),
 				error,
 			});
 		} finally {
@@ -215,7 +221,9 @@
 					<!-- Multi-select actions -->
 					<ContextMenuSection>
 						<ContextMenuItem
-							label="Squash {multiSelect.commitIds.length} commits"
+							label={$i18nMessages.t("desktop:CommitContextMenu.squashValueCommits", {
+								length: String(multiSelect.commitIds.length),
+							})}
 							icon="commit-double-chevron-down"
 							testId={TestId.CommitRowContextMenu_SquashSelected}
 							disabled={isReadOnly}
@@ -227,7 +235,9 @@
 							}}
 						/>
 						<ContextMenuItem
-							label="Uncommit {multiSelect.commitIds.length} commits"
+							label={$i18nMessages.t("desktop:CommitContextMenu.uncommitValueCommits", {
+								length: String(multiSelect.commitIds.length),
+							})}
 							icon="undo"
 							testId={TestId.CommitRowContextMenu_UncommitSelected}
 							disabled={isReadOnly}
@@ -244,7 +254,7 @@
 					{@const { onUncommitClick, onEditMessageClick } = contextData}
 					<ContextMenuSection>
 						<ContextMenuItem
-							label="Uncommit"
+							label={$i18nMessages.t("desktop:CommitContextMenu.uncommit")}
 							icon="undo"
 							testId={TestId.CommitRowContextMenu_UncommitMenuButton}
 							disabled={isReadOnly}
@@ -256,7 +266,7 @@
 							}}
 						/>
 						<ContextMenuItem
-							label="Reword commit"
+							label={$i18nMessages.t("desktop:CommitContextMenu.rewordCommit")}
 							icon="edit"
 							testId={TestId.CommitRowContextMenu_EditMessageMenuButton}
 							disabled={isReadOnly}
@@ -268,7 +278,7 @@
 							}}
 						/>
 						<ContextMenuItem
-							label="Edit commit"
+							label={$i18nMessages.t("desktop:CommitContextMenu.editCommit")}
 							icon="commit-edit"
 							testId={TestId.CommitRowContextMenu_EditCommit}
 							disabled={isReadOnly}
@@ -281,7 +291,7 @@
 						/>
 						{#if contextData.hasConflicts && $aiGenEnabled && aiConfigurationValid}
 							<ContextMenuItem
-								label="Resolve conflicts with AI"
+								label={$i18nMessages.t("desktop:CommitContextMenu.resolveConflictsWithAI")}
 								icon="ai"
 								testId={TestId.CommitRowContextMenu_ResolveConflictsAi}
 								disabled={isReadOnly || aiResolution.current.isLoading}
@@ -301,7 +311,7 @@
 				<ContextMenuSection>
 					{#if commitUrl}
 						<ContextMenuItem
-							label="Open in browser"
+							label={$i18nMessages.t("desktop:CommitContextMenu.openInBrowser")}
 							icon="open-in-browser"
 							onclick={async () => {
 								await urlService.openExternalUrl(commitUrl);
@@ -309,31 +319,40 @@
 							}}
 						/>
 					{/if}
-					<ContextMenuItemSubmenu label="Copy" icon="copy">
+					<ContextMenuItemSubmenu
+						label={$i18nMessages.t("desktop:CommitContextMenu.copy")}
+						icon="copy"
+					>
 						{#snippet submenu({ close: closeSubmenu })}
 							<ContextMenuSection>
 								{#if commitUrl}
 									<ContextMenuItem
-										label="Copy commit link"
+										label={$i18nMessages.t("desktop:CommitContextMenu.copyCommitLink")}
 										onclick={() => {
-											clipboardService.write(commitUrl, { message: "Commit link copied" });
+											clipboardService.write(commitUrl, {
+												message: i18nMessage("desktop:CommitContextMenu.inline9f0a4b054"),
+											});
 											closeSubmenu();
 											close();
 										}}
 									/>
 								{/if}
 								<ContextMenuItem
-									label="Copy commit hash"
+									label={$i18nMessages.t("desktop:CommitContextMenu.copyCommitHash")}
 									onclick={() => {
-										clipboardService.write(commitId, { message: "Commit hash copied" });
+										clipboardService.write(commitId, {
+											message: i18nMessage("desktop:CommitContextMenu.inlinefb6ebf38a"),
+										});
 										closeSubmenu();
 										close();
 									}}
 								/>
 								<ContextMenuItem
-									label="Copy commit message"
+									label={$i18nMessages.t("desktop:CommitContextMenu.copyCommitMessage")}
 									onclick={() => {
-										clipboardService.write(commitMessage, { message: "Commit message copied" });
+										clipboardService.write(commitMessage, {
+											message: i18nMessage("desktop:CommitContextMenu.inline33bf343d3"),
+										});
 										closeSubmenu();
 										close();
 									}}
@@ -342,11 +361,14 @@
 						{/snippet}
 					</ContextMenuItemSubmenu>
 					{#if isLocal}
-						<ContextMenuItemSubmenu label="Add empty commit" icon="commit-plus">
+						<ContextMenuItemSubmenu
+							label={$i18nMessages.t("desktop:CommitContextMenu.addEmptyCommit")}
+							icon="commit-plus"
+						>
 							{#snippet submenu({ close: closeSubmenu })}
 								<ContextMenuSection>
 									<ContextMenuItem
-										label="Add empty commit above"
+										label={$i18nMessages.t("desktop:CommitContextMenu.addEmptyCommitAbove")}
 										disabled={isReadOnly || commitInsertion.current.isLoading}
 										onclick={() => {
 											insertBlankCommit(commitId, "above");
@@ -355,7 +377,7 @@
 										}}
 									/>
 									<ContextMenuItem
-										label="Add empty commit below"
+										label={$i18nMessages.t("desktop:CommitContextMenu.addEmptyCommitBelow")}
 										disabled={isReadOnly || commitInsertion.current.isLoading}
 										onclick={() => {
 											insertBlankCommit(commitId, "below");
@@ -366,11 +388,14 @@
 								</ContextMenuSection>
 							{/snippet}
 						</ContextMenuItemSubmenu>
-						<ContextMenuItemSubmenu label="Create branch" icon="branch">
+						<ContextMenuItemSubmenu
+							label={$i18nMessages.t("desktop:CommitContextMenu.createBranch")}
+							icon="branch"
+						>
 							{#snippet submenu({ close: closeSubmenu })}
 								<ContextMenuSection>
 									<ContextMenuItem
-										label="Add branch above"
+										label={$i18nMessages.t("desktop:CommitContextMenu.addBranchAbove")}
 										disabled={isReadOnly || branchCreation.current.isLoading}
 										onclick={async () => {
 											if (!isReadOnly) {
@@ -381,7 +406,7 @@
 										}}
 									/>
 									<ContextMenuItem
-										label="Add branch below"
+										label={$i18nMessages.t("desktop:CommitContextMenu.addBranchBelow")}
 										disabled={isReadOnly || branchCreation.current.isLoading}
 										onclick={async () => {
 											if (!isReadOnly) {
@@ -399,7 +424,9 @@
 
 				<ContextMenuSection>
 					<ContextMenuItem
-						label={$rewrapCommitMessage ? "Show original wrapping" : "Rewrap message"}
+						label={$rewrapCommitMessage
+							? $i18nMessages.t("desktop:CommitContextMenu.inline12d6e7f2a")
+							: $i18nMessages.t("desktop:CommitContextMenu.inlineec50fb0ed")}
 						icon="text-wrap"
 						disabled={commitInsertion.current.isLoading}
 						onclick={() => {

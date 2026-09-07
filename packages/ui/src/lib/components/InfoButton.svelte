@@ -5,7 +5,6 @@
 	import { tooltip } from "$lib/utils/tooltipPosition";
 	import { flyScale } from "$lib/utils/transitions";
 	import type { Snippet } from "svelte";
-
 	interface Props {
 		title?: string;
 		size?: "small" | "medium";

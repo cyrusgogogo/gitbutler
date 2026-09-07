@@ -36,7 +36,8 @@
 	"build": {
 		"appId": "com.gitbutler.lite",
 		"electronLanguages": [
-			"en-US"
+			"en-US",
+			"zh-CN"
 		],
 		"electronFuses": {
 			"runAsNode": false,
@@ -166,7 +167,8 @@
 		"rehype-sanitize": "^6.0.0",
 		"remark-gemoji": "^8.0.0",
 		"remark-gfm": "^4.0.1",
-		"shiki": "^4.3.0"
+		"shiki": "^4.3.0",
+		"@gitbutler/i18n": "workspace:*"
 	},
 	"devDependencies": {
 		"@playwright/test": "catalog:",

@@ -1,8 +1,10 @@
 <script lang="ts">
 	import { focusable } from "$lib/focus/focusable";
 	import { pxToRem } from "$lib/utils/pxToRem";
+	import { useTranslations } from "@gitbutler/i18n/svelte";
 	import { untrack } from "svelte";
 	import type { HTMLTextareaAttributes } from "svelte/elements";
+	const i18nMessages = useTranslations();
 
 	interface Props extends HTMLTextareaAttributes {
 		textBoxEl?: HTMLTextAreaElement;
@@ -115,7 +117,7 @@
 
 <div
 	class="textarea-container"
-	style:--placeholder-text={`"${placeholder || "Type here..."}"`}
+	style:--placeholder-text={`"${placeholder || $i18nMessages.t("ui:Textarea.inlinee4423f2ac")}"`}
 	style:--min-rows={minRows}
 	style:--max-rows={maxRows}
 	style:--padding-top="{pxToRem(effectivePadding.top)}rem"

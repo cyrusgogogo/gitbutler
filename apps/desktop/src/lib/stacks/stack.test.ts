@@ -1,3 +1,4 @@
+import { canonicalMessages } from "$lib/notifications/toasts";
 import { cherryPickTargets, toMoveBranchWarning, type Stack } from "$lib/stacks/stack";
 import { TestId } from "@gitbutler/ui";
 import { describe, expect, test } from "vitest";
@@ -31,12 +32,12 @@ describe("toMoveBranchWarning", () => {
 			throw new Error("Expected a warning drop result");
 		}
 
-		expect(warning).toMatchObject({
+		expect({ ...warning, title: canonicalMessages.text(warning.title ?? "") }).toMatchObject({
 			type: "warning",
 			title: "Heads up: We had to unapply some stacks to move this branch",
 			testId: TestId.StacksUnappliedToast,
 		});
-		expect(warning.message).toContain("1 stack");
+		expect(canonicalMessages.text(warning.message ?? "")).toContain("1 stack");
 	});
 
 	test("renders a plural warning message when multiple stacks are unapplied", () => {
@@ -49,7 +50,7 @@ describe("toMoveBranchWarning", () => {
 			throw new Error("Expected a warning drop result");
 		}
 
-		expect(warning.message).toContain("2 stacks");
+		expect(canonicalMessages.text(warning.message ?? "")).toContain("2 stacks");
 	});
 });
 

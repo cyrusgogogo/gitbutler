@@ -1,11 +1,14 @@
 <script lang="ts">
 	import { setAfterVersion, setBeforeVersion } from "$lib/interdiffRangeQuery.svelte";
+	import { useTranslations } from "@gitbutler/i18n/svelte";
 	import { eventTimeStamp, getMultipleContributorNames } from "@gitbutler/shared/branches/utils";
 	import { getPatchContributorsWithAvatars } from "@gitbutler/shared/contributors";
 	import { isFound } from "@gitbutler/shared/network/loadable";
 	import { type PatchVersionEvent } from "@gitbutler/shared/patchEvents/types";
 	import { getPatch } from "@gitbutler/shared/patches/patchCommitsPreview.svelte";
 	import { AvatarGroup, Icon } from "@gitbutler/ui";
+	import I18nRichMessage from "@gitbutler/ui/i18n/RichMessage.svelte";
+	const i18nMessages = useTranslations();
 
 	interface Props {
 		event: PatchVersionEvent;
@@ -15,10 +18,12 @@
 
 	const patch = $derived(event.object);
 
-	const authorNames = $derived(getMultipleContributorNames(patch.contributors));
+	const authorNames = $derived(
+		getMultipleContributorNames(patch.contributors, $i18nMessages.locale),
+	);
 	const authorAvatars = $derived(getPatchContributorsWithAvatars(patch));
 
-	const timestamp = $derived(eventTimeStamp(event));
+	const timestamp = $derived(eventTimeStamp(event, $i18nMessages.locale));
 	const latestPatchCommit = $derived(getPatch(patch.branchUuid, patch.changeId));
 
 	// NOTE: Because this is working with the query params this MUST NOT be
@@ -50,9 +55,16 @@
 
 		<!-- svelte-ignore a11y_click_events_have_key_events -->
 		<p class="text-12 patch-verssion__message" onclick={viewInterdiff}>
-			published a new <span class="interdiff-version text-bold"
-				>commit version #{patch.version}</span
-			>
+			{#snippet i18nSlot1(content: import("svelte").Snippet)}<span
+					class="interdiff-version text-bold">{@render content()}</span
+				>{/snippet}
+			<I18nRichMessage
+				value={{
+					key: "web:PatchVersion.publishedANewCommitVersionValue",
+					values: { version: String(patch.version) },
+				}}
+				components={{ slot1: i18nSlot1 }}
+			/>
 		</p>
 
 		<div class="text-12 patch-version__timestamp" title={event.createdAt}>{timestamp}</div>

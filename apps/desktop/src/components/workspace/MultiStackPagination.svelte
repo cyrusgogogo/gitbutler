@@ -10,7 +10,9 @@
 </script>
 
 <script lang="ts">
+	import { useTranslations } from "@gitbutler/i18n/svelte";
 	import { Tooltip } from "@gitbutler/ui";
+	const i18nMessages = useTranslations();
 
 	type Props = {
 		length: number;
@@ -32,11 +34,11 @@
 
 	function getPaginationTooltip(index: number) {
 		if (visibleIndexes.includes(index)) {
-			return "In view";
+			return $i18nMessages.t("desktop:MultiStackPagination.detail5d9dc858b");
 		} else if (index === selectedBranchIndex) {
-			return "Selected";
+			return $i18nMessages.t("desktop:MultiStackPagination.detail9a976fc22");
 		} else {
-			return "Scroll to lane";
+			return $i18nMessages.t("desktop:MultiStackPagination.detail26aade47d");
 		}
 	}
 </script>
@@ -60,7 +62,7 @@
 			></div>
 		</Tooltip>
 	{/each}
-	<Tooltip text="Create new branch">
+	<Tooltip text={$i18nMessages.t("desktop:MultiStackPagination.createNewBranch")}>
 		<div
 			role="button"
 			tabindex="0"

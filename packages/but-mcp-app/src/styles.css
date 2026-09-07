@@ -1,5 +1,11 @@
 @import "@gitbutler/design-core/core";
 
+:root:lang(zh-CN) {
+	--text-fontfamily-base: Inter, "PingFang SC", "Microsoft YaHei", "Noto Sans CJK SC", sans-serif;
+	--text-fontfamily-accent:
+		"But Head", "PingFang SC", "Microsoft YaHei", "Noto Sans CJK SC", sans-serif;
+}
+
 :root {
 	color-scheme: light dark;
 	font-family: var(--fontfamily-base);
@@ -677,4 +683,10 @@ code {
 		animation: none;
 		transition: none;
 	}
+}
+
+.language-bar {
+	display: flex;
+	justify-content: flex-end;
+	margin-bottom: 8px;
 }

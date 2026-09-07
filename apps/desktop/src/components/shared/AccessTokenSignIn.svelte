@@ -2,7 +2,9 @@
 	import signinSvg from "$lib/assets/token.svg?raw";
 	import { USER_SERVICE } from "$lib/user/userService.svelte";
 	import { inject } from "@gitbutler/core/context";
+	import { useTranslations } from "@gitbutler/i18n/svelte";
 	import { CardGroup, Textbox, Spacer, AsyncButton } from "@gitbutler/ui";
+	const i18nMessages = useTranslations();
 
 	const userService = inject(USER_SERVICE);
 
@@ -17,10 +19,12 @@
 			</div>
 
 			<div class="info-section">
-				<h2 class="text-15 text-bold m-b-6">Access token</h2>
+				<h2 class="text-15 text-bold m-b-6">
+					{$i18nMessages.t("desktop:AccessTokenSignIn.accessToken")}
+				</h2>
 
 				<p class="text-12 text-body clr-text-2">
-					Sign in to GitButler to get your personal access token.
+					{$i18nMessages.t("desktop:AccessTokenSignIn.signInToGitButlerToGetYourPersonal")}
 				</p>
 
 				<div class="flex gap-8 m-t-12">
@@ -31,7 +35,7 @@
 							await userService.openLoginPage();
 						}}
 					>
-						Log in / Sign up
+						{$i18nMessages.t("desktop:AccessTokenSignIn.logInSignUp")}
 					</AsyncButton>
 
 					<AsyncButton
@@ -41,7 +45,7 @@
 							await userService.copyLoginPageLink();
 						}}
 					>
-						Copy login link
+						{$i18nMessages.t("desktop:AccessTokenSignIn.copyLoginLink")}
 					</AsyncButton>
 				</div>
 
@@ -63,13 +67,12 @@
 							accessToken = "";
 						}}
 					>
-						Authorize access token
+						{$i18nMessages.t("desktop:AccessTokenSignIn.authorizeAccessToken")}
 					</AsyncButton>
 				</div>
 
 				<p class="text-12 text-body clr-text-2 m-t-16">
-					An access token is required to use GitButler's smart automation features, including
-					intelligent branch creation and commit message generation.
+					{$i18nMessages.t("desktop:AccessTokenSignIn.anAccessTokenIsRequiredToUseGitButler")}
 				</p>
 			</div>
 		</div>

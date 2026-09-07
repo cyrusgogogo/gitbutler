@@ -1,7 +1,11 @@
 <script lang="ts">
 	import HeaderAuthSection from "$lib/components/HeaderAuthSection.svelte";
+	import LanguageSetting from "$lib/components/LanguageSetting.svelte";
 	import linkJson from "$lib/data/links.json";
+	import { useTranslations } from "@gitbutler/i18n/svelte";
+	import I18nRichMessage from "@gitbutler/ui/i18n/RichMessage.svelte";
 	import { scale } from "svelte/transition";
+	const i18nMessages = useTranslations();
 
 	let isMenuOpen = $state(false);
 
@@ -28,7 +32,9 @@
 	class="mobile-menu-button"
 	class:is-open={isMenuOpen}
 	onclick={toggleMenu}
-	aria-label={isMenuOpen ? "Close menu" : "Open menu"}
+	aria-label={isMenuOpen
+		? $i18nMessages.t("web:MobileMenu.inline6c9fc9908")
+		: $i18nMessages.t("web:MobileMenu.inline197101e9d")}
 	aria-expanded={isMenuOpen}
 ></button>
 
@@ -37,43 +43,58 @@
 		<div class="mobile-menu__content">
 			<div class="stack-v gap-40">
 				<nav class="mobile-nav">
-					<a
-						href={linkJson.resources.downloads.url}
-						target="_self"
-						class="mobile-link"
-						data-sveltekit-preload-data="hover"
-					>
-						{linkJson.resources.downloads.label}
-					</a>
-					<a
-						href={linkJson.resources.documentation.url}
-						target="_blank"
-						rel="noopener noreferrer"
-						class="mobile-link">{linkJson.resources.documentation.label}</a
-					>
-					<a
-						href={linkJson.resources.source.url}
-						target="_blank"
-						rel="noopener noreferrer"
-						class="mobile-link"
-					>
-						{linkJson.resources.source.label}
-					</a>
-					<a
-						href={linkJson.resources.blog.url}
-						target="_blank"
-						rel="noopener noreferrer"
-						class="mobile-link">Blog</a
-					>
-					<a
-						href={linkJson.resources.jobs.url}
-						target="_blank"
-						rel="noopener noreferrer"
-						class="mobile-link">{linkJson.resources.jobs.label}</a
-					>
+					{#snippet i18nSlot1(content: import("svelte").Snippet)}<a
+							href={linkJson.resources.downloads.url}
+							target="_self"
+							class="mobile-link"
+							data-sveltekit-preload-data="hover">{@render content()}</a
+						>{/snippet}
+					{#snippet i18nSlot2(content: import("svelte").Snippet)}<a
+							href={linkJson.resources.documentation.url}
+							target="_blank"
+							rel="noopener noreferrer"
+							class="mobile-link">{@render content()}</a
+						>{/snippet}
+					{#snippet i18nSlot3(content: import("svelte").Snippet)}<a
+							href={linkJson.resources.source.url}
+							target="_blank"
+							rel="noopener noreferrer"
+							class="mobile-link">{@render content()}</a
+						>{/snippet}
+					{#snippet i18nSlot4(content: import("svelte").Snippet)}<a
+							href={linkJson.resources.blog.url}
+							target="_blank"
+							rel="noopener noreferrer"
+							class="mobile-link">{@render content()}</a
+						>{/snippet}
+					{#snippet i18nSlot5(content: import("svelte").Snippet)}<a
+							href={linkJson.resources.jobs.url}
+							target="_blank"
+							rel="noopener noreferrer"
+							class="mobile-link">{@render content()}</a
+						>{/snippet}
+					<I18nRichMessage
+						value={{
+							key: "web:MobileMenu.valueValueValueBlogValue",
+							values: {
+								label: $i18nMessages.text(linkJson.resources.downloads.label),
+								label2: $i18nMessages.text(linkJson.resources.documentation.label),
+								label3: $i18nMessages.text(linkJson.resources.source.label),
+								label4: $i18nMessages.text(linkJson.resources.jobs.label),
+							},
+						}}
+						components={{
+							slot1: i18nSlot1,
+							slot2: i18nSlot2,
+							slot3: i18nSlot3,
+							slot4: i18nSlot4,
+							slot5: i18nSlot5,
+						}}
+					/>
 				</nav>
 
 				<HeaderAuthSection />
+				<LanguageSetting />
 
 				<div class="mobile-socials">
 					{#each Object.values(linkJson.social) as social}

@@ -1,6 +1,7 @@
 import { goto } from "$app/navigation";
 import { showToast, showWarning } from "$lib/notifications/toasts";
 import { projectPath } from "$lib/routes/routes.svelte";
+import { message as i18nMessage } from "@gitbutler/i18n";
 import { TestId } from "@gitbutler/ui";
 // Inlined to avoid circular import with forge/.
 type ForgeName = "github" | "gitlab" | "bitbucket" | "azure" | "default";
@@ -86,10 +87,14 @@ export function handleAddProjectOutcome(
 			return true;
 		case "alreadyExists":
 			showWarning(
-				`Project '${outcome.subject.title}' already exists`,
-				`The project at "${outcome.subject.path}" is already added`,
+				i18nMessage("desktop:project.projectValueAlreadyExists", {
+					title: String(outcome.subject.title),
+				}),
+				i18nMessage("desktop:project.theProjectAtValueIsAlreadyAdded", {
+					path: String(outcome.subject.path),
+				}),
 				{
-					label: "Open project",
+					label: i18nMessage("desktop:project.openProject"),
 					testId: TestId.AddProjectAlreadyExistsModalOpenProjectButton,
 					onClick: (dismiss) => {
 						goto(projectPath(outcome.subject.id));
@@ -100,46 +105,57 @@ export function handleAddProjectOutcome(
 			);
 			return true;
 		case "pathNotFound":
-			showWarning("Path not found", "The specified path does not exist on the filesystem.");
+			showWarning(
+				i18nMessage("desktop:project.pathNotFound"),
+				i18nMessage("desktop:project.theSpecifiedPathDoesNotExistOnThe"),
+			);
 			return true;
 		case "notADirectory":
-			showWarning("Not a directory", "The specified path is not a directory.");
+			showWarning(
+				i18nMessage("desktop:project.notADirectory"),
+				i18nMessage("desktop:project.theSpecifiedPathIsNotADirectory"),
+			);
 			return true;
 		case "bareRepository":
 			showToast({
 				testId: TestId.AddProjectBareRepoModal,
 				style: "danger",
-				title: "Bare repository",
-				message: "The specified path appears to be a bare Git repository and cannot be added.",
+				title: i18nMessage("desktop:project.bareRepository"),
+				message: i18nMessage("desktop:project.theSpecifiedPathAppearsToBeABare"),
 			});
 			return true;
 		case "nonMainWorktree":
 			showWarning(
-				"Non-main worktree",
-				"The specified path is not the main worktree of the repository.",
+				i18nMessage("desktop:project.nonMainWorktree"),
+				i18nMessage("desktop:project.theSpecifiedPathIsNotTheMainWorktree"),
 			);
 			return true;
 		case "noWorkdir":
-			showWarning("No workdir", "The specified repository does not have a working directory.");
+			showWarning(
+				i18nMessage("desktop:project.noWorkdir"),
+				i18nMessage("desktop:project.theSpecifiedRepositoryDoesNotHaveAWorking"),
+			);
 			return true;
 		case "noDotGitDirectory":
 			showWarning(
-				"No .git directory",
-				"The specified path does not contain a .git directory.",
+				i18nMessage("desktop:project.noGitDirectory"),
+				i18nMessage("desktop:project.theSpecifiedPathDoesNotContainAGit"),
 				undefined,
 				TestId.AddProjectNoDotGitDirectoryModal,
 			);
 			return true;
 		case "reftableRefFormatUnsupported":
 			showWarning(
-				"Unsupported reference format",
-				"GitButler does not support repositories using the reftable reference format yet.",
+				i18nMessage("desktop:project.unsupportedReferenceFormat"),
+				i18nMessage("desktop:project.gitButlerDoesNotSupportRepositoriesUsingTheReftable"),
 			);
 			return true;
 		case "notAGitRepository":
 			showWarning(
-				"Not a Git repository",
-				`Unable to add project: ${outcome.subject}`,
+				i18nMessage("desktop:project.notAGitRepository"),
+				i18nMessage("desktop:project.unableToAddProjectValue", {
+					subject: String(outcome.subject),
+				}),
 				undefined,
 				TestId.AddProjectNotAGitRepoModal,
 			);

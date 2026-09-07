@@ -1,3 +1,6 @@
+import { createI18n } from "@gitbutler/i18n";
+import { resources } from "@gitbutler/i18n/catalogs/lite";
+const english = createI18n(resources, "en");
 import { assert } from "#ui/assert.ts";
 import {
 	describeLineStats,
@@ -75,19 +78,23 @@ describe("getLineStats", () => {
 
 describe("describeLineStats", () => {
 	it("words both sides, singular where it has to", () => {
-		expect(describeLineStats({ linesAdded: 34, linesRemoved: 28 })).toEqual([
+		expect(describeLineStats({ linesAdded: 34, linesRemoved: 28 }).map(english.text)).toEqual([
 			"34 lines added",
 			"28 lines removed",
 		]);
-		expect(describeLineStats({ linesAdded: 1, linesRemoved: 1 })).toEqual([
+		expect(describeLineStats({ linesAdded: 1, linesRemoved: 1 }).map(english.text)).toEqual([
 			"1 line added",
 			"1 line removed",
 		]);
 	});
 
 	it("drops the side that did not change, and says nothing when neither did", () => {
-		expect(describeLineStats({ linesAdded: 60, linesRemoved: 0 })).toEqual(["60 lines added"]);
-		expect(describeLineStats({ linesAdded: 0, linesRemoved: 5 })).toEqual(["5 lines removed"]);
-		expect(describeLineStats({ linesAdded: 0, linesRemoved: 0 })).toEqual([]);
+		expect(describeLineStats({ linesAdded: 60, linesRemoved: 0 }).map(english.text)).toEqual([
+			"60 lines added",
+		]);
+		expect(describeLineStats({ linesAdded: 0, linesRemoved: 5 }).map(english.text)).toEqual([
+			"5 lines removed",
+		]);
+		expect(describeLineStats({ linesAdded: 0, linesRemoved: 0 }).map(english.text)).toEqual([]);
 	});
 });

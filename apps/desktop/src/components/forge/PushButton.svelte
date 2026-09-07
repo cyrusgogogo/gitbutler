@@ -11,6 +11,8 @@
 	import { STACK_SERVICE } from "$lib/stacks/stackService.svelte";
 	import { UI_STATE } from "$lib/state/uiState.svelte";
 	import { inject } from "@gitbutler/core/context";
+	import { message as i18nMessage } from "@gitbutler/i18n";
+	import { useTranslations } from "@gitbutler/i18n/svelte";
 	import { persisted } from "@gitbutler/shared/persisted";
 	import {
 		Button,
@@ -21,8 +23,10 @@
 		ScrollableContainer,
 		chipToasts,
 	} from "@gitbutler/ui";
+	import I18nRichMessage from "@gitbutler/ui/i18n/RichMessage.svelte";
 	import type { GerritPushFlag } from "$lib/stacks/stack";
 	import type { Segment } from "@gitbutler/but-sdk";
+	const i18nMessages = useTranslations();
 
 	type Props = {
 		projectId: string;
@@ -117,11 +121,14 @@
 			uiState.project(projectId).branchesToPoll.add(...upstreamBranchNames);
 
 			// Show success notification
-			const branchText =
-				multipleBranches && !isLastBranchInStack
-					? `${branchName} and all branches below it`
-					: branchName;
-			chipToasts.success(`Pushed ${branchText} successfully`);
+			chipToasts.success(
+				i18nMessage(
+					multipleBranches && !isLastBranchInStack
+						? "desktop:push.succeededWithLower"
+						: "desktop:push.succeeded",
+					{ branch: branchName },
+				),
+			);
 		} catch (error: any) {
 			if (error?.code === "GitForcePushProtection") {
 				forcePushProtectionModal?.show();
@@ -140,30 +147,32 @@
 		remoteTrackingBranch: string | null,
 	): string | undefined {
 		if (isReadOnly) {
-			return "Read-only mode";
+			return $i18nMessages.t("desktop:PushButton.detail893cd37c4");
 		}
 
 		if (!hasThingsToPush) {
-			return "No commits to push";
+			return $i18nMessages.t("desktop:PushButton.detail6579c0ce8");
 		}
 
 		if (hasConflicts) {
-			return "In order to push, please resolve any conflicted commits.";
+			return $i18nMessages.t("desktop:PushButton.detail184fa5f6f");
 		}
 
 		if (multipleBranches && !isLastBranchInStack) {
-			return "Push this and all branches below";
+			return $i18nMessages.t("desktop:PushButton.detail5304846e6");
 		}
 
 		if (withForce) {
 			return remoteTrackingBranch
-				? "Force push this branch"
-				: `Force push this branch to ${remoteTrackingBranch}`;
+				? $i18nMessages.t("desktop:PushButton.detailc623d45d2")
+				: $i18nMessages.t("desktop:PushButton.detailfd671ae66", {
+						value1: String(remoteTrackingBranch),
+					});
 		}
 
 		return remoteTrackingBranch
-			? `Push this branch to ${remoteTrackingBranch}`
-			: "Push this branch";
+			? $i18nMessages.t("desktop:push.toRemote", { remote: remoteTrackingBranch })
+			: $i18nMessages.t("desktop:push.thisBranch");
 	}
 
 	const doNotShowPushBelowWarning = persisted<boolean>(false, "doNotShowPushBelowWarning");
@@ -184,11 +193,15 @@
 	onclick={() => handleClick({ withForce, skipForcePushProtection: false, gerritFlags: [] })}
 	icon={multipleBranches && !isLastBranchInStack ? "push-all" : "push"}
 >
-	{isGerritMode ? "Push" : withForce ? "Force push" : "Push"}
+	{isGerritMode
+		? $i18nMessages.t("desktop:PushButton.push")
+		: withForce
+			? $i18nMessages.t("desktop:PushButton.forcePush")
+			: $i18nMessages.t("desktop:PushButton.push")}
 </Button>
 
 <Modal
-	title="Push with dependencies"
+	title={$i18nMessages.t("desktop:PushButton.pushWithDependencies")}
 	width="small"
 	bind:this={confirmationModal}
 	onSubmit={async (close) => {
@@ -202,8 +215,16 @@
 	}}
 >
 	<p>
-		You're about to push <span class="text-bold">{branchName}</span>. To maintain the correct
-		history, GitButler will also push all branches below this branch in the stack.
+		{#snippet i18nSlot1(content: import("svelte").Snippet)}<span class="text-bold"
+				>{@render content()}</span
+			>{/snippet}
+		<I18nRichMessage
+			value={{
+				key: "desktop:PushButton.youReAboutToPushValueToMaintain",
+				values: { branchName: String(branchName) },
+			}}
+			components={{ slot1: i18nSlot1 }}
+		/>
 	</p>
 
 	{#snippet controls(close)}
@@ -211,7 +232,7 @@
 			<div class="flex flex-1">
 				<label for="dont-show-again" class="modal-footer__checkbox">
 					<Checkbox name="dont-show-again" small bind:checked={$doNotShowPushBelowWarning} />
-					<span class="text-12"> Don’t show again</span>
+					<span class="text-12">{$i18nMessages.t("desktop:PushButton.donTShowAgain")}</span>
 				</label>
 			</div>
 			<Button
@@ -221,17 +242,17 @@
 					close();
 				}}
 			>
-				Cancel
+				{$i18nMessages.t("desktop:PushButton.cancel")}
 			</Button>
 			<Button testId={TestId.StackConfirmPushModalButton} style="pop" type="submit" width={90}>
-				Push
+				{$i18nMessages.t("desktop:PushButton.push")}
 			</Button>
 		</div>
 	{/snippet}
 </Modal>
 
 <Modal
-	title="Protected force push"
+	title={$i18nMessages.t("desktop:PushButton.protectedForcePush")}
 	width={480}
 	type="warning"
 	bind:this={forcePushProtectionModal}
@@ -246,12 +267,16 @@
 	}}
 >
 	<p class="description">
-		Your force push was blocked because the remote branch contains <span
-			class="text-bold text-nowrap"
-			>{upstreamCommits?.length === 1 ? "1 commit" : `${upstreamCommits?.length} commits`}</span
-		>
-		your local branch doesn’t include. To prevent overwriting history,
-		<span class="text-bold">cancel and pull & integrate</span> the changes.
+		{#snippet i18nSlot3(content: import("svelte").Snippet)}<span class="text-bold text-nowrap"
+				>{@render content()}</span
+			>{/snippet}
+		{#snippet i18nSlot4(content: import("svelte").Snippet)}<span class="text-bold"
+				>{@render content()}</span
+			>{/snippet}
+		<I18nRichMessage
+			value={{ key: "desktop:push.forceBlocked", values: { count: upstreamCommits?.length ?? 0 } }}
+			components={{ slot3: i18nSlot3, slot4: i18nSlot4 }}
+		/>
 	</p>
 	{#if upstreamCommits}
 		<div class="scroll-wrap">
@@ -265,7 +290,10 @@
 						author={commit.author.name}
 						{url}
 						onOpen={(url) => urlService.openExternalUrl(url)}
-						onCopy={() => clipboardService.write(commit.id, { message: "Commit hash copied" })}
+						onCopy={() =>
+							clipboardService.write(commit.id, {
+								message: i18nMessage("desktop:PushButton.inlinefb6ebf38a"),
+							})}
 					/>
 				{/each}
 			</ScrollableContainer>
@@ -274,8 +302,12 @@
 
 	{#snippet controls(close)}
 		<div class="controls">
-			<Button kind="outline" type="submit">Force push anyway</Button>
-			<Button wide style="pop" onclick={close}>Cancel</Button>
+			<Button kind="outline" type="submit"
+				>{$i18nMessages.t("desktop:PushButton.forcePushAnyway")}</Button
+			>
+			<Button wide style="pop" onclick={close}
+				>{$i18nMessages.t("desktop:PushButton.cancel")}</Button
+			>
 		</div>
 	{/snippet}
 </Modal>

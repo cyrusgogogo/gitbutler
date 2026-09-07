@@ -7,9 +7,11 @@
 	import { PR_SERVICE } from "$lib/forge/prService.svelte";
 	import { UI_STATE } from "$lib/state/uiState.svelte";
 	import { inject } from "@gitbutler/core/context";
+	import { useTranslations } from "@gitbutler/i18n/svelte";
 	import { reactive } from "@gitbutler/shared/reactiveUtils.svelte";
 	import { TestId } from "@gitbutler/ui";
 	import type { Segment } from "@gitbutler/but-sdk";
+	const i18nMessages = useTranslations();
 
 	type Props = {
 		projectId: string;
@@ -88,7 +90,12 @@
 		onExitFloatingModeClick={() => {
 			uiState.global.useFloatingBox.set(false);
 		}}
-		title={pr ? `Edit ${reviewUnit} #${pr.number}` : `Create ${reviewUnit}`}
+		title={pr
+			? $i18nMessages.t("desktop:CreateReviewBox.inline76f872f73", {
+					value1: String(reviewUnit),
+					value2: String(pr.number),
+				})
+			: $i18nMessages.t("desktop:CreateReviewBox.inlineb8f6b0e1e", { value1: String(reviewUnit) })}
 	>
 		{@render editor()}
 	</FloatingCommitBox>

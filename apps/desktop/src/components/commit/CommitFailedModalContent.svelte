@@ -4,9 +4,13 @@
 	import { readableRejectionReason } from "$lib/stacks/stackEndpoints";
 	import { REJECTTION_REASONS } from "$lib/stacks/stackService.svelte";
 	import { type RejectionReason } from "$lib/state/uiState.svelte";
+	import { useTranslations } from "@gitbutler/i18n/svelte";
 	import { Icon, ModalHeader, TestId, Tooltip } from "@gitbutler/ui";
+	import I18nRichMessage from "@gitbutler/ui/i18n/RichMessage.svelte";
 	import { untrack } from "svelte";
 	import type { CommitFailedModalState } from "$lib/state/uiState.svelte";
+	import type { LocalizedText } from "@gitbutler/i18n";
+	const i18nMessages = useTranslations();
 
 	type Props = {
 		data: CommitFailedModalState;
@@ -17,7 +21,7 @@
 
 	type ReasonGroup = {
 		reason: RejectionReason;
-		reasonReadable: string;
+		reasonReadable: LocalizedText;
 		paths: string[];
 	};
 
@@ -53,7 +57,9 @@
 		closeButton
 		{oncloseclick}
 		closeButtonTestId={TestId.GlobalModalActionButton}
-		>{data.newCommitId ? "Some changes were not committed" : "Failed to create commit"}</ModalHeader
+		>{data.newCommitId
+			? $i18nMessages.t("desktop:CommitFailedModalContent.someChangesWereNotCommitted")
+			: $i18nMessages.t("desktop:CommitFailedModalContent.failedToCreateCommit")}</ModalHeader
 	>
 	<AppScrollableContainer
 		onscrollTop={(visible) => {
@@ -63,13 +69,18 @@
 		<div class="commit-failed__content">
 			<div class="text-13 commit-failed__description">
 				{#if data.newCommitId}
-					Commit <i class="commit-failed__text-icon"><Icon name="commit" /></i>
-					<Tooltip text={data.commitTitle ? data.commitTitle : "No commit title provided"}
+					{$i18nMessages.t("desktop:CommitFailedModalContent.commit")}
+					<i class="commit-failed__text-icon"><Icon name="commit" /></i>
+					<Tooltip
+						text={data.commitTitle
+							? data.commitTitle
+							: $i18nMessages.t("desktop:detail.398051cab7")}
 						><span class="h-dotted-underline text-semibold">{data.newCommitId.substring(0, 7)}</span
 						></Tooltip
-					> was created, but some changes weren't fully committed:
+					>
+					{$i18nMessages.t("desktop:CommitFailedModalContent.wasCreatedButSomeChangesWerenTFully")}
 				{:else}
-					Commit could not be created because of the following reasons:
+					{$i18nMessages.t("desktop:CommitFailedModalContent.commitCouldNotBeCreatedBecauseOfThe")}
 				{/if}
 			</div>
 
@@ -78,7 +89,16 @@
 					<hr class="commit-failed__reasons-divider" />
 
 					<p class="text-13">
-						Cause: <span class="text-bold">{reasonReadable}</span>
+						{#snippet i18nSlot1(content: import("svelte").Snippet)}<span class="text-bold"
+								>{@render content()}</span
+							>{/snippet}
+						<I18nRichMessage
+							value={{
+								key: "desktop:CommitFailedModalContent.causeValue",
+								values: { reasonReadable: $i18nMessages.text(reasonReadable) },
+							}}
+							components={{ slot1: i18nSlot1 }}
+						/>
 					</p>
 
 					<div class="commit-failed__reason-file-list">

@@ -1,7 +1,9 @@
 <script lang="ts">
+	import { useTranslations } from "@gitbutler/i18n/svelte";
 	import { Icon } from "@gitbutler/ui";
 	import { pxToRem } from "@gitbutler/ui/utils/pxToRem";
 	import type { Snippet } from "svelte";
+	const i18nMessages = useTranslations();
 
 	interface Props {
 		foldable?: boolean;
@@ -44,7 +46,13 @@
 				isOpen = !isOpen;
 			}}
 		>
-			<span class="text-11">{isOpen ? "Fold files" : `Show ${foldedAmount} files`}</span>
+			<span class="text-11"
+				>{isOpen
+					? $i18nMessages.t("desktop:SnapshotSection.foldFiles")
+					: $i18nMessages.t("desktop:SnapshotSection.showFiles", {
+							count: foldedAmount ?? 0,
+						})}</span
+			>
 			<div class="toggle-btn__icon" style="transform: rotate({isOpen ? '180deg' : '0'})">
 				<Icon name="chevron-down" size={14} />
 			</div>

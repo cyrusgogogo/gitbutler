@@ -1,5 +1,6 @@
 import { showToast } from "$lib/notifications/toasts";
 import { InjectionToken } from "@gitbutler/core/context";
+import { message as i18nMessage } from "@gitbutler/i18n";
 import type { IBackend } from "$lib/backend";
 
 const SEPARATOR = "/";
@@ -14,12 +15,8 @@ export default class URLService {
 			await this.backend.openExternalUrl(href);
 		} catch (e) {
 			if (typeof e === "string" || e instanceof String) {
-				const message = `
-                Failed to open link in external browser:
-
-                ${href}
-            `;
-				showToast({ title: "External URL error", message, style: "danger" });
+				const message = i18nMessage("desktop:url.openFailed", { href });
+				showToast({ title: i18nMessage("desktop:url.externalURLError"), message, style: "danger" });
 			}
 
 			// Rethrowing for sentry and posthog

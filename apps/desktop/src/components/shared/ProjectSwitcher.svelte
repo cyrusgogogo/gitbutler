@@ -4,8 +4,10 @@
 	import { PROJECTS_SERVICE } from "$lib/project/projectsService";
 	import { projectPath } from "$lib/routes/routes.svelte";
 	import { inject } from "@gitbutler/core/context";
+	import { useTranslations } from "@gitbutler/i18n/svelte";
 	import { Button, OptionsGroup, Select, SelectItem } from "@gitbutler/ui";
 	import { untrack } from "svelte";
+	const i18nMessages = useTranslations();
 
 	const { projectId }: { projectId?: string } = $props();
 
@@ -31,7 +33,7 @@
 	<Select
 		value={selectedId}
 		options={mappedProjects}
-		label="Switch to another project"
+		label={$i18nMessages.t("desktop:ProjectSwitcher.switchToAnotherProject")}
 		wide
 		onselect={(value) => {
 			selectedId = value;
@@ -64,7 +66,7 @@
 						}
 					}}
 				>
-					Add local repository
+					{$i18nMessages.t("desktop:ProjectSwitcher.addLocalRepository")}
 				</SelectItem>
 			{/if}
 			<SelectItem
@@ -79,7 +81,7 @@
 					}
 				}}
 			>
-				Clone repository
+				{$i18nMessages.t("desktop:ProjectSwitcher.cloneRepository")}
 			</SelectItem>
 		</OptionsGroup>
 	</Select>
@@ -92,7 +94,7 @@
 			if (selectedId) goto(projectPath(selectedId));
 		}}
 	>
-		Open project
+		{$i18nMessages.t("desktop:ProjectSwitcher.openProject")}
 	</Button>
 </div>
 

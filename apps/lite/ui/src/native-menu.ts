@@ -1,10 +1,12 @@
 import type { NativeMenuPopupItem, NativeMenuPosition } from "#electron/ipc.ts";
 import type { MouseEvent as ReactMouseEvent } from "react";
+import type { LocalizedText } from "@gitbutler/i18n";
+import { i18n } from "#ui/i18n.ts";
 
 type NativeMenuAction = () => void | Promise<void>;
 
 export type NativeMenuItemData = {
-	label: string;
+	label: LocalizedText;
 	accelerator?: string;
 	/** Renders the item as a checkbox in the given state. */
 	checked?: boolean;
@@ -42,7 +44,7 @@ const serializeNativeMenuItems = (
 		if (item.submenu) {
 			return {
 				_tag: "Item",
-				label: item.label,
+				label: i18n.text(item.label),
 				accelerator: item.accelerator,
 				enabled: item.enabled,
 				submenu: serializeNativeMenuItems(item.submenu, handlers, nextActionId),
@@ -54,7 +56,7 @@ const serializeNativeMenuItems = (
 
 		return {
 			_tag: "Item",
-			label: item.label,
+			label: i18n.text(item.label),
 			accelerator: item.accelerator,
 			checked: item.checked,
 			enabled: item.enabled,

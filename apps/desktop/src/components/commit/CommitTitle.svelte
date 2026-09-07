@@ -1,6 +1,8 @@
 <script lang="ts">
 	import { splitMessage } from "$lib/commits/commitMessage";
+	import { useTranslations } from "@gitbutler/i18n/svelte";
 	import { TestId, Tooltip } from "@gitbutler/ui";
+	const i18nMessages = useTranslations();
 
 	type Props = {
 		truncate?: boolean;
@@ -17,7 +19,9 @@
 		if (title) {
 			return title;
 		}
-		return editable ? "Empty commit. Drag changes here" : "Empty commit";
+		return editable
+			? $i18nMessages.t("desktop:CommitTitle.detail70dc2de16")
+			: $i18nMessages.t("desktop:CommitTitle.detail81186b7ed");
 	}
 </script>
 

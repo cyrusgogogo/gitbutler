@@ -1,3 +1,4 @@
+import { useTranslations } from "@gitbutler/i18n/react";
 import { classes } from "#ui/components/classes.ts";
 import { FieldControlWithIcon, FieldRootStyles } from "#ui/components/Field.tsx";
 import { Icon } from "#ui/components/Icon.tsx";
@@ -23,51 +24,54 @@ export const ListFilterRow: FC<{
 	onClose: () => void;
 	/** Moves focus down into the filtered list, so a match can be previewed without the mouse. */
 	onEnterList: () => void;
-}> = ({ filter, inputId, subject, onFilterChange, onClose, onEnterList }) => (
-	<Row
-		interactive={false}
-		className={classes(rowStyles.sectionHeader, styles.filterRow)}
-		onKeyDown={(event) => {
-			// Escape closes the filter rather than reaching the sidebar's cancel
-			// shortcut, which has nothing to cancel while the input holds focus.
-			if (event.key === "Escape") {
-				event.preventDefault();
-				event.stopPropagation();
-				onClose();
-				return;
-			}
+}> = ({ filter, inputId, subject, onFilterChange, onClose, onEnterList }) => {
+	const i18nMessages = useTranslations();
+	return (
+		<Row
+			interactive={false}
+			className={classes(rowStyles.sectionHeader, styles.filterRow)}
+			onKeyDown={(event) => {
+				// Escape closes the filter rather than reaching the sidebar's cancel
+				// shortcut, which has nothing to cancel while the input holds focus.
+				if (event.key === "Escape") {
+					event.preventDefault();
+					event.stopPropagation();
+					onClose();
+					return;
+				}
 
-			// Down leaves the input for the list it filters, the way it would step
-			// between rows there. The filter stays open and keeps its query, so the
-			// list can be walked and narrowed in turn.
-			if (event.key === "ArrowDown") {
-				event.preventDefault();
-				event.stopPropagation();
-				onEnterList();
-			}
-		}}
-	>
-		<Field.Root render={<FieldRootStyles />} className={styles.filterField}>
-			<FieldControlWithIcon
-				id={inputId}
-				className="text-13"
-				icon={<Icon name="search" />}
-				aria-label={`Filter ${subject}`}
-				placeholder={`Filter ${subject}`}
-				value={filter}
-				onChange={(event) => onFilterChange(event.currentTarget.value)}
-				// oxlint-disable-next-line jsx_a11y/no-autofocus
-				autoFocus
-			/>
-		</Field.Root>
-
-		<button
-			type="button"
-			aria-label={`Close ${subject} filter`}
-			className={getRowButtonClassName({ size: "regular", iconOnly: true })}
-			onClick={onClose}
+				// Down leaves the input for the list it filters, the way it would step
+				// between rows there. The filter stays open and keeps its query, so the
+				// list can be walked and narrowed in turn.
+				if (event.key === "ArrowDown") {
+					event.preventDefault();
+					event.stopPropagation();
+					onEnterList();
+				}
+			}}
 		>
-			<Icon name="cross" />
-		</button>
-	</Row>
-);
+			<Field.Root render={<FieldRootStyles />} className={styles.filterField}>
+				<FieldControlWithIcon
+					id={inputId}
+					className="text-13"
+					icon={<Icon name="search" />}
+					aria-label={i18nMessages.t("lite:ListFilterRow.filterValue", { subject })}
+					placeholder={i18nMessages.t("lite:ListFilterRow.filterValue", { subject })}
+					value={filter}
+					onChange={(event) => onFilterChange(event.currentTarget.value)}
+					// oxlint-disable-next-line jsx_a11y/no-autofocus
+					autoFocus
+				/>
+			</Field.Root>
+
+			<button
+				type="button"
+				aria-label={i18nMessages.t("lite:ListFilterRow.closeValueFilter", { subject })}
+				className={getRowButtonClassName({ size: "regular", iconOnly: true })}
+				onClick={onClose}
+			>
+				<Icon name="cross" />
+			</button>
+		</Row>
+	);
+};

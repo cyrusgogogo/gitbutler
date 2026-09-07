@@ -1,5 +1,7 @@
 <script lang="ts">
+	import { useTranslations } from "@gitbutler/i18n/svelte";
 	import { onMount } from "svelte";
+	const i18nMessages = useTranslations();
 
 	interface Props {
 		videoUrl: string;
@@ -69,7 +71,7 @@
 	<div class="video-container">
 		<iframe
 			src={embedUrl}
-			title="Demo video"
+			title={$i18nMessages.t("web:VideoOverlay.demoVideo")}
 			frameborder="0"
 			allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
 			allowfullscreen

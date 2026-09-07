@@ -32,15 +32,16 @@
 	import { createCommitSelection } from "$lib/selection/key";
 	import { getStackContext } from "$lib/stacks/stackController.svelte";
 	import { STACK_SERVICE } from "$lib/stacks/stackService.svelte";
-
 	import { UI_STATE, withStackBusy } from "$lib/state/uiState.svelte";
 	import { inject } from "@gitbutler/core/context";
+	import { useTranslations } from "@gitbutler/i18n/svelte";
 	import { TestId } from "@gitbutler/ui";
 	import { DRAG_STATE_SERVICE } from "@gitbutler/ui/drag/dragStateService.svelte";
 	import { focusable } from "@gitbutler/ui/focus/focusable";
 	import { getTimeAgo } from "@gitbutler/ui/utils/timeAgo";
 	import { isDefined } from "@gitbutler/ui/utils/typeguards";
 	import type { Segment } from "@gitbutler/but-sdk";
+	const i18nMessages = useTranslations();
 
 	interface Props {
 		branchName?: string;
@@ -349,7 +350,7 @@
 						}
 					},
 				})}
-				{@const tooltip = commitStatusLabel(commit.state.type)}
+				{@const tooltip = $i18nMessages.text(commitStatusLabel(commit.state.type))}
 				<Dropzone
 					handlers={branchName ? [amendHandler, squashHandler, hunkHandler].filter(isDefined) : []}
 				>
@@ -357,8 +358,8 @@
 						{@const label =
 							handler instanceof AmendCommitWithChangeDzHandler ||
 							handler instanceof AmendCommitWithHunkDzHandler
-								? "Amend"
-								: "Squash"}
+								? $i18nMessages.t("desktop:drag.amend")
+								: $i18nMessages.t("desktop:drag.squash")}
 						<DropzoneOverlay {hovered} {activated} {label} />
 					{/snippet}
 					<div
@@ -367,7 +368,7 @@
 							disabled: false,
 							label: commit.message.split("\n")[0],
 							sha: commit.id.slice(0, 7),
-							date: getTimeAgo(commitCommittedAt(commit)),
+							date: getTimeAgo(commitCommittedAt(commit), true, $i18nMessages.locale),
 							authorImgUrl: undefined,
 							commitType: commit.state.type,
 							data:
@@ -451,7 +452,7 @@
 										{@const firstConflictedCommitId = findEarliestConflict(commits)?.id}
 
 										<ChangedFilesPanel
-											title="Changed files"
+											title={$i18nMessages.t("desktop:BranchCommitList.changedFiles")}
 											{projectId}
 											{stackId}
 											visibleRange={controller.visibleRange}

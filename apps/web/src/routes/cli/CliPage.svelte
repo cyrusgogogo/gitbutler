@@ -5,6 +5,7 @@
 	import Hero from "./sections/Hero.svelte";
 	import OptimizedForAgents from "./sections/OptimizedForAgents.svelte";
 	import Footer from "$lib/components/marketing/Footer.svelte";
+	import I18nRichMessage from "@gitbutler/ui/i18n/RichMessage.svelte";
 </script>
 
 <svelte:head>
@@ -13,9 +14,15 @@
 
 <Hero currentPage="cli">
 	{#snippet descriptionContent()}
-		Agents are 60% faster using GitButler than vanilla Git, with 80% fewer tool calls. Works with
-		any Git repo. Seamlessly fits your workflow. See the benchmark at
-		<a href="https://vcbench.dev/" target="_blank" rel="noopener noreferrer">vcbench.dev</a>.
+		{#snippet i18nSlot1(content: import("svelte").Snippet)}<a
+				href="https://vcbench.dev/"
+				target="_blank"
+				rel="noopener noreferrer">{@render content()}</a
+			>{/snippet}
+		<I18nRichMessage
+			value={{ key: "web:CliPage.agentsAre60FasterUsingGitButlerThanVanilla" }}
+			components={{ slot1: i18nSlot1 }}
+		/>
 	{/snippet}
 </Hero>
 <Features />

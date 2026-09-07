@@ -3,6 +3,7 @@ import type { GUISettings } from "#electron/settings.ts";
 
 // [tag:lite_default_settings]
 export const defaultSettings = {
+	language: "system",
 	autoFetchFrequency: "15 min",
 	autoUpdate: true,
 	commentAnnotations: false,

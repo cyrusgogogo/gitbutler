@@ -2,8 +2,10 @@
 	import ReduxResult from "$components/shared/ReduxResult.svelte";
 	import { STACK_SERVICE } from "$lib/stacks/stackService.svelte";
 	import { inject } from "@gitbutler/core/context";
+	import { useTranslations } from "@gitbutler/i18n/svelte";
 	import { Toggle, Select, SelectItem, TestId } from "@gitbutler/ui";
 	import { type Writable } from "svelte/store";
+	const i18nMessages = useTranslations();
 
 	interface Props {
 		projectId: string;
@@ -51,7 +53,9 @@
 		{#if templates && templates.length > 0}
 			<div class="pr-template__wrap">
 				<label class="pr-template__toggle" for="pr-template-toggle">
-					<span class="text-13 text-semibold">Use template</span>
+					<span class="text-13 text-semibold"
+						>{$i18nMessages.t("desktop:PrTemplateSection.useTemplate")}</span
+					>
 					<Toggle
 						testId={TestId.ReviewTemplateToggle}
 						small
@@ -65,7 +69,7 @@
 					value={$path}
 					options={templates.map((value) => ({ label: value, value }))}
 					placeholder={templates.length > 0
-						? "Choose template"
+						? $i18nMessages.t("desktop:PrTemplateSection.inline736c02c4e")
 						: "No PR templates found ¯\\_(ツ)_/¯"}
 					flex="1"
 					searchable

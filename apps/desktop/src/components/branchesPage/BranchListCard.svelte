@@ -5,11 +5,13 @@
 	import { getPrStatus } from "$lib/forge/interface/prUtils";
 	import { useUserAvatarUrl } from "$lib/user/userAvatar.svelte";
 	import { inject } from "@gitbutler/core/context";
-
+	import { useTranslations } from "@gitbutler/i18n/svelte";
 	import { AvatarGroup, ReviewBadge, SeriesLabelsRow, TestId, TimeAgo } from "@gitbutler/ui";
 	import { gravatarUrlFromEmail } from "@gitbutler/ui/components/avatar/gravatar";
+	import I18nRichMessage from "@gitbutler/ui/i18n/RichMessage.svelte";
 	import type { PullRequest } from "$lib/forge/interface/types";
 	import type { BranchListing, BranchListingDetails, ForgeUnitInfo } from "@gitbutler/but-sdk";
+	const i18nMessages = useTranslations();
 
 	interface Props {
 		reviewUnit: ForgeUnitInfo | undefined;
@@ -114,7 +116,9 @@
 			<SeriesLabelsRow series={filteredStackBranches} />
 			{#if branchListing.stack?.inWorkspace}
 				<div class="sidebar-entry__applied-tag">
-					<span class="text-10 text-semibold">Workspace</span>
+					<span class="text-10 text-semibold"
+						>{$i18nMessages.t("desktop:BranchListCard.workspace")}</span
+					>
 				</div>
 			{/if}
 		</div>
@@ -142,12 +146,20 @@
 			{/each}
 
 			{#if branchListing.hasLocal}
-				<span class="truncate">local</span>
-				<span class="sidebar-entry__divider">•</span>
+				{#snippet i18nSlot2(content: import("svelte").Snippet)}<span class="truncate"
+						>{@render content()}</span
+					>{/snippet}
+				{#snippet i18nSlot3(content: import("svelte").Snippet)}<span class="sidebar-entry__divider"
+						>{@render content()}</span
+					>{/snippet}
+				<I18nRichMessage
+					value={{ key: "desktop:BranchListCard.local" }}
+					components={{ slot2: i18nSlot2, slot3: i18nSlot3 }}
+				/>
 			{/if}
 
 			{#if branchListing.remotes.length === 0 && !branchListing.hasLocal}
-				<span class="truncate">No remotes</span>
+				<span class="truncate">{$i18nMessages.t("desktop:BranchListCard.noRemotes")}</span>
 			{/if}
 		</div>
 	{/snippet}
@@ -156,7 +168,9 @@
 			<span class="truncate">
 				{#if lastCommitDetails}
 					<TimeAgo date={lastCommitDetails.lastCommitAt} addSuffix />
-					by {lastCommitDetails.authorName}
+					{$i18nMessages.t("desktop:BranchListCard.byValue", {
+						authorName: String(lastCommitDetails.authorName),
+					})}
 				{/if}
 			</span>
 

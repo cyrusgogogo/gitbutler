@@ -4,6 +4,7 @@
 	import { type IconName } from "$lib/icons/names";
 	import { clickOutside } from "$lib/utils/clickOutside";
 	import { pxToRem } from "$lib/utils/pxToRem";
+	import { useTranslations } from "@gitbutler/i18n/svelte";
 	import { onMount, tick } from "svelte";
 	import type { Snippet } from "svelte";
 
@@ -43,9 +44,11 @@
 		onkeydown?: (e: KeyboardEvent & { currentTarget: EventTarget & HTMLInputElement }) => void;
 	}
 
+	const translations = useTranslations();
+	const generatedId = $props.id();
 	let {
 		element = $bindable(),
-		id,
+		id = generatedId,
 		testId,
 		type = "text",
 		iconLeft,
@@ -215,6 +218,7 @@
 				<button
 					type="button"
 					class="textbox__count-btn"
+					aria-label={$translations.t("ui:Textbox.decrease")}
 					disabled={disabled || readonly}
 					onclick={() => {
 						if (disabled || readonly) return;
@@ -231,6 +235,7 @@
 				<button
 					type="button"
 					class="textbox__count-btn"
+					aria-label={$translations.t("ui:Textbox.increase")}
 					disabled={disabled || readonly}
 					onclick={() => {
 						if (disabled || readonly) return;
@@ -251,6 +256,9 @@
 			<button
 				type="button"
 				class="textbox__show-hide-icon"
+				aria-label={$translations.t(
+					showPassword ? "ui:Textbox.hidePassword" : "ui:Textbox.showPassword",
+				)}
 				disabled={disabled || readonly}
 				onclick={() => {
 					if (disabled || readonly) return;

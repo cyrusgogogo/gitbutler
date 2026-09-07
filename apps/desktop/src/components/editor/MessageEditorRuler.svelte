@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { UI_STATE } from "$lib/state/uiState.svelte";
 	import { inject } from "@gitbutler/core/context";
-
 	interface Props {
 		monospaceFont?: string;
 	}

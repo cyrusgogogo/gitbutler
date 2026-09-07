@@ -7,10 +7,13 @@
 	import { MODE_SERVICE } from "$lib/mode/modeService";
 	import { toHumanReadableTime } from "$lib/utils/time";
 	import { inject } from "@gitbutler/core/context";
+	import { useTranslations } from "@gitbutler/i18n/svelte";
 	import { Button, Icon, ScrollableContainer, type IconName } from "@gitbutler/ui";
 	import { focusable } from "@gitbutler/ui/focus/focusable";
+	import I18nRichMessage from "@gitbutler/ui/i18n/RichMessage.svelte";
 	import { untrack } from "svelte";
 	import type { Snapshot, SnapshotDetails } from "$lib/history/types";
+	const i18nMessages = useTranslations();
 
 	interface Props {
 		entry: Snapshot;
@@ -35,11 +38,16 @@
 	function getShortSha(sha: string | undefined) {
 		if (!sha) return "";
 
-		return `${sha.slice(0, 7)}`;
+		return $i18nMessages.t("desktop:SnapshotCard.detail5cb90a99f", {
+			value1: String(sha.slice(0, 7)),
+		});
 	}
 
 	function createdOnDayAndTime(epochMs: number) {
-		return `${createdOnDay(epochMs)}, ${toHumanReadableTime(new Date(epochMs))}`;
+		return $i18nMessages.t("desktop:SnapshotCard.detail73ed1c8c5", {
+			value1: String(createdOnDay(epochMs, $i18nMessages.locale)),
+			value2: String(toHumanReadableTime(new Date(epochMs), $i18nMessages.locale)),
+		});
 	}
 
 	function camelToTitleCase(str: string | undefined) {
@@ -68,7 +76,12 @@
 		switch (snapshotDetails.operation) {
 			// REMOVE
 			case "DeleteBranch":
-				return { text: `Delete branch "${entryTrailer("name")}"`, icon: "cross" };
+				return {
+					text: $i18nMessages.t("desktop:SnapshotCard.detail5c98e4552", {
+						value1: String(entryTrailer("name")),
+					}),
+					icon: "cross",
+				};
 			case "DiscardLines":
 			case "DiscardHunk":
 			case "DiscardFile":
@@ -76,14 +89,21 @@
 
 			// ADD
 			case "CreateBranch":
-				return { text: `Create branch "${trailer("name")}"`, icon: "plus" };
+				return {
+					text: $i18nMessages.t("desktop:SnapshotCard.detail5a3a06529", {
+						value1: String(trailer("name")),
+					}),
+					icon: "plus",
+				};
 			case "CreateCommit":
 			case "InsertBlankCommit":
 				return {
 					text:
 						snapshotDetails.operation === "CreateCommit"
-							? `Create commit ${getShortSha(entryTrailer("sha"))}`
-							: "Insert blank commit",
+							? $i18nMessages.t("desktop:SnapshotCard.detailb6d3f8a5c", {
+									value1: String(getShortSha(entryTrailer("sha"))),
+								})
+							: $i18nMessages.t("desktop:SnapshotCard.detail7668fa745"),
 					icon: "plus",
 					commitMessage: entryTrailer("message"),
 				};
@@ -91,43 +111,67 @@
 			// EDIT
 			case "UpdateBranchName":
 				return {
-					text: `Renamed branch "${trailer("previous_name", "before")}" to "${trailer("name", "after")}"`,
+					text: $i18nMessages.t("desktop:SnapshotCard.detailb6be86e66", {
+						value1: String(trailer("previous_name", "before")),
+						value2: String(trailer("name", "after")),
+					}),
 					icon: "edit",
 				};
 			case "UpdateBranchRemoteName":
 				return {
-					text: `Update branch remote name "${trailer("before")}" to "${trailer("after")}"`,
+					text: $i18nMessages.t("desktop:SnapshotCard.detail01a1edc9a", {
+						value1: String(trailer("before")),
+						value2: String(trailer("after")),
+					}),
 					icon: "edit",
 				};
 			case "AmendCommit":
-				return { text: "Amend commit", icon: "edit" };
+				return { text: $i18nMessages.t("desktop:SnapshotCard.detail1af5edc91"), icon: "edit" };
 			case "UpdateCommitMessage":
-				return { text: "Update commit message", icon: "edit" };
+				return { text: $i18nMessages.t("desktop:SnapshotCard.detail09bcb2a3e"), icon: "edit" };
 			case "EnterEditMode":
-				return { text: "Enter Edit Mode", icon: "edit" };
+				return { text: $i18nMessages.t("desktop:SnapshotCard.detail7138a62fb"), icon: "edit" };
 
 			// BRANCH
 			case "ApplyBranch":
-				return { text: `Apply branch "${entryTrailer("name")}"`, icon: "branch" };
+				return {
+					text: $i18nMessages.t("desktop:SnapshotCard.detailef19c4063", {
+						value1: String(entryTrailer("name")),
+					}),
+					icon: "branch",
+				};
 			case "UnapplyBranch":
-				return { text: `Unapply branch "${trailer("branch")}"`, icon: "branch" };
+				return {
+					text: $i18nMessages.t("desktop:SnapshotCard.detail31ced2b8b", {
+						value1: String(trailer("branch")),
+					}),
+					icon: "branch",
+				};
 			case "SwitchBranch":
-				return { text: `Switch branch`, icon: "branch" };
+				return { text: $i18nMessages.t("desktop:SnapshotCard.detail693400c29"), icon: "branch" };
 			case "SwitchToWorkspace":
-				return { text: `Switch to workspace`, icon: "branch" };
+				return { text: $i18nMessages.t("desktop:SnapshotCard.detaile78af8291"), icon: "branch" };
 			case "ReorderBranches":
 				return {
-					text: `Reorder branches "${trailer("before")}" and "${trailer("after")}"`,
+					text: $i18nMessages.t("desktop:SnapshotCard.detaild4fbd935c", {
+						value1: String(trailer("before")),
+						value2: String(trailer("after")),
+					}),
 					icon: "branch",
 				};
 			case "SelectDefaultVirtualBranch":
-				return { text: `Select default virtual branch "${trailer("after")}"`, icon: "branch" };
+				return {
+					text: $i18nMessages.t("desktop:SnapshotCard.detailf30a3bb4f", {
+						value1: String(trailer("after")),
+					}),
+					icon: "branch",
+				};
 			case "SetBaseBranch":
-				return { text: "Set base branch", icon: "branch" };
+				return { text: $i18nMessages.t("desktop:SnapshotCard.detail1b1ee22b9"), icon: "branch" };
 			case "GenericBranchUpdate":
-				return { text: "Generic branch update", icon: "branch" };
+				return { text: $i18nMessages.t("desktop:SnapshotCard.detailafdb0c9a9"), icon: "branch" };
 			case "SplitBranch":
-				return { text: "Split branch", icon: "branch" };
+				return { text: $i18nMessages.t("desktop:SnapshotCard.detailde214d5b9"), icon: "branch" };
 			case "MoveBranch":
 			case "TearOffBranch":
 				return { text: camelToTitleCase(snapshotDetails.operation), icon: "branch" };
@@ -135,48 +179,65 @@
 			// COMMIT
 			case "UndoCommit":
 				return {
-					text: `Undo commit ${getShortSha(entryTrailer("sha"))}`,
+					text: $i18nMessages.t("desktop:SnapshotCard.detail3c5094196", {
+						value1: String(getShortSha(entryTrailer("sha"))),
+					}),
 					icon: "undo",
 					commitMessage: entryTrailer("message"),
 				};
 			case "DiscardCommit":
 				return {
-					text: `Discard commit ${getShortSha(entryTrailer("sha"))}`,
+					text: $i18nMessages.t("desktop:SnapshotCard.detail7b15a9d0c", {
+						value1: String(getShortSha(entryTrailer("sha"))),
+					}),
 					icon: "cross",
 					commitMessage: entryTrailer("message"),
 				};
 			case "SquashCommit":
-				return { text: "Squash commit", icon: "commit-arrow-down" };
+				return {
+					text: $i18nMessages.t("desktop:SnapshotCard.detail9bde37f7e"),
+					icon: "commit-arrow-down",
+				};
 			case "MoveCommit":
 			case "ReorderCommit":
 				return { text: camelToTitleCase(snapshotDetails.operation), icon: "commit" };
 			case "MoveCommitFile":
-				return { text: "Move commit file", icon: "commit" };
+				return { text: $i18nMessages.t("desktop:SnapshotCard.detaila9be6a1be"), icon: "commit" };
 			case "Absorb":
-				return { text: "Absorb changes into commit", icon: "commit-absorb" };
+				return {
+					text: $i18nMessages.t("desktop:SnapshotCard.detail178e0da92"),
+					icon: "commit-absorb",
+				};
 			case "AutoCommit":
-				return { text: "Auto commit changes", icon: "commit-ai" };
+				return { text: $i18nMessages.t("desktop:SnapshotCard.detailefb03ce8d"), icon: "commit-ai" };
 
 			// FILE
 			case "MoveHunk":
-				return { text: `Move hunk to "${entryTrailer("name")}"`, icon: "file" };
+				return {
+					text: $i18nMessages.t("desktop:SnapshotCard.detail33986a00d", {
+						value1: String(entryTrailer("name")),
+					}),
+					icon: "file",
+				};
 			case "FileChanges":
-				return { text: "File changes", icon: "file" };
+				return { text: $i18nMessages.t("desktop:SnapshotCard.detail663da9347"), icon: "file" };
 
 			// OTHER
 			case "MergeUpstream":
-				return { text: "Merge upstream", icon: "pr-tick" };
+				return { text: $i18nMessages.t("desktop:SnapshotCard.detailf1f7438f7"), icon: "pr-tick" };
 			case "UpdateWorkspaceBase":
-				return { text: "Update workspace base", icon: "refresh" };
+				return { text: $i18nMessages.t("desktop:SnapshotCard.detail3358924f1"), icon: "refresh" };
 			case "RestoreFromSnapshot":
 			case "RestoreFromSnapshotViaUndo":
 			case "RestoreFromSnapshotViaRedo":
-				return { text: "Revert snapshot" };
+				return { text: $i18nMessages.t("desktop:SnapshotCard.detail50448d1e0") };
 			case "OnDemandSnapshot":
 				return {
 					text: snapshotDetails.body
-						? `Manual snapshot: ${snapshotDetails.body}`
-						: "Manual snapshot",
+						? $i18nMessages.t("desktop:SnapshotCard.detailbfa29883c", {
+								value1: String(snapshotDetails.body),
+							})
+						: $i18nMessages.t("desktop:SnapshotCard.detail54ff1f896"),
 					icon: "camera",
 				};
 			default:
@@ -213,16 +274,16 @@
 			<Button
 				size="tag"
 				kind="outline"
-				tooltip="Restores GitButler and your files to the state before this operation. Revert actions can also be undone."
+				tooltip={$i18nMessages.t("desktop:SnapshotCard.restoresGitButlerAndYourFilesToTheState")}
 				onclick={() => {
 					onRestoreClick();
 				}}
 				disabled={restoring || mode.response?.type !== "OpenWorkspace"}
-				loading={restoring}>Revert</Button
+				loading={restoring}>{$i18nMessages.t("desktop:SnapshotCard.revert")}</Button
 			>
 		</div>
 		<span class="snapshot-time text-11">
-			{toHumanReadableTime(new Date(entry.createdAt))}
+			{toHumanReadableTime(new Date(entry.createdAt), $i18nMessages.locale)}
 		</span>
 	</div>
 
@@ -243,8 +304,15 @@
 
 			{#if operation.commitMessage}
 				<p class="text-12 text-body snapshot-commit-message">
-					<span>Message:</span>
-					{operation.commitMessage}
+					{#snippet i18nSlot1(content: import("svelte").Snippet)}<span>{@render content()}</span
+						>{/snippet}
+					<I18nRichMessage
+						value={{
+							key: "desktop:SnapshotCard.messageValue",
+							values: { commitMessage: String(operation.commitMessage) },
+						}}
+						components={{ slot1: i18nSlot1 }}
+					/>
 				</p>
 			{/if}
 		</div>

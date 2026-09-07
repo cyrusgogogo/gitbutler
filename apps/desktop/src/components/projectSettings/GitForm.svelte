@@ -8,8 +8,10 @@
 	import { projectLandDirectly } from "$lib/config/config";
 	import { PROJECTS_SERVICE } from "$lib/project/projectsService";
 	import { inject } from "@gitbutler/core/context";
+	import { useTranslations } from "@gitbutler/i18n/svelte";
 	import { CardGroup, Spacer, Toggle } from "@gitbutler/ui";
 	import type { Project } from "$lib/project/project";
+	const i18nMessages = useTranslations();
 
 	const { projectId }: { projectId: string } = $props();
 	const projectsService = inject(PROJECTS_SERVICE);
@@ -26,12 +28,10 @@
 	<CardGroup>
 		<CardGroup.Item labelFor="landDirectly">
 			{#snippet title()}
-				Land branches directly
+				{$i18nMessages.t("desktop:GitForm.landBranchesDirectly")}
 			{/snippet}
 			{#snippet caption()}
-				Replace the "Create PR" button with a "Land" button that integrates the branch straight into
-				the target branch, without opening a pull request. Shown on the bottom branch of a stack;
-				works without a forge integration.
+				{$i18nMessages.t("desktop:GitForm.replaceTheCreatePRButtonWithALand")}
 			{/snippet}
 			{#snippet actions()}
 				<Toggle id="landDirectly" bind:checked={$landDirectly} />
@@ -52,11 +52,10 @@
 			<CardGroup>
 				<CardGroup.Item labelFor="forcePushProtection">
 					{#snippet title()}
-						Force push protection
+						{$i18nMessages.t("desktop:GitForm.forcePushProtection")}
 					{/snippet}
 					{#snippet caption()}
-						Protect remote commits during force pushes. This will use Git's safer force push flags
-						to avoid overwriting remote commit history.
+						{$i18nMessages.t("desktop:GitForm.protectRemoteCommitsDuringForcePushesThisWill")}
 					{/snippet}
 					{#snippet actions()}
 						<Toggle

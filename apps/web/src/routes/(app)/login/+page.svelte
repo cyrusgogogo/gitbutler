@@ -3,17 +3,21 @@
 	import OAuthButtons from "$lib/components/auth/OAuthButtons.svelte";
 	import FullscreenIllustrationCard from "$lib/components/service/FullscreenIllustrationCard.svelte";
 	import { inject } from "@gitbutler/core/context";
+	import { message as i18nMessage, type LocalizedText } from "@gitbutler/i18n";
+	import { useTranslations } from "@gitbutler/i18n/svelte";
 	import { LOGIN_SERVICE } from "@gitbutler/shared/login/loginService";
 	import { WEB_ROUTES_SERVICE } from "@gitbutler/shared/routing/webRoutes.svelte";
 	import { Button, EmailTextbox, Textbox, InfoMessage } from "@gitbutler/ui";
+	import I18nRichMessage from "@gitbutler/ui/i18n/RichMessage.svelte";
 	import { env } from "$env/dynamic/public";
+	const i18nMessages = useTranslations();
 
 	let email = $state<string>();
 	let password = $state<string>();
 
 	let emailTextbox: any = $state();
 
-	let error = $state<string>();
+	let error = $state<LocalizedText>();
 	let errorCode = $state<string>();
 	let confirmationSent = $state<boolean>(false);
 	let resendCountdown = $state<number>(0);
@@ -73,7 +77,7 @@
 
 	async function resendConfirmationEmail() {
 		if (!email) {
-			error = "Please enter your email to resend the confirmation email.";
+			error = i18nMessage("web:detail.6fe3a38166");
 			return;
 		}
 
@@ -99,39 +103,42 @@
 </script>
 
 <svelte:head>
-	<title>GitButler | Login</title>
+	<title>{$i18nMessages.t("web:page.gitButlerLogin")}</title>
 </svelte:head>
 
 <RedirectIfLoggedIn />
 
 <FullscreenIllustrationCard>
 	{#snippet title()}
-		<i>Login</i>
-		to GitButler
+		{#snippet i18nSlot1(content: import("svelte").Snippet)}<i>{@render content()}</i>{/snippet}
+		<I18nRichMessage
+			value={{ key: "web:page.loginToGitButler" }}
+			components={{ slot1: i18nSlot1 }}
+		/>
 	{/snippet}
 
 	<div id="login-form" class="stack-v">
 		<div class="auth-form__inputs">
 			<EmailTextbox
 				bind:this={emailTextbox}
-				label="Email"
+				label={$i18nMessages.t("web:page.email")}
 				placeholder=" "
 				bind:value={email}
 				autocomplete={false}
 				autocorrect={false}
 				spellcheck
 			/>
-			<Textbox bind:value={password} label="Password" type="password" />
+			<Textbox bind:value={password} label={$i18nMessages.t("web:page.password")} type="password" />
 
 			<div class="text-12 password-reset">
-				<a href={routesService.resetPasswordPath()}>Forgot password?</a>
+				<a href={routesService.resetPasswordPath()}>{$i18nMessages.t("web:page.forgotPassword")}</a>
 			</div>
 		</div>
 
 		{#if confirmationSent}
 			<InfoMessage filled outlined={false} style="success" class="m-b-16">
 				{#snippet content()}
-					<p>Confirmation email sent! Please check your inbox.</p>
+					<p>{$i18nMessages.t("web:page.confirmationEmailSentPleaseCheckYourInbox")}</p>
 				{/snippet}
 			</InfoMessage>
 		{:else if error}
@@ -141,30 +148,34 @@
 						{#if errorCode === "email_not_verified"}
 							{#if !resendDisabled}
 								<p>
-									Verify your email before logging in. Check your inbox or <button
+									{$i18nMessages.t("web:page.verifyYourEmailBeforeLoggingInCheckYour")}
+									<button
 										type="button"
 										class="resend-btn"
 										onclick={resendConfirmationEmail}
 										disabled={!email || resendDisabled}
 									>
-										resend the confirmation email</button
+										{$i18nMessages.t("web:page.resendTheConfirmationEmail")}</button
 									>.
 								</p>
 							{:else}
 								<p>
-									Verify your email before logging in. You can resend the confirmation email in {resendCountdown}
-									seconds.
+									{$i18nMessages.t("web:page.verifyYourEmailBeforeLoggingInYouCan", {
+										resendCountdown: String(resendCountdown),
+									})}
 								</p>
 							{/if}
 						{:else}
-							<p>{error}</p>
+							<p>{$i18nMessages.text(error ?? "")}</p>
 						{/if}
 					{/snippet}
 				</InfoMessage>
 			</div>
 		{/if}
 
-		<Button style="pop" disabled={!isFormValid} onclick={handleSubmit}>Log in</Button>
+		<Button style="pop" disabled={!isFormValid} onclick={handleSubmit}
+			>{$i18nMessages.t("web:page.logIn")}</Button
+		>
 
 		<OAuthButtons mode="signup" />
 	</div>
@@ -172,7 +183,13 @@
 	{#snippet footer()}
 		<div class="auth-form__footer">
 			<p>
-				Don't have an account? <a href={routesService.signupPath()}>Sign Up</a>
+				{#snippet i18nSlot3(content: import("svelte").Snippet)}<a href={routesService.signupPath()}
+						>{@render content()}</a
+					>{/snippet}
+				<I18nRichMessage
+					value={{ key: "web:page.donTHaveAnAccountSignUp" }}
+					components={{ slot3: i18nSlot3 }}
+				/>
 			</p>
 		</div>
 	{/snippet}

@@ -4,7 +4,9 @@
 	import { getProjectByRepositoryId } from "$lib/organizations/projectsPreview.svelte";
 	import { ShareLevel } from "$lib/permissions";
 	import { inject } from "@gitbutler/core/context";
+	import { useTranslations } from "@gitbutler/i18n/svelte";
 	import { ContextMenuItem, ContextMenuSection, DropdownButton } from "@gitbutler/ui";
+	const i18nMessages = useTranslations();
 
 	type Props = {
 		repositoryId: string;
@@ -16,20 +18,20 @@
 
 	const project = $derived(getProjectByRepositoryId(repositoryId));
 
-	const options = [
+	const options = $derived([
 		{
-			label: "Private",
+			label: $i18nMessages.t("shared:PermissionsSelector.private"),
 			key: ShareLevel.Private,
 		},
 		{
-			label: "Unlisted",
+			label: $i18nMessages.t("shared:PermissionsSelector.unlisted"),
 			key: ShareLevel.Unlisted,
 		},
 		{
-			label: "Public",
+			label: $i18nMessages.t("shared:PermissionsSelector.public"),
 			key: ShareLevel.Public,
 		},
-	];
+	]);
 
 	async function updatePermission(shareLevel: ShareLevel) {
 		dropDownEnabled = false;

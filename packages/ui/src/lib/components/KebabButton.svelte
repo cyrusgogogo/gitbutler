@@ -3,7 +3,9 @@
 	import ContextMenu from "$components/ContextMenu.svelte";
 	import Icon from "$components/Icon.svelte";
 	import { type IconName } from "$lib/icons/names";
+	import { useTranslations } from "@gitbutler/i18n/svelte";
 	import type { Snippet } from "svelte";
+	const i18nMessages = useTranslations();
 
 	interface Props {
 		showOnHover?: boolean;
@@ -111,7 +113,7 @@
 		onclick={onClick}
 		oncontextmenu={onContextMenu}
 		data-testid={testId}
-		aria-label="Open context menu"
+		aria-label={$i18nMessages.t("ui:KebabButton.openContextMenu")}
 	>
 		<Icon name={icon} size={14} />
 	</button>

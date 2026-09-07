@@ -1,9 +1,11 @@
 <script lang="ts">
 	import { splitDiffIntoHunks } from "$lib/diffParsing";
+	import { useTranslations } from "@gitbutler/i18n/svelte";
 	import { isLockfile } from "@gitbutler/shared/lockfiles";
 	import { getFilePathInfo } from "@gitbutler/shared/utils/file";
 	import { Button, FileIcon, HunkDiff } from "@gitbutler/ui";
 	import type { DiffSection } from "@gitbutler/shared/patches/types";
+	const i18nMessages = useTranslations();
 
 	interface Props {
 		section: DiffSection;
@@ -88,9 +90,11 @@
 	<div class="diff-section__content">
 		{#if lockFile && !displayLockHunks}
 			<div class="lock-files-hidden-by-default">
-				<p class="text-12 hidden-lock-file-message">Lock files are hidden by default</p>
+				<p class="text-12 hidden-lock-file-message">
+					{$i18nMessages.t("web:DiffSection.lockFilesAreHiddenByDefault")}
+				</p>
 				<Button kind="outline" icon="eye" onclick={() => (displayLockHunks = true)}
-					>Show diff</Button
+					>{$i18nMessages.t("web:DiffSection.showDiff")}</Button
 				>
 			</div>
 		{:else}

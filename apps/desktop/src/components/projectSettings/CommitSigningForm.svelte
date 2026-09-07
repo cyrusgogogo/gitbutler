@@ -4,6 +4,7 @@
 	import { GIT_CONFIG_SERVICE } from "$lib/config/gitConfigService";
 	import { GIT_SERVICE } from "$lib/git/gitService";
 	import { inject } from "@gitbutler/core/context";
+	import { useTranslations } from "@gitbutler/i18n/svelte";
 	import {
 		Button,
 		CardGroup,
@@ -14,6 +15,8 @@
 		Textbox,
 		Toggle,
 	} from "@gitbutler/ui";
+	import I18nRichMessage from "@gitbutler/ui/i18n/RichMessage.svelte";
+	const i18nMessages = useTranslations();
 
 	const { projectId }: { projectId: string } = $props();
 
@@ -25,20 +28,20 @@
 		await gitConfig.setGbConfig(projectId, { signCommits: targetState });
 	}
 
-	const signingFormatOptions = [
+	const signingFormatOptions = $derived([
 		{
 			label: "GPG",
 			value: "openpgp",
-			keyPlaceholder: "ex: 723CCA3AC13CF28D",
-			programPlaceholder: "ex: /usr/local/bin/gpg",
+			keyPlaceholder: $i18nMessages.t("desktop:CommitSigningForm.staticd74e3fab2"),
+			programPlaceholder: $i18nMessages.t("desktop:CommitSigningForm.static58ad627fb"),
 		},
 		{
 			label: "SSH",
 			value: "ssh",
-			keyPlaceholder: "ex: /Users/bob/.ssh/id_rsa.pub",
-			programPlaceholder: "ex: /Applications/1Password.app/Contents/MacOS/op-ssh-sign",
+			keyPlaceholder: $i18nMessages.t("desktop:CommitSigningForm.static9dd81922f"),
+			programPlaceholder: $i18nMessages.t("desktop:CommitSigningForm.static9d4686fd4"),
 		},
-	] as const;
+	] as const);
 
 	const selectedOption = $derived(
 		signingFormatOptions.find((option) => option.value === signingFormat),
@@ -99,13 +102,15 @@
 	<CardGroup>
 		<CardGroup.Item labelFor="signCommits">
 			{#snippet title()}
-				Sign commits
+				{$i18nMessages.t("desktop:CommitSigningForm.signCommits")}
 			{/snippet}
 			{#snippet caption()}
-				Use GPG or SSH to sign your commits so they can be verified as authentic.
-				<br />
-				GitButler will sign commits as per your git configuration, but evaluates
-				<code class="code-string">gitbutler.signCommits</code> with priority.
+				{#snippet i18nSlot1()}<br />{/snippet}
+				{#snippet i18nSlot2()}<code class="code-string">gitbutler.signCommits</code>{/snippet}
+				<I18nRichMessage
+					value={{ key: "desktop:CommitSigningForm.useGPGOrSSHToSignYourCommits" }}
+					components={{ slot1: i18nSlot1, slot2: i18nSlot2 }}
+				/>
 			{/snippet}
 			{#snippet actions()}
 				<Toggle id="signCommits" checked={signCommits} onclick={handleSignCommitsClick} />
@@ -119,7 +124,7 @@
 					value={signingFormat}
 					options={signingFormatOptions}
 					wide
-					label="Signing format"
+					label={$i18nMessages.t("desktop:CommitSigningForm.signingFormat")}
 					onselect={(value: string) => {
 						signingFormat = value;
 						updateSigningInfo();
@@ -133,7 +138,7 @@
 				</Select>
 
 				<Textbox
-					label="Signing key"
+					label={$i18nMessages.t("desktop:CommitSigningForm.signingKey")}
 					bind:value={signingKey}
 					required
 					onchange={updateSigningInfo}
@@ -141,7 +146,7 @@
 				/>
 
 				<Textbox
-					label="Signing program (optional)"
+					label={$i18nMessages.t("desktop:CommitSigningForm.signingProgramOptional")}
 					bind:value={signingProgram}
 					onchange={updateSigningInfo}
 					placeholder={programPlaceholder}
@@ -156,11 +161,11 @@
 					>
 						{#snippet title()}
 							{#if loading}
-								<p>Checking signing</p>
+								<p>{$i18nMessages.t("desktop:CommitSigningForm.checkingSigning")}</p>
 							{:else if signCheckResult}
-								<p>Signing is working correctly</p>
+								<p>{$i18nMessages.t("desktop:CommitSigningForm.signingIsWorkingCorrectly")}</p>
 							{:else}
-								<p>Signing is not working correctly</p>
+								<p>{$i18nMessages.t("desktop:CommitSigningForm.signingIsNotWorkingCorrectly")}</p>
 							{/if}
 						{/snippet}
 					</InfoMessage>
@@ -168,17 +173,17 @@
 
 				<Button style="pop" wide icon="tick" onclick={checkSigning}>
 					{#if !checked}
-						Test signing
+						{$i18nMessages.t("desktop:CommitSigningForm.testSigning")}
 					{:else}
-						Re-test signing
+						{$i18nMessages.t("desktop:CommitSigningForm.reTestSigning")}
 					{/if}
 				</Button>
 				<SectionCardDisclaimer>
-					Signing commits can allow other people to verify your commits if you publish the public
-					version of your signing key.
+					{$i18nMessages.t("desktop:CommitSigningForm.signingCommitsCanAllowOtherPeopleToVerify")}
 					<Link href="https://docs.gitbutler.com/features/virtual-branches/signing-commits"
-						>Read more</Link
-					> about commit signing and verification.
+						>{$i18nMessages.t("desktop:CommitSigningForm.readMore")}</Link
+					>
+					{$i18nMessages.t("desktop:CommitSigningForm.aboutCommitSigningAndVerification")}
 				</SectionCardDisclaimer>
 			</CardGroup.Item>
 		</CardGroup>

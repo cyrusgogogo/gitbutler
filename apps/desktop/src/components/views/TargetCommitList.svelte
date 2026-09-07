@@ -10,10 +10,11 @@
 	import { UI_STATE } from "$lib/state/uiState.svelte";
 	import { type UpstreamCommit } from "@gitbutler/but-sdk";
 	import { inject } from "@gitbutler/core/context";
-
+	import { useTranslations } from "@gitbutler/i18n/svelte";
 	import VirtualList from "@gitbutler/ui/components/VirtualList.svelte";
 	import { getColorFromBranchType } from "@gitbutler/ui/utils/getColorFromBranchType";
 	import { onMount } from "svelte";
+	const i18nMessages = useTranslations();
 
 	type Props = {
 		projectId: string;
@@ -112,7 +113,7 @@
 									<ReduxResult {projectId} result={changesQuery.result}>
 										{#snippet children(changesResult)}
 											<ChangedFilesPanel
-												title="Changed files"
+												title={$i18nMessages.t("desktop:TargetCommitList.changedFiles")}
 												{projectId}
 												draggableFiles
 												selectionId={createCommitSelection({ commitId: commit.id })}

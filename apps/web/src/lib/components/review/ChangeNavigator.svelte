@@ -1,5 +1,7 @@
 <script lang="ts">
+	import { useTranslations } from "@gitbutler/i18n/svelte";
 	import { Button } from "@gitbutler/ui";
+	const i18nMessages = useTranslations();
 
 	interface Props {
 		goToPatch: (patchId: string) => void;
@@ -34,7 +36,10 @@
 		icon="chevron-left"
 	></Button>
 	<div class="indicator text-12 text-semibold">
-		Commit {patchIds?.length - index}/{patchIds?.length}
+		{$i18nMessages.t("web:ChangeNavigator.commitValueValue", {
+			value: String(patchIds?.length - index),
+			value2: String(patchIds?.length),
+		})}
 	</div>
 	<Button
 		disabled={!nextPatchId}

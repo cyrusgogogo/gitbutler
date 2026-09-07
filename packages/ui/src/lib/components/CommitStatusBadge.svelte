@@ -11,6 +11,8 @@
 <script lang="ts">
 	import Icon from "$components/Icon.svelte";
 	import { type IconName } from "$lib/icons/names";
+	import { useTranslations } from "@gitbutler/i18n/svelte";
+	const i18nMessages = useTranslations();
 
 	type Props = {
 		status: CommitStatusType;
@@ -64,17 +66,17 @@
 	<div class={statusClasses("text")}>
 		<span class="text-10 text-bold status-badge__text">
 			{#if status === "closed"}
-				Closed
+				{$i18nMessages.t("ui:CommitStatusBadge.closed")}
 			{:else if status === "loading"}
-				Processing
+				{$i18nMessages.t("ui:CommitStatusBadge.processing")}
 			{:else if status === "changes-requested"}
-				Changes requested
+				{$i18nMessages.t("ui:CommitStatusBadge.changesRequested")}
 			{:else if status === "approved"}
-				Approved
+				{$i18nMessages.t("ui:CommitStatusBadge.approved")}
 			{:else if status === "in-discussion"}
-				In discussion
+				{$i18nMessages.t("ui:CommitStatusBadge.inDiscussion")}
 			{:else}
-				Unreviewed
+				{$i18nMessages.t("ui:CommitStatusBadge.unreviewed")}
 			{/if}
 		</span>
 	</div>

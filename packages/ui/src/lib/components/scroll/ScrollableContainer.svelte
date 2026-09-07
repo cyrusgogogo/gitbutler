@@ -36,7 +36,6 @@
 	import { passiveScroll } from "$lib/utils/scroll";
 	import { onDestroy } from "svelte";
 	import type { Snippet } from "svelte";
-
 	let {
 		maxHeight,
 		initiallyVisible,

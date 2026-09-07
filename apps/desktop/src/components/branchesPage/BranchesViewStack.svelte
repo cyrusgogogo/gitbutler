@@ -5,6 +5,8 @@
 	import { getColorFromPushStatus } from "$lib/stacks/stack";
 	import { STACK_SERVICE } from "$lib/stacks/stackService.svelte";
 	import { inject } from "@gitbutler/core/context";
+	import { useTranslations } from "@gitbutler/i18n/svelte";
+	const i18nMessages = useTranslations();
 
 	type Props = {
 		projectId: string;
@@ -36,7 +38,7 @@
 <ReduxResult result={stackQuery.result} {projectId} {stackId} {onerror}>
 	{#snippet children(stack, { stackId, projectId })}
 		{#if stack === null}
-			<p>Stack not found.</p>
+			<p>{$i18nMessages.t("desktop:BranchesViewStack.stackNotFound")}</p>
 		{:else}
 			{#each stack.segments as segment, idx}
 				{@const branchName = segment.refName?.displayName}

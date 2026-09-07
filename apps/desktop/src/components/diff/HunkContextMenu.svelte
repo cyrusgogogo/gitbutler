@@ -20,9 +20,11 @@
 	import { STACK_SERVICE } from "$lib/stacks/stackService.svelte";
 	import { UI_STATE } from "$lib/state/uiState.svelte";
 	import { inject } from "@gitbutler/core/context";
+	import { useTranslations } from "@gitbutler/i18n/svelte";
 	import { ContextMenu, ContextMenuItem, ContextMenuSection, TestId } from "@gitbutler/ui";
 	import type { TreeChange } from "@gitbutler/but-sdk";
 	import type { LineId } from "@gitbutler/ui/utils/diffParsing";
+	const i18nMessages = useTranslations();
 
 	interface Props {
 		trigger: HTMLElement | undefined;
@@ -66,7 +68,9 @@
 		const { selectedLines } = item;
 
 		if (selectedLines !== undefined && selectedLines.length > 0)
-			return `Discard ${selectedLines.length} selected lines`;
+			return $i18nMessages.t("desktop:HunkContextMenu.detailb9cb10e7f", {
+				value1: String(selectedLines.length),
+			});
 
 		return "";
 	}
@@ -165,7 +169,7 @@
 				<ContextMenuSection>
 					<ContextMenuItem
 						testId={TestId.HunkContextMenu_DiscardChange}
-						label="Discard change"
+						label={$i18nMessages.t("desktop:HunkContextMenu.discardChange")}
 						icon="bin"
 						onclick={() => {
 							discardHunk(item);
@@ -189,7 +193,7 @@
 				<ContextMenuSection>
 					<ContextMenuItem
 						testId={TestId.HunkContextMenu_UncommitChange}
-						label="Uncommit change"
+						label={$i18nMessages.t("desktop:HunkContextMenu.uncommitChange")}
 						icon="commit-undo"
 						onclick={async () => {
 							uncommitHunk(item);
@@ -201,7 +205,9 @@
 			<ContextMenuSection>
 				<ContextMenuItem
 					testId={TestId.HunkContextMenu_OpenInEditor}
-					label="Open in {defaultCodeEditor.current.displayName}"
+					label={$i18nMessages.t("desktop:HunkContextMenu.openInValue", {
+						displayName: String(defaultCodeEditor.current.displayName),
+					})}
 					icon="open-in-ide"
 					onclick={async () => {
 						const project = await projectService.fetchProject(projectId);
@@ -225,7 +231,7 @@
 				<ContextMenuSection>
 					<ContextMenuItem
 						testId={TestId.HunkContextMenu_SelectAll}
-						label="Select all"
+						label={$i18nMessages.t("desktop:HunkContextMenu.selectAll")}
 						icon="select-all"
 						onclick={() => {
 							selectAllHunkLines(item.hunk);
@@ -234,7 +240,7 @@
 					/>
 					<ContextMenuItem
 						testId={TestId.HunkContextMenu_UnselectAll}
-						label="Unselect all"
+						label={$i18nMessages.t("desktop:HunkContextMenu.unselectAll")}
 						icon="select-all-remove"
 						onclick={() => {
 							unselectAllHunkLines(item.hunk);
@@ -243,7 +249,7 @@
 					/>
 					<ContextMenuItem
 						testId={TestId.HunkContextMenu_InvertSelection}
-						label="Invert selection"
+						label={$i18nMessages.t("desktop:HunkContextMenu.invertSelection")}
 						icon="select-all-inverse"
 						onclick={() => {
 							invertHunkSelection(item.hunk);
@@ -253,7 +259,9 @@
 				</ContextMenuSection>
 			{/if}
 		{:else}
-			<p class="text-12 text-semibold clr-text-2">Malformed item (·•᷄‎ࡇ•᷅ )</p>
+			<p class="text-12 text-semibold clr-text-2">
+				{$i18nMessages.t("desktop:HunkContextMenu.malformedItem")}
+			</p>
 		{/if}
 	</ContextMenu>
 {/if}

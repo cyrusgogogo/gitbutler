@@ -1,6 +1,8 @@
 <script lang="ts">
 	import profileIconSvg from "$lib/assets/profile-icon.svg?raw";
 	import { useImageLoading } from "$lib/utils/imageLoading.svelte";
+	import { useTranslations } from "@gitbutler/i18n/svelte";
+	const i18nMessages = useTranslations();
 
 	interface Props {
 		onclick: () => void;
@@ -17,14 +19,14 @@
 	type="button"
 	class="profile-btn"
 	class:has-image={!!srcUrl}
-	aria-label="Profile button"
+	aria-label={$i18nMessages.t("ui:ProfileButton.profileButton")}
 	onclick={async () => onclick()}
 >
 	{#if srcUrl && !imageLoadingState.hasError}
 		<img
 			bind:this={imageLoadingState.imgElement}
 			src={srcUrl}
-			alt="Profile"
+			alt={$i18nMessages.t("ui:ProfileButton.profile")}
 			class="hidden-preload"
 			referrerpolicy="no-referrer"
 			onload={imageLoadingState.handleImageLoad}

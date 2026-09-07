@@ -1,6 +1,8 @@
 <script lang="ts">
 	import BranchIntegrationModalContent from "$components/branch/BranchIntegrationModalContent.svelte";
+	import { useTranslations } from "@gitbutler/i18n/svelte";
 	import { Modal, TestId } from "@gitbutler/ui";
+	const i18nMessages = useTranslations();
 
 	type Props = {
 		modalRef: Modal | undefined;
@@ -14,7 +16,7 @@
 
 <Modal
 	bind:this={modalRef}
-	title="Update local branch"
+	title={$i18nMessages.t("desktop:BranchIntegrationModal.updateLocalBranch")}
 	noPadding
 	width={720}
 	testId={TestId.BranchIntegrationModal}

@@ -3,7 +3,9 @@
 	import { GIT_CONFIG_SERVICE } from "$lib/config/gitConfigService";
 	import { PROJECTS_SERVICE } from "$lib/project/projectsService";
 	import { inject } from "@gitbutler/core/context";
+	import { useTranslations } from "@gitbutler/i18n/svelte";
 	import { CardGroup, Link, Toggle } from "@gitbutler/ui";
+	const i18nMessages = useTranslations();
 
 	type Props = {
 		projectId: string;
@@ -22,12 +24,14 @@
 		{#snippet children(itIsAGerritProject)}
 			<CardGroup.Item standalone labelFor="gerritModeToggle">
 				{#snippet title()}
-					Gerrit configuration
+					{$i18nMessages.t("desktop:GerritForm.gerritConfiguration")}
 				{/snippet}
 
 				{#snippet caption()}
-					Enable or disable Gerrit mode for this project.
-					<Link href="https://docs.gitbutler.com/features/gerrit-mode">Learn more</Link>
+					{$i18nMessages.t("desktop:GerritForm.enableOrDisableGerritModeForThisProject")}
+					<Link href="https://docs.gitbutler.com/features/gerrit-mode"
+						>{$i18nMessages.t("desktop:GerritForm.learnMore")}</Link
+					>
 				{/snippet}
 
 				{#snippet actions()}

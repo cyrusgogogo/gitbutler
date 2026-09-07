@@ -1,3 +1,4 @@
+import { Message as I18nMessage } from "@gitbutler/i18n/react";
 import { getButtonClassName } from "#ui/components/Button.tsx";
 import { Component, type ReactNode } from "react";
 import styles from "./ErrorBoundary.module.css";
@@ -72,14 +73,16 @@ export class ErrorBoundary extends Component<Props, State> {
 
 		return (
 			<div className={styles.error}>
-				<h1 className={styles.errorTitle}>Something went wrong.</h1>
+				<h1 className={styles.errorTitle}>
+					<I18nMessage value={{ key: "lite:ErrorBoundary.somethingWentWrong" }} />
+				</h1>
 				<div className={styles.errorActions}>
 					<button
 						type="button"
 						className={getButtonClassName({})}
 						onClick={() => this.handleRetry()}
 					>
-						Retry
+						<I18nMessage value={{ key: "lite:ErrorBoundary.retry" }} />
 					</button>
 				</div>
 				<code className={styles.errorMessage}>{this.state.error.message}</code>

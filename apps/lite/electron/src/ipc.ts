@@ -29,6 +29,8 @@ export type LiteElectronApi = SDK & {
 	onDeepLink: (callback: (path: string) => void) => () => void;
 	getAiConfiguration: () => Promise<AiConfiguration>;
 	getVersion: () => Promise<string>;
+	getSystemLocale: () => Promise<string>;
+	onGUISettingsChange: (callback: (settings: GUISettings) => void) => () => void;
 	isFullScreen: () => Promise<boolean>;
 	onFullScreenChange: (callback: (fullScreen: boolean) => void) => () => void;
 	openInWebBrowser: (url: string) => Promise<void>;
@@ -68,6 +70,8 @@ export const localEndpoints = [
 	"deepLink",
 	"fullScreenChange",
 	"getVersion",
+	"getSystemLocale",
+	"guiSettingsChange",
 	"isFullScreen",
 	"openInWebBrowser",
 	"pathJoin",

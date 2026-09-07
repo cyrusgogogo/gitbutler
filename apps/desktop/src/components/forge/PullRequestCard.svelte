@@ -9,6 +9,8 @@
 	import { REPO_SERVICE } from "$lib/forge/repoService.svelte";
 	import { createPollBackoff } from "$lib/forge/shared/pollErrorBackoff.svelte";
 	import { inject } from "@gitbutler/core/context";
+	import { message as i18nMessage } from "@gitbutler/i18n";
+	import { useTranslations } from "@gitbutler/i18n/svelte";
 	import {
 		Button,
 		ContextMenu,
@@ -21,6 +23,7 @@
 	import { getForgeLogo } from "@gitbutler/ui/utils/getForgeLogo";
 	import type { PullRequest } from "$lib/forge/interface/types";
 	import type { Snippet } from "svelte";
+	const i18nMessages = useTranslations();
 
 	type ButtonStatus = {
 		disabled: boolean;
@@ -129,7 +132,11 @@
 	const repoQuery = $derived(repoInfoEnabled ? repoService.getInfo(projectId) : undefined);
 	const repoInfo = $derived(repoQuery?.response);
 
-	const name = $derived(forgeInfo?.unit.name ?? "Pull request");
+	const name = $derived(
+		$i18nMessages.t(
+			forgeInfo?.unit.abbr === "MR" ? "desktop:review.mergeRequest" : "desktop:review.pullRequest",
+		),
+	);
 	const abbr = $derived(forgeInfo?.unit.abbr ?? "PR");
 	const symbol = $derived(forgeInfo?.unit.symbol ?? "#");
 
@@ -150,29 +157,29 @@
 		let disabled = true;
 		let tooltip = undefined;
 		if (isPushed && hasParent && !parentIsPushed) {
-			tooltip = "Remote parent branch seems to have been deleted";
+			tooltip = $i18nMessages.t("desktop:PullRequestCard.detail65de983f0");
 		} else if (!baseIsTargetBranch) {
-			tooltip = name + " is not next in stack";
+			tooltip = $i18nMessages.t("desktop:detail.fbce8584a8", { name });
 		} else if (repoInfoEnabled && !repoInfo?.canMerge) {
 			// Forges without a repoService (e.g. Bitbucket, Azure) rely
 			// on the server-side merge button to refuse.
-			tooltip = name + " requires push permissions";
+			tooltip = $i18nMessages.t("desktop:detail.05fe1240ee", { name });
 		} else if (pr?.draft) {
-			tooltip = name + " is a draft";
+			tooltip = $i18nMessages.t("desktop:detail.3410c542d7", { name });
 		} else if (prMergeStatus?.mergeableState === "blocked") {
-			tooltip = name + " needs approval";
+			tooltip = $i18nMessages.t("desktop:detail.32361da415", { name });
 		} else if (prMergeStatus?.mergeableState === "unknown") {
-			tooltip = name + " mergeability is unknown";
+			tooltip = $i18nMessages.t("desktop:detail.61d1a6e1b7", { name });
 		} else if (prMergeStatus?.mergeableState === "behind") {
-			tooltip = name + " base is too far behind";
+			tooltip = $i18nMessages.t("desktop:detail.d41668dd7b", { name });
 		} else if (prMergeStatus?.mergeableState === "dirty") {
-			tooltip = name + " has conflicts";
+			tooltip = $i18nMessages.t("desktop:detail.5e67a60be5", { name });
 		} else if (!prMergeStatus) {
 			// Loading, or the status fetch failed — don't claim "not mergeable"
 			// when the state simply isn't known.
-			tooltip = name + " merge status not loaded";
+			tooltip = $i18nMessages.t("desktop:detail.c0f3e46bcb", { name });
 		} else if (!prMergeStatus.isMergeable) {
-			tooltip = name + " is not mergeable";
+			tooltip = $i18nMessages.t("desktop:detail.9ece2c816e", { name });
 		} else {
 			disabled = false;
 		}
@@ -183,7 +190,7 @@
 		let disabled = true;
 		let tooltip = undefined;
 		if (isPushed && hasParent && !parentIsPushed) {
-			tooltip = "Remote parent branch seems to have been deleted";
+			tooltip = $i18nMessages.t("desktop:PullRequestCard.detail65de983f0");
 		} else {
 			disabled = false;
 		}
@@ -202,21 +209,25 @@
 			>
 				<ContextMenuSection>
 					<ContextMenuItem
-						label="Open in browser"
+						label={$i18nMessages.t("desktop:PullRequestCard.openInBrowser")}
 						onclick={() => {
 							contextMenuOpen = false;
 							urlService.openExternalUrl(pr.htmlUrl);
 						}}
 					/>
 					<ContextMenuItem
-						label="Copy link"
+						label={$i18nMessages.t("desktop:PullRequestCard.copyLink")}
 						onclick={() => {
 							contextMenuOpen = false;
-							clipboardService.write(pr.htmlUrl, { message: `${abbr} link copied` });
+							clipboardService.write(pr.htmlUrl, {
+								message: i18nMessage("desktop:PullRequestCard.inlinefca40ccf3", {
+									value1: String(abbr),
+								}),
+							});
 						}}
 					/>
 					<ContextMenuItem
-						label="Refetch status"
+						label={$i18nMessages.t("desktop:PullRequestCard.refetchStatus")}
 						onclick={() => {
 							contextMenuOpen = false;
 							prService.fetch(projectId, pr.number, { forceRefetch: true });
@@ -228,7 +239,9 @@
 					/>
 					{#if !pr.closedAt && !pr.mergedAt}
 						<ContextMenuItem
-							label={pr.draft ? "Ready for review" : "Convert to draft"}
+							label={pr.draft
+								? $i18nMessages.t("desktop:PullRequestCard.inline8c2d9db10")
+								: $i18nMessages.t("desktop:PullRequestCard.inlineab263713a")}
 							disabled={draftToggling}
 							onclick={async () => {
 								contextMenuOpen = false;
@@ -240,17 +253,19 @@
 				{#if hasChecks}
 					<ContextMenuSection>
 						<ContextMenuItem
-							label="Open checks"
+							label={$i18nMessages.t("desktop:PullRequestCard.openChecks")}
 							onclick={() => {
 								contextMenuOpen = false;
 								urlService.openExternalUrl(`${pr.htmlUrl}/checks`);
 							}}
 						/>
 						<ContextMenuItem
-							label="Copy checks"
+							label={$i18nMessages.t("desktop:PullRequestCard.copyChecks")}
 							onclick={() => {
 								contextMenuOpen = false;
-								clipboardService.write(`${pr.htmlUrl}/checks`, { message: "Checks link copied" });
+								clipboardService.write(`${pr.htmlUrl}/checks`, {
+									message: i18nMessage("desktop:PullRequestCard.inlinef267048a5"),
+								});
 							}}
 						/>
 					</ContextMenuSection>
@@ -275,16 +290,22 @@
 					kind="outline"
 					size="tag"
 					icon="copy"
-					tooltip="Copy {abbr} link"
+					tooltip={$i18nMessages.t("desktop:PullRequestCard.copyValueLink", { abbr: String(abbr) })}
 					onclick={() => {
-						clipboardService.write(pr.htmlUrl, { message: `${abbr} link copied` });
+						clipboardService.write(pr.htmlUrl, {
+							message: i18nMessage("desktop:PullRequestCard.inlinefca40ccf3", {
+								value1: String(abbr),
+							}),
+						});
 					}}
 				/>
 				<Button
 					kind="outline"
 					size="tag"
 					icon="arrow-up-righ"
-					tooltip="Open {abbr} in browser"
+					tooltip={$i18nMessages.t("desktop:PullRequestCard.openValueInBrowser", {
+						abbr: String(abbr),
+					})}
 					onclick={() => {
 						urlService.openExternalUrl(pr.htmlUrl);
 					}}
@@ -302,7 +323,7 @@
 			<div class="text-12 pr-row">
 				<div class="factoid">
 					{#if pr.reviewers.length > 0}
-						<span class="label">Reviewers:</span>
+						<span class="label">{$i18nMessages.t("desktop:PullRequestCard.reviewers")}</span>
 						<div class="avatar-group-container">
 							<AvatarGroup
 								avatars={pr.reviewers.map((r) => ({
@@ -312,7 +333,9 @@
 							/>
 						</div>
 					{:else}
-						<span class="label italic">No reviewers</span>
+						<span class="label italic"
+							>{$i18nMessages.t("desktop:PullRequestCard.noReviewers")}</span
+						>
 					{/if}
 				</div>
 				<span class="separator">•</span>

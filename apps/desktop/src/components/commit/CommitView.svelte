@@ -13,8 +13,11 @@
 	import { STACK_SERVICE } from "$lib/stacks/stackService.svelte";
 	import { UI_STATE, withStackBusy } from "$lib/state/uiState.svelte";
 	import { inject, injectOptional } from "@gitbutler/core/context";
+	import { message as i18nMessage } from "@gitbutler/i18n";
+	import { useTranslations } from "@gitbutler/i18n/svelte";
 	import { Button, TestId } from "@gitbutler/ui";
 	import type { Commit, UpstreamCommit } from "@gitbutler/but-sdk";
+	const i18nMessages = useTranslations();
 
 	type Props = {
 		projectId: string;
@@ -97,7 +100,10 @@
 			throw new Error("No branch selected!");
 		}
 		if (!commitMessage) {
-			showToast({ message: "Commit message is required", style: "danger" });
+			showToast({
+				message: i18nMessage("desktop:CommitView.commitMessageIsRequired"),
+				style: "danger",
+			});
 			return;
 		}
 
@@ -167,7 +173,7 @@
 				kind="ghost"
 				icon="pop-out-bottom-right"
 				size="tag"
-				tooltip="Pop out diff view"
+				tooltip={$i18nMessages.t("desktop:CommitView.popOutDiffView")}
 				onclick={onpopout}
 			/>
 		{/if}
@@ -195,7 +201,9 @@
 					drawer?.open();
 					setMode("edit");
 				}}
-				tooltip={isReadOnly ? "Read-only mode" : "Reword commit"}
+				tooltip={isReadOnly
+					? $i18nMessages.t("desktop:CommitView.inline893cd37c4")
+					: $i18nMessages.t("desktop:CommitView.inline345e5789a")}
 				disabled={isReadOnly || isEditingMessage}
 			/>
 		{/if}
@@ -231,7 +239,7 @@
 					{projectId}
 					{stackId}
 					action={({ title, description }) => saveCommitMessage(title, description)}
-					actionLabel="Save changes"
+					actionLabel={$i18nMessages.t("desktop:CommitView.saveChanges")}
 					onCancel={cancelEdit}
 					floatingBoxHeader="Reword commit"
 					loading={messageUpdateQuery.current.isLoading}

@@ -13,10 +13,11 @@
 	import { useSettingsModal } from "$lib/settings/settingsModal.svelte";
 	import { UI_STATE } from "$lib/state/uiState.svelte";
 	import { inject } from "@gitbutler/core/context";
+	import { useTranslations } from "@gitbutler/i18n/svelte";
 	import { Button, ContextMenu, ContextMenuItem, ContextMenuSection, TestId } from "@gitbutler/ui";
 	import { focusable } from "@gitbutler/ui/focus/focusable";
-
 	import { slide } from "svelte/transition";
+	const i18nMessages = useTranslations();
 
 	const { projectId, disabled = false }: { projectId: string; disabled?: boolean } = $props();
 
@@ -41,7 +42,7 @@
 				width={34}
 				hotkey="⌘1"
 				class={["btn-square", isWorkspacePath() && "btn-active"]}
-				tooltip="Workspace"
+				tooltip={$i18nMessages.t("desktop:AppSidebar.workspace")}
 				{disabled}
 			>
 				{#snippet custom()}
@@ -79,7 +80,7 @@
 				width={34}
 				class={["btn-square", isBranchesPath() && "btn-active"]}
 				hotkey="⌘2"
-				tooltip="Branches"
+				tooltip={$i18nMessages.t("desktop:AppSidebar.branches")}
 				{disabled}
 			>
 				{#snippet custom()}
@@ -144,7 +145,7 @@
 				width={34}
 				class={["btn-square", isHistoryPath() && "btn-active"]}
 				hotkey="⌘3"
-				tooltip="Operations history"
+				tooltip={$i18nMessages.t("desktop:AppSidebar.operationsHistory")}
 				{disabled}
 			>
 				{#snippet custom()}
@@ -190,7 +191,7 @@
 					class="btn-square"
 					tooltipPosition="top"
 					tooltipAlign="start"
-					tooltip="Project settings"
+					tooltip={$i18nMessages.t("desktop:AppSidebar.projectSettings")}
 				>
 					{#snippet custom()}
 						<svg
@@ -220,7 +221,7 @@
 			<Button
 				icon="mail"
 				kind="ghost"
-				tooltip="Share feedback"
+				tooltip={$i18nMessages.t("desktop:AppSidebar.shareFeedback")}
 				tooltipPosition="top"
 				tooltipAlign="start"
 				width={34}
@@ -245,7 +246,7 @@
 	>
 		<ContextMenuSection>
 			<ContextMenuItem
-				label="Global settings"
+				label={$i18nMessages.t("desktop:AppSidebar.globalSettings")}
 				onclick={() => {
 					openGeneralSettings();
 					contextMenuOpen = false;
@@ -253,23 +254,23 @@
 				keyboardShortcut="⌘,"
 			/>
 		</ContextMenuSection>
-		<ContextMenuSection title="Theme (⌘T)">
+		<ContextMenuSection title={$i18nMessages.t("desktop:AppSidebar.themeT")}>
 			<ContextMenuItem
-				label="Dark"
+				label={$i18nMessages.t("desktop:AppSidebar.dark")}
 				onclick={async () => {
 					uiState.global.theme.set("dark");
 					contextMenuOpen = false;
 				}}
 			/>
 			<ContextMenuItem
-				label="Light"
+				label={$i18nMessages.t("desktop:AppSidebar.light")}
 				onclick={async () => {
 					uiState.global.theme.set("light");
 					contextMenuOpen = false;
 				}}
 			/>
 			<ContextMenuItem
-				label="System"
+				label={$i18nMessages.t("desktop:AppSidebar.system")}
 				onclick={async () => {
 					uiState.global.theme.set("system");
 					contextMenuOpen = false;

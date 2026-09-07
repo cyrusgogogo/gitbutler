@@ -1,7 +1,9 @@
 <script lang="ts">
 	import Button from "$components/Button.svelte";
 	import Avatar from "$components/avatar/Avatar.svelte";
+	import { useTranslations } from "@gitbutler/i18n/svelte";
 	import type { Snippet } from "svelte";
+	const i18nMessages = useTranslations();
 
 	type Props = {
 		username: string;
@@ -67,18 +69,18 @@
 				{#if email}
 					{email}
 				{:else if isError}
-					Error loading user info
+					{$i18nMessages.t("ui:ForgeUserCard.errorLoadingUserInfo")}
 				{:else if isLoading}
-					Loading...
+					{$i18nMessages.t("ui:ForgeUserCard.loading")}
 				{:else}
-					No email available
+					{$i18nMessages.t("ui:ForgeUserCard.noEmailAvailable")}
 				{/if}
 			</p>
 		</div>
 
 		<div class="forge-user-card__actions">
 			<Button kind="outline" style="danger" icon="bin" onclick={onForget} loading={isForgetLoading}
-				>Forget</Button
+				>{$i18nMessages.t("ui:ForgeUserCard.forget")}</Button
 			>
 		</div>
 	</div>

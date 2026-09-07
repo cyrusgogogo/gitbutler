@@ -1,3 +1,6 @@
+import { createI18n } from "@gitbutler/i18n";
+import { resources } from "@gitbutler/i18n/catalogs/lite";
+const english = createI18n(resources, "en");
 import { describe, expect, test } from "vitest";
 import type { ConflictEntryPresence, FileInfo } from "@gitbutler/but-sdk";
 import { conflictHint, conflictStateOf } from "./edit-mode-conflicts.ts";
@@ -40,8 +43,12 @@ describe("conflict state on disk", () => {
 
 describe("conflict hints", () => {
 	test("names the side that deleted the file", () => {
-		expect(conflictHint({ ancestor: true, ours: false, theirs: true })).toBe("deleted by you");
-		expect(conflictHint({ ancestor: true, ours: true, theirs: false })).toBe("deleted by them");
-		expect(conflictHint(bothSides)).toBe("conflicts");
+		expect(english.text(conflictHint({ ancestor: true, ours: false, theirs: true }))).toBe(
+			"deleted by you",
+		);
+		expect(english.text(conflictHint({ ancestor: true, ours: true, theirs: false }))).toBe(
+			"deleted by them",
+		);
+		expect(english.text(conflictHint(bothSides))).toBe("conflicts");
 	});
 });

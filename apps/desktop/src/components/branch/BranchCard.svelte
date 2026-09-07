@@ -17,12 +17,15 @@
 	import { STACK_SERVICE } from "$lib/stacks/stackService.svelte";
 	import { UI_STATE } from "$lib/state/uiState.svelte";
 	import { inject } from "@gitbutler/core/context";
+	import { useTranslations } from "@gitbutler/i18n/svelte";
 	import { ReviewBadge, TestId } from "@gitbutler/ui";
+	import I18nRichMessage from "@gitbutler/ui/i18n/RichMessage.svelte";
 	import { isDefined } from "@gitbutler/ui/utils/typeguards";
 	import type { BranchIconName } from "$lib/branches/branchIcon";
 	import type { DropzoneHandler } from "$lib/dragging/handler";
 	import type { PushStatus, Segment } from "@gitbutler/but-sdk";
 	import type { Snippet } from "svelte";
+	const i18nMessages = useTranslations();
 
 	interface BranchCardProps {
 		type: "normal-branch" | "stack-branch" | "pr-branch";
@@ -165,10 +168,13 @@
 	}
 
 	function getDropzoneOverlayLabel(handler: DropzoneHandler | undefined): string {
-		if (handler instanceof MoveCommitDzHandler) return "Move here";
-		if (handler instanceof ReorderCommitDzHandler) return "Reorder here";
-		if (handler instanceof StartCommitDzHandler) return "Start commit";
-		return "Drop here";
+		if (handler instanceof MoveCommitDzHandler)
+			return $i18nMessages.t("desktop:BranchCard.detaild6f5b75c9");
+		if (handler instanceof ReorderCommitDzHandler)
+			return $i18nMessages.t("desktop:BranchCard.detaila45df0058");
+		if (handler instanceof StartCommitDzHandler)
+			return $i18nMessages.t("desktop:BranchCard.detaila687fa516");
+		return $i18nMessages.t("desktop:BranchCard.detail7c67e6fb7");
 	}
 </script>
 
@@ -242,10 +248,17 @@
 				}}
 			>
 				{#snippet emptyState()}
-					<span class="branch-header__empty-state-span">This is an empty branch.</span>
-					<span class="branch-header__empty-state-span">Click for details.</span>
-					<br />
-					Create or drag & drop commits here.
+					{#snippet i18nSlot1(content: import("svelte").Snippet)}<span
+							class="branch-header__empty-state-span">{@render content()}</span
+						>{/snippet}
+					{#snippet i18nSlot2(content: import("svelte").Snippet)}<span
+							class="branch-header__empty-state-span">{@render content()}</span
+						>{/snippet}
+					{#snippet i18nSlot3()}<br />{/snippet}
+					<I18nRichMessage
+						value={{ key: "desktop:BranchCard.thisIsAnEmptyBranchClickForDetails" }}
+						components={{ slot1: i18nSlot1, slot2: i18nSlot2, slot3: i18nSlot3 }}
+					/>
 				{/snippet}
 
 				{#snippet content()}
@@ -332,7 +345,8 @@
 			roundedBottom={args.roundedBottom}
 		>
 			{#snippet emptyState()}
-				<span class="branch-header__empty-state-span">There are no commits yet on this branch.</span
+				<span class="branch-header__empty-state-span"
+					>{$i18nMessages.t("desktop:BranchCard.thereAreNoCommitsYetOnThisBranch")}</span
 				>
 			{/snippet}
 		</BranchHeader>

@@ -2,7 +2,9 @@
 	import Icon from "$components/Icon.svelte";
 	import { focusable } from "$lib/focus/focusable";
 	import { pxToRem } from "$lib/utils/pxToRem";
+	import { useTranslations } from "@gitbutler/i18n/svelte";
 	import type { BaseInputProps, InputStylingProps } from "$components/inputTypes";
+	const i18nMessages = useTranslations();
 
 	export interface Tag {
 		id: string;
@@ -24,7 +26,7 @@
 		label,
 		tags = $bindable([]),
 		value = $bindable(""),
-		placeholder = "Add tags (split by space/comma)",
+		placeholder: providedPlaceholder,
 		disabled = false,
 		readonly = false,
 		autofocus: _autofocus = false,
@@ -37,6 +39,9 @@
 		onRemoveTag,
 		onTagsChange,
 	}: Props = $props();
+	const placeholder = $derived(
+		providedPlaceholder ?? $i18nMessages.t("ui:TagInput.defaulta43eb58cf"),
+	);
 
 	let inputEl: HTMLInputElement;
 	let hasError = $derived(!!error);
@@ -133,7 +138,7 @@
 								e.stopPropagation();
 								removeTag(tag.id);
 							}}
-							aria-label="Remove tag"
+							aria-label={$i18nMessages.t("ui:TagInput.removeTag")}
 						>
 							<Icon name="cross" size={14} />
 						</button>

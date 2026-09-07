@@ -1,3 +1,4 @@
+import { Message as I18nMessage } from "@gitbutler/i18n/react";
 import { classes } from "#ui/components/classes.ts";
 import { Icon } from "#ui/components/Icon.tsx";
 import { openLinkExternally } from "#ui/external-link.ts";
@@ -35,7 +36,7 @@ export const DiffThreadCard: FC<Props> = ({ projectId, reviewId, thread }) => (
 					href={thread.comments[0].htmlUrl}
 					onClick={openLinkExternally}
 				>
-					Open on the forge
+					<I18nMessage value={{ key: "lite:DiffThreadCard.openOnTheForge" }} />{" "}
 					<Icon name="arrow-up-right" size={12} />
 				</a>
 			)}

@@ -1,16 +1,21 @@
 <script lang="ts">
 	import GoToSettingsButton from "$components/settings/GoToSettingsButton.svelte";
+	import { useTranslations } from "@gitbutler/i18n/svelte";
 	import { CardGroup, Icon } from "@gitbutler/ui";
+	const i18nMessages = useTranslations();
 
 	interface Props {
 		title?: string;
 		message?: string;
 	}
 
-	const {
-		title: titleLabel = "Authorization Required",
-		message = "Authorize GitButler to use this service",
-	}: Props = $props();
+	const { title: providedTitleLabel, message: providedMessage }: Props = $props();
+	const message = $derived(
+		providedMessage ?? $i18nMessages.t("desktop:AuthorizationBanner.defaultd4a709561"),
+	);
+	const titleLabel = $derived(
+		providedTitleLabel ?? $i18nMessages.t("desktop:AuthorizationBanner.default5cd9ae36f"),
+	);
 </script>
 
 <CardGroup>

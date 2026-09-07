@@ -1,3 +1,6 @@
+import { message, type MessageDescriptor } from "@gitbutler/i18n";
+import { useTranslations } from "@gitbutler/i18n/react";
+import { Message as I18nMessage } from "@gitbutler/i18n/react";
 /**
  * @file The bell: the inbox's face in the window corner.
  *
@@ -43,28 +46,12 @@ const kindIcon: Record<InboxKind, IconName> = {
 	closed: "pr-close",
 };
 
-/** The sentence fragment after the author — "commented on", "approved". */
-const kindPhrase = (entry: InboxEntry): string => {
-	const many = entry.count > 1;
-	switch (entry.kind) {
-		case "comment":
-			return many ? `left ${entry.count} comments on` : "commented on";
-		case "mention":
-			return "mentioned you on";
-		case "approved":
-			return "approved";
-		case "changesRequested":
-			return "requested changes on";
-		case "reviewRequested":
-			return "requested your review on";
-		case "committed":
-			return many ? `pushed ${entry.count} commits to` : "pushed a commit to";
-		case "merged":
-			return "merged";
-		case "closed":
-			return "closed";
-	}
-};
+const entryMessage = (entry: InboxEntry): MessageDescriptor =>
+	message(`lite:inbox.${entry.kind}`, {
+		count: entry.count,
+		author: entry.author ?? "",
+		review: `${entry.unitSymbol}${entry.review}`,
+	});
 
 const Entry: FC<{
 	projectId: string;
@@ -114,9 +101,7 @@ const Entry: FC<{
 			<span className={styles.entryBody}>
 				<span className={classes("text-12", styles.entryTitle)}>{entry.reviewTitle}</span>
 				<span className={classes("text-11", styles.entryAction)}>
-					{entry.author !== null && <span>{entry.author} </span>}
-					{kindPhrase(entry)} {entry.unitSymbol}
-					{entry.review}
+					<I18nMessage value={entryMessage(entry)} />
 				</span>
 				{entry.snippet !== null && (
 					<span className={classes("text-11", styles.entrySnippet)}>{entry.snippet}</span>
@@ -139,6 +124,7 @@ const Entry: FC<{
  * without forge review support, or below the loud dial.
  */
 export const NotificationBell: FC<{ projectId: string }> = ({ projectId }) => {
+	const i18nMessages = useTranslations();
 	const [open, setOpen] = useState(false);
 	const { data: forgeInfo } = useQuery(forgeInfoOptions(projectId));
 	// Unconditional: behind `&&` the hook count would change mid-mount.
@@ -162,7 +148,11 @@ export const NotificationBell: FC<{ projectId: string }> = ({ projectId }) => {
 			trigger={
 				<button
 					type="button"
-					aria-label={unseen > 0 ? `Notifications, ${unseen} unread` : "Notifications"}
+					aria-label={
+						unseen > 0
+							? i18nMessages.t("lite:reviewinboxbell.notificationsValueUnread", { unseen })
+							: i18nMessages.t("lite:reviewinboxbell.notifications")
+					}
 					className={classes(getButtonClassName({ iconOnly: true, variant: "ghost" }), styles.bell)}
 				>
 					<Icon name="bell" />
@@ -171,19 +161,23 @@ export const NotificationBell: FC<{ projectId: string }> = ({ projectId }) => {
 			}
 		>
 			<div className={styles.panelHeader}>
-				<span className={classes("text-12", "text-semibold")}>Notifications</span>
+				<span className={classes("text-12", "text-semibold")}>
+					<I18nMessage value={{ key: "lite:reviewinboxbell.notifications" }} />
+				</span>
 				{unseen > 0 && (
 					<button
 						className={classes("text-12", styles.markAll)}
 						onClick={() => markInboxSeen(projectId)}
 						type="button"
 					>
-						Mark all read
+						<I18nMessage value={{ key: "lite:reviewinboxbell.markAllRead" }} />
 					</button>
 				)}
 			</div>
 			{entries.length === 0 ? (
-				<div className={classes("text-12", styles.empty)}>Nothing yet</div>
+				<div className={classes("text-12", styles.empty)}>
+					<I18nMessage value={{ key: "lite:reviewinboxbell.nothingYet" }} />
+				</div>
 			) : (
 				<div className={styles.list}>
 					{entries.map((entry) => (

@@ -2,6 +2,9 @@
 	import ArrowButton from "$home/components/ArrowButton.svelte";
 	import SectionHeader from "$home/components/SectionHeader.svelte";
 	import { formatDate } from "$lib/utils/formatDate";
+	import { useTranslations } from "@gitbutler/i18n/svelte";
+	import I18nRichMessage from "@gitbutler/ui/i18n/RichMessage.svelte";
+	const i18nMessages = useTranslations();
 
 	interface BlogPost {
 		title: string;
@@ -67,12 +70,16 @@
 </script>
 
 <section class="blog-highlights">
-	<SectionHeader
-		>From <i>the</i> Blog
+	{#snippet i18nHeadingSlot(content: import("svelte").Snippet)}<i>{@render content()}</i>{/snippet}
+	<SectionHeader>
+		<I18nRichMessage
+			value={{ key: "web:BlogHighlights.fromTheBlog" }}
+			components={{ slot1: i18nHeadingSlot }}
+		/>
 
 		{#snippet buttons()}
 			<ArrowButton
-				label="Read more"
+				label={$i18nMessages.t("web:BlogHighlights.readMore")}
 				onclick={() => window.open("https://blog.gitbutler.com", "_blank")}
 			/>
 		{/snippet}
@@ -88,9 +95,12 @@
 					<h3 class="blog-post__title">
 						{posts?.[0]?.title}
 					</h3>
-					<span class="blog-post__meta">
-						{formatDate(posts?.[0]?.published_at ?? "")} by {posts?.[0]?.primary_author?.name}
-					</span>
+					<span class="blog-post__meta"
+						>{$i18nMessages.t("web:BlogHighlights.valueByValue", {
+							value: String(formatDate(posts?.[0]?.published_at ?? "", $i18nMessages.locale)),
+							value2: String(posts?.[0]?.primary_author?.name),
+						})}</span
+					>
 				</div>
 				<div class="blog-post__body">
 					<p class="blog-post__excerpt">{posts?.[0]?.custom_excerpt}</p>
@@ -108,9 +118,12 @@
 						<h3 class="blog-post__title">
 							{posts?.[1]?.title}
 						</h3>
-						<span class="blog-post__meta">
-							{formatDate(posts?.[1]?.published_at ?? "")} by {posts?.[1]?.primary_author?.name}
-						</span>
+						<span class="blog-post__meta"
+							>{$i18nMessages.t("web:BlogHighlights.valueByValue_22b1415", {
+								value: String(formatDate(posts?.[1]?.published_at ?? "", $i18nMessages.locale)),
+								value2: String(posts?.[1]?.primary_author?.name),
+							})}</span
+						>
 					</div>
 					<div class="blog-post__body">
 						<p class="blog-post__excerpt">{posts?.[1]?.custom_excerpt}</p>
@@ -126,9 +139,12 @@
 						<h3 class="blog-post__title">
 							{posts?.[2]?.title}
 						</h3>
-						<span class="blog-post__meta">
-							{formatDate(posts?.[2]?.published_at ?? "")} by {posts?.[2]?.primary_author?.name}
-						</span>
+						<span class="blog-post__meta"
+							>{$i18nMessages.t("web:BlogHighlights.valueByValue_5416c80", {
+								value: String(formatDate(posts?.[2]?.published_at ?? "", $i18nMessages.locale)),
+								value2: String(posts?.[2]?.primary_author?.name),
+							})}</span
+						>
 					</div>
 					<div class="blog-post__body">
 						<p class="blog-post__excerpt">{posts?.[2]?.custom_excerpt}</p>

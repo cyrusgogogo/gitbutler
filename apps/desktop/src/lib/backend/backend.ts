@@ -1,3 +1,4 @@
+import type { Locale } from "@gitbutler/i18n";
 import type { UnlistenFn } from "@tauri-apps/api/event";
 import type { Readable } from "svelte/store";
 
@@ -10,6 +11,8 @@ export interface IBackend {
 	 * The name of the platform, e.g. 'macos', 'windows', 'linux', or 'web'
 	 */
 	platformName: string;
+	getSystemLocale: () => Promise<string | null>;
+	setMenuLocale: (locale: Locale) => Promise<void>;
 	/**
 	 * The theme of the system, e.g. 'light', 'dark'
 	 */

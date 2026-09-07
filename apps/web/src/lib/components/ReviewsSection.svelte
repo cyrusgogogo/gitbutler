@@ -1,8 +1,10 @@
 <script lang="ts">
 	import { goto } from "$app/navigation";
 	import { getRelativeTime } from "$lib/utils/dateUtils";
+	import { useTranslations } from "@gitbutler/i18n/svelte";
 	import { AvatarGroup, Button, CommitStatusBadge, type CommitStatusType } from "@gitbutler/ui";
 	import type { Branch } from "@gitbutler/shared/branches/types";
+	const i18nMessages = useTranslations();
 
 	interface Contributor {
 		user?: {
@@ -44,7 +46,7 @@
 	let {
 		reviews,
 		status = "found",
-		sectionTitle = "Recent Reviews",
+		sectionTitle,
 		allReviewsUrl = undefined,
 		reviewsCount = 0,
 	}: Props = $props();
@@ -55,7 +57,7 @@
 			? review.title
 			: "title" in review && review.title !== undefined
 				? String(review.title)
-				: "Untitled Review";
+				: $i18nMessages.t("web:detail.703e23c768");
 	}
 
 	function getReviewUrl(review: Review): string {
@@ -68,16 +70,18 @@
 	function getContributorAvatars(contributors: Contributor[]) {
 		return contributors.map((contributor) => ({
 			srcUrl: contributor.user?.avatarUrl || "/images/default-avatar.png",
-			username: contributor.user?.name || "User",
+			username: contributor.user?.name || $i18nMessages.t("web:detail.9f8a2389a2"),
 		}));
 	}
 </script>
 
 <div class="section-card reviews-table-section">
 	<div class="section-header">
-		<h2 class="section-title">{sectionTitle}</h2>
+		<h2 class="section-title">{sectionTitle ?? $i18nMessages.t("web:detail.83c623252b")}</h2>
 		{#if allReviewsUrl && reviewsCount > 0}
-			<Button onclick={() => goto(allReviewsUrl)} style="pop">All Reviews</Button>
+			<Button onclick={() => goto(allReviewsUrl)} style="pop"
+				>{$i18nMessages.t("web:ReviewsSection.allReviews")}</Button
+			>
 		{/if}
 	</div>
 
@@ -85,13 +89,15 @@
 		<table class="reviews-table">
 			<thead>
 				<tr>
-					<th>Status</th>
-					<th>Project</th>
-					<th>Name</th>
-					<th>Commits</th>
-					<th>Update</th>
-					<th>Authors</th>
-					<th title="Commit version">Ver.</th>
+					<th>{$i18nMessages.t("web:ReviewsSection.status")}</th>
+					<th>{$i18nMessages.t("web:ReviewsSection.project")}</th>
+					<th>{$i18nMessages.t("web:ReviewsSection.name")}</th>
+					<th>{$i18nMessages.t("web:ReviewsSection.commits")}</th>
+					<th>{$i18nMessages.t("web:ReviewsSection.update")}</th>
+					<th>{$i18nMessages.t("web:ReviewsSection.authors")}</th>
+					<th title={$i18nMessages.t("web:ReviewsSection.commitVersion")}
+						>{$i18nMessages.t("web:ReviewsSection.ver")}</th
+					>
 				</tr>
 			</thead>
 			<tbody>
@@ -113,7 +119,7 @@
 							</a>
 						</td>
 						<td>{review.stackSize || "-"}</td>
-						<td>{getRelativeTime(review.updatedAt)}</td>
+						<td>{getRelativeTime(review.updatedAt, $i18nMessages.locale)}</td>
 						<td>
 							<AvatarGroup avatars={getContributorAvatars(review.contributors)} />
 						</td>
@@ -125,12 +131,14 @@
 	{:else if status === "loading"}
 		<div class="loading-state">
 			<div class="loading-spinner"></div>
-			<p>Loading reviews...</p>
+			<p>{$i18nMessages.t("web:ReviewsSection.loadingReviews")}</p>
 		</div>
 	{:else}
 		<div class="empty-state">
-			<p>No recent reviews</p>
-			<p class="empty-state-subtitle">Reviews will appear here once they are created.</p>
+			<p>{$i18nMessages.t("web:ReviewsSection.noRecentReviews")}</p>
+			<p class="empty-state-subtitle">
+				{$i18nMessages.t("web:ReviewsSection.reviewsWillAppearHereOnceTheyAreCreated")}
+			</p>
 		</div>
 	{/if}
 </div>

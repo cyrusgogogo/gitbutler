@@ -2,6 +2,7 @@
 	import ThemeSelector from "$components/projectSettings/ThemeSelector.svelte";
 	import { UI_STATE } from "$lib/state/uiState.svelte";
 	import { inject } from "@gitbutler/core/context";
+	import { useTranslations } from "@gitbutler/i18n/svelte";
 	import {
 		CardGroup,
 		HunkDiff,
@@ -11,8 +12,10 @@
 		Textbox,
 		Toggle,
 	} from "@gitbutler/ui";
+	import I18nRichMessage from "@gitbutler/ui/i18n/RichMessage.svelte";
 	import { LIGHT_THEMES, DARK_THEMES, setSyntaxThemes } from "@gitbutler/ui/utils/shikiHighlighter";
 	import type { ScrollbarVisilitySettings } from "@gitbutler/ui";
+	const i18nMessages = useTranslations();
 
 	const uiState = inject(UI_STATE);
 
@@ -73,25 +76,25 @@
 
 <CardGroup.Item standalone>
 	{#snippet title()}
-		Theme
+		{$i18nMessages.t("desktop:AppearanceSettings.theme")}
 	{/snippet}
 	<ThemeSelector {uiState} />
 </CardGroup.Item>
 
 <CardGroup.Item alignment="center" standalone>
 	{#snippet title()}
-		Default file list mode
+		{$i18nMessages.t("desktop:AppearanceSettings.defaultFileListMode")}
 	{/snippet}
 	{#snippet caption()}
-		Set the default file list view (can be changed per location).
+		{$i18nMessages.t("desktop:AppearanceSettings.setTheDefaultFileListViewCanBe")}
 	{/snippet}
 	{#snippet actions()}
 		<Select
 			maxWidth={120}
 			value={defaultFileListMode.current}
 			options={[
-				{ label: "List view", value: "list" },
-				{ label: "Tree view", value: "tree" },
+				{ label: $i18nMessages.t("desktop:AppearanceSettings.inline694bbd757"), value: "list" },
+				{ label: $i18nMessages.t("desktop:AppearanceSettings.inlinebaeb5de2c"), value: "tree" },
 			]}
 			onselect={(value) => {
 				defaultFileListMode.set(value as "tree" | "list");
@@ -108,10 +111,10 @@
 
 <CardGroup.Item labelFor="pathFirst" standalone>
 	{#snippet title()}
-		File path first
+		{$i18nMessages.t("desktop:AppearanceSettings.filePathFirst")}
 	{/snippet}
 	{#snippet caption()}
-		Display the full file path before the file name in file lists.
+		{$i18nMessages.t("desktop:AppearanceSettings.displayTheFullFilePathBeforeTheFile")}
 	{/snippet}
 	{#snippet actions()}
 		<Toggle
@@ -127,10 +130,10 @@
 <CardGroup>
 	<CardGroup.Item labelFor="allInOneDiff">
 		{#snippet title()}
-			All-in-one diff
+			{$i18nMessages.t("desktop:AppearanceSettings.allInOneDiff")}
 		{/snippet}
 		{#snippet caption()}
-			Show a scrollable list of all file diffs instead of only the selected file's diff.
+			{$i18nMessages.t("desktop:AppearanceSettings.showAScrollableListOfAllFileDiffs")}
 		{/snippet}
 		{#snippet actions()}
 			<Toggle
@@ -146,10 +149,10 @@
 	{#if allInOneDiff.current}
 		<CardGroup.Item labelFor="highlightDiffs">
 			{#snippet title()}
-				Highlight active diff
+				{$i18nMessages.t("desktop:AppearanceSettings.highlightActiveDiff")}
 			{/snippet}
 			{#snippet caption()}
-				Highlight the currently selected file's diff in the all-in-one diff view.
+				{$i18nMessages.t("desktop:AppearanceSettings.highlightTheCurrentlySelectedFileSDiffIn")}
 			{/snippet}
 			{#snippet actions()}
 				<Toggle
@@ -167,7 +170,7 @@
 <CardGroup>
 	<CardGroup.Item alignment="center">
 		{#snippet title()}
-			Diff preview
+			{$i18nMessages.t("desktop:AppearanceSettings.diffPreview")}
 		{/snippet}
 
 		<HunkDiff
@@ -188,10 +191,10 @@
 
 	<CardGroup.Item alignment="center">
 		{#snippet title()}
-			Syntax theme (light)
+			{$i18nMessages.t("desktop:AppearanceSettings.syntaxThemeLight")}
 		{/snippet}
 		{#snippet caption()}
-			Color scheme used for syntax highlighting when the app is in light mode.
+			{$i18nMessages.t("desktop:AppearanceSettings.colorSchemeUsedForSyntaxHighlightingWhenThe")}
 		{/snippet}
 		{#snippet actions()}
 			<Select
@@ -213,10 +216,12 @@
 
 	<CardGroup.Item alignment="center">
 		{#snippet title()}
-			Syntax theme (dark)
+			{$i18nMessages.t("desktop:AppearanceSettings.syntaxThemeDark")}
 		{/snippet}
 		{#snippet caption()}
-			Color scheme used for syntax highlighting when the app is in dark mode.
+			{$i18nMessages.t(
+				"desktop:AppearanceSettings.colorSchemeUsedForSyntaxHighlightingWhenThe_a538bdb",
+			)}
 		{/snippet}
 		{#snippet actions()}
 			<Select
@@ -238,10 +243,10 @@
 
 	<CardGroup.Item>
 		{#snippet title()}
-			Font family
+			{$i18nMessages.t("desktop:AppearanceSettings.fontFamily")}
 		{/snippet}
 		{#snippet caption()}
-			Sets the font for the diff view. The first font name is the default, others are fallbacks.
+			{$i18nMessages.t("desktop:AppearanceSettings.setsTheFontForTheDiffViewThe")}
 		{/snippet}
 
 		<Textbox
@@ -256,10 +261,10 @@
 
 	<CardGroup.Item alignment="center">
 		{#snippet title()}
-			Font size
+			{$i18nMessages.t("desktop:AppearanceSettings.fontSize")}
 		{/snippet}
 		{#snippet caption()}
-			Font size of the code in the diff view.
+			{$i18nMessages.t("desktop:AppearanceSettings.fontSizeOfTheCodeInTheDiff")}
 		{/snippet}
 
 		{#snippet actions()}
@@ -281,7 +286,7 @@
 
 	<CardGroup.Item labelFor="allowDiffLigatures">
 		{#snippet title()}
-			Allow font ligatures
+			{$i18nMessages.t("desktop:AppearanceSettings.allowFontLigatures")}
 		{/snippet}
 		{#snippet actions()}
 			<Toggle
@@ -296,10 +301,10 @@
 
 	<CardGroup.Item alignment="center">
 		{#snippet title()}
-			Tab size
+			{$i18nMessages.t("desktop:AppearanceSettings.tabSize")}
 		{/snippet}
 		{#snippet caption()}
-			Number of spaces per tab in the diff view.
+			{$i18nMessages.t("desktop:AppearanceSettings.numberOfSpacesPerTabInTheDiff")}
 		{/snippet}
 
 		{#snippet actions()}
@@ -321,10 +326,10 @@
 
 	<CardGroup.Item labelFor="wrapText">
 		{#snippet title()}
-			Soft wrap
+			{$i18nMessages.t("desktop:AppearanceSettings.softWrap")}
 		{/snippet}
 		{#snippet caption()}
-			Soft wrap long lines in the diff view to fit within the viewport.
+			{$i18nMessages.t("desktop:AppearanceSettings.softWrapLongLinesInTheDiffView")}
 		{/snippet}
 
 		{#snippet actions()}
@@ -340,10 +345,10 @@
 
 	<CardGroup.Item labelFor="strongContrast">
 		{#snippet title()}
-			Strong contrast
+			{$i18nMessages.t("desktop:AppearanceSettings.strongContrast")}
 		{/snippet}
 		{#snippet caption()}
-			Use stronger contrast for added, deleted, and context lines in diffs.
+			{$i18nMessages.t("desktop:AppearanceSettings.useStrongerContrastForAddedDeletedAndContext")}
 		{/snippet}
 		{#snippet actions()}
 			<Toggle
@@ -358,12 +363,14 @@
 
 	<CardGroup.Item labelFor="colorBlindFriendly">
 		{#snippet title()}
-			Color blind-friendly colors
+			{$i18nMessages.t("desktop:AppearanceSettings.colorBlindFriendlyColors")}
 		{/snippet}
 		{#snippet caption()}
-			Use blue and orange colors instead of green and red for better
-			<br />
-			accessibility with color vision deficiency.
+			{#snippet i18nSlot1()}<br />{/snippet}
+			<I18nRichMessage
+				value={{ key: "desktop:AppearanceSettings.useBlueAndOrangeColorsInsteadOfGreen" }}
+				components={{ slot1: i18nSlot1 }}
+			/>
 		{/snippet}
 		{#snippet actions()}
 			<Toggle
@@ -378,11 +385,10 @@
 
 	<CardGroup.Item labelFor="inlineUnifiedDiffs">
 		{#snippet title()}
-			Display word diffs inline
+			{$i18nMessages.t("desktop:AppearanceSettings.displayWordDiffsInline")}
 		{/snippet}
 		{#snippet caption()}
-			Instead of separate lines for removals and additions, this feature shows a single line with
-			both added and removed words highlighted.
+			{$i18nMessages.t("desktop:AppearanceSettings.insteadOfSeparateLinesForRemovalsAndAdditions")}
 		{/snippet}
 		{#snippet actions()}
 			<Toggle
@@ -397,10 +403,10 @@
 
 	<CardGroup.Item labelFor="svgAsImage">
 		{#snippet title()}
-			Preview SVG files as images
+			{$i18nMessages.t("desktop:AppearanceSettings.previewSVGFilesAsImages")}
 		{/snippet}
 		{#snippet caption()}
-			Show SVG file changes as an image diff instead of a code diff.
+			{$i18nMessages.t("desktop:AppearanceSettings.showSVGFileChangesAsAnImageDiff")}
 		{/snippet}
 		{#snippet actions()}
 			<Toggle
@@ -418,10 +424,10 @@
 	<form class="stack-v" onchange={(e) => onScrollbarFormChange(e.currentTarget)}>
 		<CardGroup.Item labelFor="scrollbar-on-scroll">
 			{#snippet title()}
-				Scrollbar-On-Scroll
+				{$i18nMessages.t("desktop:AppearanceSettings.scrollbarOnScroll")}
 			{/snippet}
 			{#snippet caption()}
-				Only show the scrollbar when you are scrolling.
+				{$i18nMessages.t("desktop:AppearanceSettings.onlyShowTheScrollbarWhenYouAreScrolling")}
 			{/snippet}
 			{#snippet actions()}
 				<RadioButton
@@ -435,10 +441,10 @@
 
 		<CardGroup.Item labelFor="scrollbar-on-hover">
 			{#snippet title()}
-				Scrollbar-On-Hover
+				{$i18nMessages.t("desktop:AppearanceSettings.scrollbarOnHover")}
 			{/snippet}
 			{#snippet caption()}
-				Show the scrollbar only when you hover over the scrollable area.
+				{$i18nMessages.t("desktop:AppearanceSettings.showTheScrollbarOnlyWhenYouHoverOver")}
 			{/snippet}
 			{#snippet actions()}
 				<RadioButton
@@ -452,7 +458,7 @@
 
 		<CardGroup.Item labelFor="scrollbar-always">
 			{#snippet title()}
-				Always show scrollbar
+				{$i18nMessages.t("desktop:AppearanceSettings.alwaysShowScrollbar")}
 			{/snippet}
 			{#snippet actions()}
 				<RadioButton

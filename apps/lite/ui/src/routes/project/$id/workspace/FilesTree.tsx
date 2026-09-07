@@ -1,3 +1,4 @@
+import { useTranslations } from "@gitbutler/i18n/react";
 import rowStyles from "./Row.module.css";
 import { startAbsorb } from "#ui/use-cursor.ts";
 import {
@@ -406,6 +407,7 @@ const FilesTreeRow: FC<{
 	holdsSelection,
 	interactive,
 }) => {
+	const i18nMessages = useTranslations();
 	const {
 		projectId,
 		fileParent,
@@ -459,7 +461,7 @@ const FilesTreeRow: FC<{
 				row={row}
 				isSelected={isSelected}
 				isExpanded={!isCollapsed}
-				aria-label={`Directory ${row.path}`}
+				aria-label={i18nMessages.t("lite:FilesTree.directoryValue", { value: row.path })}
 				style={virtStyle}
 				render={
 					interactive ? (
@@ -490,8 +492,11 @@ const FilesTreeRow: FC<{
 			style={virtStyle}
 			aria-label={
 				item._tag === "Change"
-					? `${item.change.status.type} ${item.change.path}`
-					: `Conflict ${item.path}`
+					? i18nMessages.t("lite:FilesTree.valueValue", {
+							value: item.change.status.type,
+							value1: item.change.path,
+						})
+					: i18nMessages.t("lite:FilesTree.conflictValue", { value: item.path })
 			}
 			render={
 				interactive ? (
@@ -710,11 +715,12 @@ export const FilesTree: FC<
 	fileParent,
 	focusScope,
 	reviewedPaths = EMPTY_REVIEWED_PATHS,
-	emptyLabel = "No changes.",
+	emptyLabel,
 	ageBadgeNow = null,
 	ref: refProp,
 	...props
 }) => {
+	const i18nMessages = useTranslations();
 	const { data: headInfoIndex } = useQuery({
 		...headInfoQueryOptions(projectId),
 		select: getHeadInfoIndex,
@@ -922,7 +928,9 @@ export const FilesTree: FC<
 			{rows.length === 0 ? (
 				<Row interactive={false}>
 					<RowLabelContainer>
-						<RowLabel className={rowStyles.fadedText}>{emptyLabel}</RowLabel>
+						<RowLabel className={rowStyles.fadedText}>
+							{emptyLabel ?? i18nMessages.t("lite:files.noChanges")}
+						</RowLabel>
 					</RowLabelContainer>
 				</Row>
 			) : (

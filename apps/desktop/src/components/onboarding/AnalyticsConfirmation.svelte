@@ -1,18 +1,29 @@
 <script lang="ts">
 	import AnalyticsSettings from "$components/shared/AnalyticsSettings.svelte";
 	import { initAnalyticsIfEnabled } from "$lib/analytics/analytics";
+	import { LANGUAGE_SERVICE } from "$lib/i18n";
 	import { SETTINGS_SERVICE } from "$lib/settings/appSettings";
 	import { OnboardingEvent, POSTHOG_WRAPPER } from "$lib/telemetry/posthog";
 	import { inject } from "@gitbutler/core/context";
+	import { useTranslations } from "@gitbutler/i18n/svelte";
 	import { AsyncButton, TestId } from "@gitbutler/ui";
+	import LanguageSelect from "@gitbutler/ui/i18n/LanguageSelect.svelte";
+	const i18nMessages = useTranslations();
 
 	const settingsService = inject(SETTINGS_SERVICE);
+	const language = inject(LANGUAGE_SERVICE);
 	const appSettings = $derived(settingsService.appSettings);
 	const posthog = inject(POSTHOG_WRAPPER);
 </script>
 
 <div class="analytics-confirmation">
-	<h1 class="title text-serif-42">Before we begin</h1>
+	<h1 class="title text-serif-42">
+		{$i18nMessages.t("desktop:AnalyticsConfirmation.beforeWeBegin")}
+	</h1>
+	<LanguageSelect
+		value={$appSettings?.ui.language ?? "system"}
+		onchange={(value) => language.set(value)}
+	/>
 	<AnalyticsSettings />
 
 	{#if $appSettings !== undefined}
@@ -29,7 +40,7 @@
 					});
 				}}
 			>
-				Continue
+				{$i18nMessages.t("desktop:AnalyticsConfirmation.continue")}
 			</AsyncButton>
 		</div>
 	{/if}

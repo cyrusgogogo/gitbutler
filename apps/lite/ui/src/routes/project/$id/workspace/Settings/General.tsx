@@ -1,3 +1,4 @@
+import { Message as I18nMessage, useTranslations } from "@gitbutler/i18n/react";
 import { useSuspenseQueries } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
 import { useState, type FC } from "react";
@@ -15,8 +16,10 @@ import { Switch } from "#ui/components/Switch.tsx";
 import { defaultSettings } from "#ui/settings.ts";
 import styles from "./General.module.css";
 import { Row, Section } from "./Section.tsx";
+import { LanguageSetting } from "#ui/LanguageSetting.tsx";
 
 export const General: FC = () => {
+	const i18nMessages = useTranslations();
 	const [
 		{ data: editors },
 		{ data: terminals },
@@ -46,17 +49,20 @@ export const General: FC = () => {
 
 	return (
 		<>
+			<Section>
+				<LanguageSetting />
+			</Section>
 			<AccountSection profile={profile} />
 
 			<Section>
-				<Row label="Default editor" htmlFor="editor">
+				<Row label={i18nMessages.t("lite:General.defaultEditor")} htmlFor="editor">
 					<select
 						id="editor"
 						value={settings.editorId ?? ""}
 						onChange={(evt) => saveGUISettings({ editorId: evt.currentTarget.value })}
 					>
 						<option value="" disabled>
-							Select an editor...
+							<I18nMessage value={{ key: "lite:General.selectAnEditor" }} />
 						</option>
 						{editors.map((editor) => (
 							<option key={editor.id} value={editor.id}>
@@ -66,14 +72,14 @@ export const General: FC = () => {
 					</select>
 				</Row>
 
-				<Row label="Default terminal" htmlFor="terminal">
+				<Row label={i18nMessages.t("lite:General.defaultTerminal")} htmlFor="terminal">
 					<select
 						id="terminal"
 						value={settings.terminalId ?? ""}
 						onChange={(evt) => saveGUISettings({ terminalId: evt.currentTarget.value })}
 					>
 						<option value="" disabled>
-							Select a terminal...
+							<I18nMessage value={{ key: "lite:General.selectATerminal" }} />
 						</option>
 						{terminals.map((terminal) => (
 							<option key={terminal.identifier} value={terminal.identifier}>
@@ -84,9 +90,9 @@ export const General: FC = () => {
 				</Row>
 
 				<Row
-					label="Check for updates automatically"
+					label={i18nMessages.t("lite:General.checkForUpdatesAutomatically")}
 					labelId="auto-update"
-					hint="An update already downloaded still installs on quit."
+					hint={i18nMessages.t("lite:General.anUpdateAlreadyDownloadedStillInstallsOnQuit")}
 				>
 					<Switch
 						aria-labelledby="auto-update"
@@ -96,9 +102,9 @@ export const General: FC = () => {
 				</Row>
 
 				<Row
-					label="Pull request activity"
+					label={i18nMessages.t("lite:General.pullRequestActivity")}
 					htmlFor="pr-notifications"
-					hint="Loud collects notifications in the bell; quiet keeps just the unread dots."
+					hint={i18nMessages.t("lite:General.loudCollectsNotificationsInTheBellQuietKeeps")}
 				>
 					<select
 						id="pr-notifications"
@@ -109,17 +115,25 @@ export const General: FC = () => {
 								saveGUISettings({ prNotifications: value });
 						}}
 					>
-						<option value="loud">Loud</option>
-						<option value="quiet">Quiet</option>
-						<option value="off">Off</option>
+						<option value="loud">
+							<I18nMessage value={{ key: "lite:General.loud" }} />
+						</option>
+						<option value="quiet">
+							<I18nMessage value={{ key: "lite:General.quiet" }} />
+						</option>
+						<option value="off">
+							<I18nMessage value={{ key: "lite:General.off" }} />
+						</option>
 					</select>
 				</Row>
 			</Section>
 
-			<Section heading="Danger zone">
+			<Section heading={i18nMessages.t("lite:General.dangerZone")}>
 				<Row
-					label="Remove all projects"
-					hint={`Forgets all ${projects.length} of them. The repositories on disk are untouched.`}
+					label={i18nMessages.t("lite:General.removeAllProjects")}
+					hint={i18nMessages.t("lite:General.forgetsAllValueOfThemTheRepositoriesOn", {
+						value: projects.length,
+					})}
 				>
 					{confirmingRemoveAll ? (
 						<div className={styles.confirm}>
@@ -129,7 +143,11 @@ export const General: FC = () => {
 								disabled={isRemoving}
 								onClick={removeAllProjects}
 							>
-								{isRemoving ? "Removing…" : "Confirm"}
+								{isRemoving ? (
+									<I18nMessage value={{ key: "lite:General.removing" }} />
+								) : (
+									<I18nMessage value={{ key: "lite:General.confirm" }} />
+								)}
 							</button>
 							<button
 								type="button"
@@ -137,7 +155,7 @@ export const General: FC = () => {
 								disabled={isRemoving}
 								onClick={() => setConfirmingRemoveAll(false)}
 							>
-								Cancel
+								<I18nMessage value={{ key: "lite:General.cancel" }} />
 							</button>
 						</div>
 					) : (
@@ -147,7 +165,7 @@ export const General: FC = () => {
 							disabled={projects.length === 0}
 							onClick={() => setConfirmingRemoveAll(true)}
 						>
-							Remove all…
+							<I18nMessage value={{ key: "lite:General.removeAll" }} />
 						</button>
 					)}
 				</Row>

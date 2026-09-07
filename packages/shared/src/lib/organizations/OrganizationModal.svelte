@@ -8,7 +8,9 @@
 	import { USER_SERVICE } from "$lib/users/userService";
 	import { getUserByLogin } from "$lib/users/usersPreview.svelte";
 	import { inject } from "@gitbutler/core/context";
+	import { useTranslations } from "@gitbutler/i18n/svelte";
 	import { Avatar, Button, CardGroup, Modal, Textbox } from "@gitbutler/ui";
+	const i18nMessages = useTranslations();
 
 	type Props = {
 		slug: string;
@@ -37,13 +39,13 @@
 		{#snippet children(organization)}
 			{#if organization.inviteCode}
 				<div class="header-with-action">
-					<p>Invite code:</p>
+					<p>{$i18nMessages.t("shared:OrganizationModal.inviteCode")}</p>
 					<Textbox value={organization.inviteCode} readonly></Textbox>
 				</div>
 			{/if}
 
 			{#if organization.memberLogins}
-				<h5 class="text-15 text-bold">Users:</h5>
+				<h5 class="text-15 text-bold">{$i18nMessages.t("shared:OrganizationModal.users")}</h5>
 
 				<CardGroup>
 					{#each organization.memberLogins as login}
@@ -54,7 +56,8 @@
 								{#snippet children(user)}
 									<Avatar
 										size="medium"
-										username={user?.name || "Unknown"}
+										username={user?.name ||
+											$i18nMessages.t("shared:OrganizationModal.inlinebc7819b34")}
 										srcUrl={user?.avatarUrl || ""}
 									/>
 									<p>{user?.name}</p>
@@ -66,7 +69,7 @@
 			{/if}
 
 			{#if organization.projectRepositoryIds}
-				<h5 class="text-15 text-bold">Projects:</h5>
+				<h5 class="text-15 text-bold">{$i18nMessages.t("shared:OrganizationModal.projects")}</h5>
 				<CardGroup>
 					{#each organization.projectRepositoryIds as repositoryId}
 						{@const project = getProjectByRepositoryId(repositoryId)}
@@ -85,7 +88,7 @@
 	</Loading>
 </Modal>
 
-<Button onclick={() => modal?.show()}>View</Button>
+<Button onclick={() => modal?.show()}>{$i18nMessages.t("shared:OrganizationModal.view")}</Button>
 
 <style lang="postcss">
 	.header-with-action {

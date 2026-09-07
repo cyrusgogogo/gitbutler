@@ -1,44 +1,19 @@
 import { showWarning } from "$lib/notifications/toasts";
+import { message as i18nMessage } from "@gitbutler/i18n";
 import { TestId } from "@gitbutler/ui";
 import type { BranchIconName } from "$lib/branches/branchIcon";
 import type { DropResult } from "$lib/dragging/dropResult";
 import type { ApplyOutcome, PushStatus, Segment, Stack as RefInfoStack } from "@gitbutler/but-sdk";
 
-function stackCount(numStacks: number): string {
-	if (numStacks === 1) {
-		return "one stack";
-	} else {
-		return "some stacks";
-	}
-}
-
-function prettyNamedListIfPossible(expectedNames: number, names: string[]): string {
-	// It could happen that not all stacks had names, for now we don't deal with that.
-	// Also, the old codepath doesn't produce names.
-	if (expectedNames !== names.length) {
-		return stackCount(expectedNames);
-	}
-	if (names.length === 0) {
-		return "";
-	} else if (names.length === 1) {
-		return `stack ${names[0]}`;
-	} else if (names.length === 2) {
-		return `stack ${names[0]} and stack ${names[1]}`;
-	}
-
-	const allButLast = names.slice(0, -1);
-	const last = names[names.length - 1];
-
-	return `${allButLast.map((n) => `stack ${n}`).join(", ")}, and stack ${last}`;
-}
-
 export function handleApplyOutcome(outcome: ApplyOutcome) {
 	if (outcome.status !== "conflictAborted") return;
 	const names = outcome.conflictingStacks.map((stack) => stack.shortName);
-	const single = names.length === 1;
+
 	showWarning(
-		"Couldn't apply branch due to conflicts",
-		`It conflicts with ${prettyNamedListIfPossible(names.length, names) || "another applied stack"}. Unapply ${single ? "it" : "them"} first, then try applying again.`,
+		i18nMessage("desktop:stack.couldnTApplyBranchDueToConflicts"),
+		names.length
+			? i18nMessage("desktop:stack.conflict", { count: names.length, names: names.join(", ") })
+			: i18nMessage("desktop:stack.conflictUnknown"),
 		undefined,
 		TestId.BranchApplyConflictToast,
 	);
@@ -58,10 +33,10 @@ export type GerritPushFlag =
  *
  * This is the name of the top-most branch in the stack.
  */
-export function getStackName(stack: Stack): string {
+export function getStackName(stack: Stack, unnamed = "Unnamed segment"): string {
 	const firstSegment = stack.segments.at(0);
 	if (!firstSegment?.refName) {
-		return "Unnamed segment";
+		return unnamed;
 	}
 	return firstSegment.refName.displayName;
 }
@@ -86,10 +61,10 @@ export function cherryPickTargets(stacks: Stack[]): CherryPickTarget[] {
 	});
 }
 
-export function getStackBranchNames(stack: Stack): string[] {
+export function getStackBranchNames(stack: Stack, unnamed = "Unnamed segment"): string[] {
 	return stack.segments.map((segment) => {
 		if (!segment.refName) {
-			return "Unnamed segment";
+			return unnamed;
 		}
 		return segment.refName.displayName;
 	});
@@ -164,9 +139,8 @@ export function toMoveBranchWarning(unappliedStackCount: number): DropResult | u
 	if (unappliedStackCount === 0) return undefined;
 	return {
 		type: "warning",
-		title: "Heads up: We had to unapply some stacks to move this branch",
-		message: `It seems that the branch moved couldn't be applied cleanly alongside your other ${unappliedStackCount} ${unappliedStackCount === 1 ? "stack" : "stacks"}.
-You can always re-apply them later from the branches page.`,
+		title: i18nMessage("desktop:stack.static608dcad83"),
+		message: i18nMessage("desktop:stack.moveWarning", { count: unappliedStackCount }),
 		testId: TestId.StacksUnappliedToast,
 	};
 }

@@ -1,3 +1,4 @@
+import { Message as I18nMessage, useTranslations } from "@gitbutler/i18n/react";
 import { getButtonClassName } from "#ui/components/Button.tsx";
 import { Icon } from "#ui/components/Icon.tsx";
 import { TooltipPopup } from "#ui/components/Tooltip.tsx";
@@ -31,6 +32,7 @@ type Props = {
  * rather than failing at the end of a drop.
  */
 export const MarkdownAttachments: FC<Props> = (p) => {
+	const i18nMessages = useTranslations();
 	const { data: profile } = useQuery(userProfileQueryOptions);
 	const uploadFiles = useUploadFiles();
 	const inputRef = useRef<HTMLInputElement | null>(null);
@@ -86,10 +88,10 @@ export const MarkdownAttachments: FC<Props> = (p) => {
 	};
 
 	const reason = uploadFiles.isPending
-		? "Uploading…"
+		? i18nMessages.t("lite:MarkdownAttachments.labeld921a79af")
 		: signedIn
-			? "Attach a file"
-			: "Sign in to GitButler to attach files";
+			? i18nMessages.t("lite:MarkdownAttachments.labelae85e4ee1")
+			: i18nMessages.t("lite:MarkdownAttachments.labelaccaaf0bd");
 
 	return (
 		<>
@@ -112,7 +114,7 @@ export const MarkdownAttachments: FC<Props> = (p) => {
 				{/* Disabled buttons swallow hover, so the wrapper span carries the tooltip. */}
 				<Tooltip.Trigger render={<span className={styles.triggerWrap} />}>
 					<button
-						aria-label="Attach a file"
+						aria-label={i18nMessages.t("lite:MarkdownAttachments.attachAFile")}
 						className={getButtonClassName({ variant: "ghost", iconOnly: true })}
 						disabled={!enabled}
 						onClick={() => inputRef.current?.click()}
@@ -136,11 +138,12 @@ export const MarkdownAttachments: FC<Props> = (p) => {
 				onOpenChange={(open) => open || setPending([])}
 			>
 				<Dialog.Title>
-					{pending.length === 1 ? "Upload this file?" : `Upload these ${pending.length} files?`}
+					<I18nMessage value={{ key: "lite:upload.confirm", values: { count: pending.length } }} />
 				</Dialog.Title>
 				<Dialog.Description className={styles.description}>
-					They are uploaded to gitbutler.com and anyone with the link can open them, which is what
-					lets the forge show them in your description.
+					<I18nMessage
+						value={{ key: "lite:MarkdownAttachments.theyAreUploadedToGitbutlerComAndAnyone" }}
+					/>{" "}
 				</Dialog.Description>
 				<ul className={styles.files}>
 					{pending.map((file, index) => (
@@ -156,14 +159,14 @@ export const MarkdownAttachments: FC<Props> = (p) => {
 						onClick={() => setPending([])}
 						type="button"
 					>
-						Cancel
+						<I18nMessage value={{ key: "lite:MarkdownAttachments.cancel" }} />
 					</button>
 					<button
 						className={getButtonClassName({ variant: "pop" })}
 						onClick={confirm}
 						type="button"
 					>
-						Yes, upload
+						<I18nMessage value={{ key: "lite:MarkdownAttachments.yesUpload" }} />
 					</button>
 				</div>
 			</Modal>

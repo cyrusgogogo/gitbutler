@@ -4,6 +4,7 @@
 	import { beforeNavigate } from "$app/navigation";
 	import { page } from "$app/state";
 	import * as jsonLinks from "$lib/data/links.json";
+	import { provideLanguage } from "$lib/i18n";
 	import { WebState } from "$lib/redux/store.svelte";
 	import { latestClientVersion } from "$lib/store";
 	import { getValidReleases } from "$lib/types/releases";
@@ -11,19 +12,32 @@
 	import { updateFavIcon } from "$lib/utils/faviconUtils";
 	import { initTheme } from "$lib/utils/theme.svelte";
 	import { provide } from "@gitbutler/core/context";
+	import { bindDocumentLanguage, createI18n } from "@gitbutler/i18n";
+	import { browserLanguage } from "@gitbutler/i18n/browser";
+	import { resources } from "@gitbutler/i18n/catalogs/web";
+	import { provideI18n } from "@gitbutler/i18n/svelte";
 	import { HttpClient, HTTP_CLIENT } from "@gitbutler/shared/network/httpClient";
 	import { PROJECT_SERVICE, ProjectService } from "@gitbutler/shared/organizations/projectService";
 	import { APP_STATE } from "@gitbutler/shared/redux/store.svelte";
 	import { WebRoutesService, WEB_ROUTES_SERVICE } from "@gitbutler/shared/routing/webRoutes.svelte";
+	import { onDestroy } from "svelte";
 	import { type Snippet } from "svelte";
 	import { readable } from "svelte/store";
 	import { env } from "$env/dynamic/public";
 	import "../styles/global.css";
 	import "@gitbutler/design-core/core";
 	import "@gitbutler/design-core/utility";
-
 	// Initialize theme system
 	initTheme();
+	const i18n = createI18n(resources);
+	const language = browserLanguage(i18n, "gitbutler.web.language");
+	provideI18n(i18n);
+	provideLanguage(language);
+	const unbindLanguage = bindDocumentLanguage(i18n, document);
+	onDestroy(() => {
+		unbindLanguage();
+		language.destroy();
+	});
 
 	interface Props {
 		children: Snippet;
@@ -111,7 +125,8 @@
 			async
 			src="https://u.gitbutler.com/script.js"
 			data-website-id="c406f339-a2af-4992-9a82-162134323008"
-		></script>
+		>
+		</script>
 	{/if}
 </svelte:head>
 

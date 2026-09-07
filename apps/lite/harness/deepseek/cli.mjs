@@ -62,7 +62,8 @@ const hostOverrides = {
 	resetAiConfiguration: () => defaultAiConfiguration(),
 	// The renderer merges this over its own defaults (defaultSettings in
 	// ui/src/settings.ts), so an empty versioned config is a valid read.
-	readGUISettings: () => ({ version: 1 }),
+	readGUISettings: () => ({ version: 1, language: "en" }),
+	getSystemLocale: () => "en-US",
 	writeGUISettings: () => undefined,
 	askpassSubmitPromptResponse: () => undefined,
 };

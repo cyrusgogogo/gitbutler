@@ -1,3 +1,4 @@
+import { useTranslations } from "@gitbutler/i18n/react";
 import { projectSlice } from "#ui/projects/state.ts";
 import { useAppDispatch, useAppStore } from "#ui/store.ts";
 import { Tooltip } from "@base-ui/react";
@@ -12,6 +13,7 @@ export const DependencyIndicator: FC<
 		tooltipHandle: Tooltip.Handle<FileRowTooltipPayload>;
 	} & ComponentProps<"button">
 > = ({ projectId, commitIds, branchNameByCommitId, tooltipHandle, ...restProps }) => {
+	const i18nMessages = useTranslations();
 	const dispatch = useAppDispatch();
 	const store = useAppStore();
 	const ownedCommitIds = useRef<Set<string> | null>(null);
@@ -24,8 +26,10 @@ export const DependencyIndicator: FC<
 	);
 	const tooltip =
 		branchNames.size > 0
-			? `Depends on ${branchNames.values().toArray().join(", ")}`
-			: "Unknown dependencies";
+			? i18nMessages.t("lite:DependencyIndicator.labelcf8ab270d", {
+					value0: branchNames.values().toArray().join(", "),
+				})
+			: i18nMessages.t("lite:DependencyIndicator.label25c0d6754");
 
 	const highlightCommitIds = () => {
 		dispatch(

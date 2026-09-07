@@ -2,6 +2,8 @@
 	import { CLIPBOARD_SERVICE } from "$lib/backend/clipboard";
 	import { STACK_SERVICE } from "$lib/stacks/stackService.svelte";
 	import { inject } from "@gitbutler/core/context";
+	import { message as i18nMessage } from "@gitbutler/i18n";
+	import { useTranslations } from "@gitbutler/i18n/svelte";
 	import {
 		Button,
 		CopyButton,
@@ -15,6 +17,7 @@
 	} from "@gitbutler/ui";
 	import { tick } from "svelte";
 	import type { CommitAbsorption, SingleHunk, TreeChange } from "@gitbutler/but-sdk";
+	const i18nMessages = useTranslations();
 
 	type Props = {
 		projectId: string;
@@ -41,7 +44,9 @@
 			},
 		});
 		if (!plan || plan.length === 0) {
-			chipToasts.error("No suitable commits found to absorb changes into.");
+			chipToasts.error(
+				i18nMessage("desktop:AbsorbPlanModal.noSuitableCommitsFoundToAbsorbChangesInto"),
+			);
 			return;
 		}
 		absorbPlan = plan;
@@ -68,9 +73,9 @@
 	onSubmit={async () => {
 		try {
 			await chipToasts.promise(absorb({ projectId, absorptionPlan: absorbPlan }), {
-				loading: "Absorbing changes",
-				success: "Changes absorbed successfully",
-				error: "Failed to absorb changes",
+				loading: i18nMessage("desktop:AbsorbPlanModal.inline2ca130bd2"),
+				success: i18nMessage("desktop:AbsorbPlanModal.inline9c63a45b0"),
+				error: i18nMessage("desktop:AbsorbPlanModal.inlinebd9fecfcb"),
 			});
 			modal?.close();
 		} catch (error) {
@@ -78,11 +83,13 @@
 		}
 	}}
 >
-	<ModalHeader sticky={!isScrollVisible}>Absorb Changes into Commits</ModalHeader>
+	<ModalHeader sticky={!isScrollVisible}
+		>{$i18nMessages.t("desktop:AbsorbPlanModal.absorbChangesIntoCommits")}</ModalHeader
+	>
 	<ScrollableContainer onscrollTop={(visible) => (isScrollVisible = visible)}>
 		<div class="absorb-plan-content">
 			<p class="text-13 text-body clr-text-2">
-				The following changes will be absorbed into their respective commits:
+				{$i18nMessages.t("desktop:AbsorbPlanModal.theFollowingChangesWillBeAbsorbedIntoTheir")}
 			</p>
 			<div class="commit-absorptions">
 				{#each absorbPlan as commitAbsorption}
@@ -91,9 +98,11 @@
 						{#if commitAbsorption.reason !== "default_stack"}
 							<div class="absorption__reason text-12 text-body clr-text-2">
 								{#if commitAbsorption.reason === "hunk_dependency"}
-									📍 Files depend on the commit due to overlapping hunks
+									{$i18nMessages.t(
+										"desktop:AbsorbPlanModal.filesDependOnTheCommitDueToOverlapping",
+									)}
 								{:else if commitAbsorption.reason === "stack_assignment"}
-									🔖 Files assigned to this stack
+									{$i18nMessages.t("desktop:AbsorbPlanModal.filesAssignedToThisStack")}
 								{/if}
 							</div>
 						{/if}
@@ -111,7 +120,7 @@
 										text={commitAbsorption.commitId.slice(0, 7)}
 										onclick={() => {
 											clipboardService.write(commitAbsorption.commitId, {
-												message: "Commit ID copied",
+												message: i18nMessage("desktop:AbsorbPlanModal.inline1e8dcfc7e"),
 											});
 										}}
 									/>
@@ -136,7 +145,9 @@
 	</ScrollableContainer>
 
 	{#snippet controls(close)}
-		<Button kind="outline" onclick={close}>Cancel</Button>
+		<Button kind="outline" onclick={close}
+			>{$i18nMessages.t("desktop:AbsorbPlanModal.cancel")}</Button
+		>
 		<Button
 			style="pop"
 			type="submit"
@@ -144,7 +155,7 @@
 			disabled={absorbPlan.length === 0 || absorbingChanges.current.isLoading}
 			testId={TestId.AbsorbModal_ActionButton}
 		>
-			Absorb changes
+			{$i18nMessages.t("desktop:AbsorbPlanModal.absorbChanges")}
 		</Button>
 	{/snippet}
 </Modal>

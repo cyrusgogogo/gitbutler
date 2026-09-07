@@ -2,10 +2,12 @@
 	import BranchHeaderIcon from "$components/branch/BranchHeaderIcon.svelte";
 	import { getColorFromCommitState } from "$components/lib";
 	import { type CommitStatusType } from "$lib/commits/commit";
+	import { useTranslations } from "@gitbutler/i18n/svelte";
 	import { Icon, FileIcon } from "@gitbutler/ui";
 	import { type DragStateService } from "@gitbutler/ui/drag/dragStateService.svelte";
 	import { readable } from "svelte/store";
 	import type { PushStatus } from "@gitbutler/but-sdk";
+	const i18nMessages = useTranslations();
 
 	type Props = {
 		type: "branch" | "commit" | "file" | "folder" | "hunk" | "ai-session";
@@ -86,7 +88,7 @@
 			{@render dropLabelSnippet({ label: $dropLabel, amount: childrenAmount })}
 			<div class="draggable-commit-indicator"></div>
 			<div class="truncate text-13 text-semibold draggable-commit-label">
-				{label || "Empty commit"}
+				{label || $i18nMessages.t("desktop:DragClone.emptyCommit")}
 			</div>
 		</div>
 	</div>
@@ -118,20 +120,22 @@
 					<div class="dragchip-file-container">
 						<FileIcon fileName={filePath || ""} />
 						<span class="text-12 text-semibold truncate dragchip-file-name">
-							{label || "Empty file"}
+							{label || $i18nMessages.t("desktop:DragClone.emptyFile")}
 						</span>
 					</div>
 				{:else if type === "folder"}
 					<div class="dragchip-file-container">
 						<FileIcon fileName="folder-close" color="var(--text-2)" />
 						<span class="text-12 text-semibold truncate dragchip-file-name">
-							{label || "Empty folder"}
+							{label || $i18nMessages.t("desktop:DragClone.emptyFolder")}
 						</span>
 					</div>
 				{:else if type === "hunk"}
 					<div class="dragchip-hunk-container">
 						<div class="dragchip-hunk-decorator">〈/〉</div>
-						<span class="dragchip-hunk-label">{label || "Empty hunk"}</span>
+						<span class="dragchip-hunk-label"
+							>{label || $i18nMessages.t("desktop:DragClone.emptyHunk")}</span
+						>
 					</div>
 				{/if}
 			</div>

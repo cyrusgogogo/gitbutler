@@ -177,7 +177,8 @@ export const fixtureForgeReview = (overrides: Partial<ForgeReview> = {}): ForgeR
 });
 
 export const globalHandlers = (projectId: string): FakeHandlers => ({
-	readGUISettings: (): GUISettings => ({ version: 1 }),
+	readGUISettings: (): GUISettings => ({ version: 1, language: "en" }),
+	getSystemLocale: () => "en-US",
 	listEditors: () => [],
 	getAiConfiguration: () => fixtureAiConfiguration,
 	forgeInfo: () => null,

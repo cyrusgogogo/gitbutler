@@ -1,6 +1,9 @@
 <script lang="ts">
 	import BranchIntegrationModal from "$components/branch/BranchIntegrationModal.svelte";
+	import { useTranslations } from "@gitbutler/i18n/svelte";
 	import { Button, Modal, TestId } from "@gitbutler/ui";
+	import I18nRichMessage from "@gitbutler/ui/i18n/RichMessage.svelte";
+	const i18nMessages = useTranslations();
 
 	type Props = {
 		projectId: string;
@@ -21,16 +24,18 @@
 
 <div class="upstream-integration-actions">
 	<p class="text-12 text-body clr-text-2">
-		This branch and its remote have diverged.
-		<br />
-		Update to integrate the remote changes.
+		{#snippet i18nSlot1()}<br />{/snippet}
+		<I18nRichMessage
+			value={{ key: "desktop:UpstreamIntegrationActions.thisBranchAndItsRemoteHaveDivergedUpdate" }}
+			components={{ slot1: i18nSlot1 }}
+		/>
 	</p>
 	<Button
 		style="warning"
 		testId={TestId.UpstreamCommitsIntegrateButton}
 		onclick={kickOffIntegration}
 	>
-		Update local branch...
+		{$i18nMessages.t("desktop:UpstreamIntegrationActions.updateLocalBranch")}
 	</Button>
 </div>
 

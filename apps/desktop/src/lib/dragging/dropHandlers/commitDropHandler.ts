@@ -11,6 +11,7 @@ import { toCommitMovePlacement } from "$lib/stacks/commitMovePlacement";
 import { STACK_SERVICE } from "$lib/stacks/stackService.svelte";
 import { UI_STATE, withStackBusy, type UiState } from "$lib/state/uiState.svelte";
 import { inject } from "@gitbutler/core/context";
+import { message as i18nMessage } from "@gitbutler/i18n";
 import { untrack } from "svelte";
 import type { DropResult } from "$lib/dragging/dropResult";
 import type { DropzoneHandler } from "$lib/dragging/handler";
@@ -98,7 +99,7 @@ export class MoveCommitDzHandler implements DropzoneHandler {
 					const classified = classify(error);
 					result = {
 						type: "warning",
-						title: "Cannot move commits",
+						title: i18nMessage("desktop:commitDropHandler.staticf41e2263d"),
 						message: classified.userMessage ?? classified.message,
 					};
 				}
@@ -179,7 +180,11 @@ export class AmendCommitWithChangeDzHandler implements DropzoneHandler {
 						await this.hooksService.runPreCommitHooks(this.projectId, worktreeChanges);
 					} catch (err) {
 						if (err instanceof HookFailedError) return { type: "ok" };
-						return { type: "error", title: "Git hook failed", error: err };
+						return {
+							type: "error",
+							title: i18nMessage("desktop:commitDropHandler.staticc340cb563"),
+							error: err,
+						};
 					}
 				}
 
@@ -420,7 +425,11 @@ export class AmendCommitWithHunkDzHandler implements DropzoneHandler {
 					await this.hooksService.runPreCommitHooks(projectId, worktreeChanges);
 				} catch (err) {
 					if (err instanceof HookFailedError) return { type: "ok" };
-					return { type: "error", title: "Git hook failed", error: err };
+					return {
+						type: "error",
+						title: i18nMessage("desktop:commitDropHandler.staticc340cb563"),
+						error: err,
+					};
 				}
 			}
 			const outcome = await this.stackService.amendCommitMutation({

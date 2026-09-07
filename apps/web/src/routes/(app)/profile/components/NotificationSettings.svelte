@@ -1,7 +1,9 @@
 <script lang="ts">
+	import { useTranslations } from "@gitbutler/i18n/svelte";
 	import { CardGroup, Spacer, Toggle } from "@gitbutler/ui";
 	import type { NotificationSettingsService } from "@gitbutler/shared/settings/notificationSettingsService";
 	import type { NotificationSettings as NotificationSettingsType } from "@gitbutler/shared/settings/types";
+	const i18nMessages = useTranslations();
 
 	interface Props {
 		notificationSettings: NotificationSettingsType;
@@ -69,19 +71,23 @@
 <Spacer />
 
 <div class="stack-v gap-8">
-	<h2 class="text-15 text-bold">Notification settings</h2>
+	<h2 class="text-15 text-bold">
+		{$i18nMessages.t("web:NotificationSettings.notificationSettings")}
+	</h2>
 	<p class="text-12 text-body clr-text-2">
-		Manage your email notification preferences for various activities within GitButler.
+		{$i18nMessages.t(
+			"web:NotificationSettings.manageYourEmailNotificationPreferencesForVariousActivities",
+		)}
 	</p>
 </div>
 
 <CardGroup>
 	<CardGroup.Item labelFor="receive-chat-mention-emails">
 		{#snippet title()}
-			Chat message mention emails
+			{$i18nMessages.t("web:NotificationSettings.chatMessageMentionEmails")}
 		{/snippet}
 		{#snippet caption()}
-			Emails when you are mentioned in a message.
+			{$i18nMessages.t("web:NotificationSettings.emailsWhenYouAreMentionedInAMessage")}
 		{/snippet}
 		{#snippet actions()}
 			<Toggle
@@ -96,10 +102,10 @@
 
 	<CardGroup.Item labelFor="receive-chat-reply-emails">
 		{#snippet title()}
-			Chat message reply emails
+			{$i18nMessages.t("web:NotificationSettings.chatMessageReplyEmails")}
 		{/snippet}
 		{#snippet caption()}
-			Emails when you receive a reply to a chat message.
+			{$i18nMessages.t("web:NotificationSettings.emailsWhenYouReceiveAReplyToA")}
 		{/snippet}
 		{#snippet actions()}
 			<Toggle
@@ -113,10 +119,10 @@
 
 	<CardGroup.Item labelFor="receive-issue-creation-emails">
 		{#snippet title()}
-			Issue creation emails
+			{$i18nMessages.t("web:NotificationSettings.issueCreationEmails")}
 		{/snippet}
 		{#snippet caption()}
-			Emails for new issues created in changes you are involved in.
+			{$i18nMessages.t("web:NotificationSettings.emailsForNewIssuesCreatedInChangesYou")}
 		{/snippet}
 		{#snippet actions()}
 			<Toggle
@@ -131,10 +137,10 @@
 
 	<CardGroup.Item labelFor="receive-issue-resolution-emails">
 		{#snippet title()}
-			Issue status emails
+			{$i18nMessages.t("web:NotificationSettings.issueStatusEmails")}
 		{/snippet}
 		{#snippet caption()}
-			Emails for status updates of issues in changes you are involved in.
+			{$i18nMessages.t("web:NotificationSettings.emailsForStatusUpdatesOfIssuesInChanges")}
 		{/snippet}
 		{#snippet actions()}
 			<Toggle
@@ -149,10 +155,10 @@
 
 	<CardGroup.Item labelFor="receive-review-branch-emails">
 		{#snippet title()}
-			Branch version update emails
+			{$i18nMessages.t("web:NotificationSettings.branchVersionUpdateEmails")}
 		{/snippet}
 		{#snippet caption()}
-			Emails when a new review branch version is created.
+			{$i18nMessages.t("web:NotificationSettings.emailsWhenANewReviewBranchVersionIs")}
 		{/snippet}
 		{#snippet actions()}
 			<Toggle
@@ -167,10 +173,10 @@
 
 	<CardGroup.Item labelFor="receive-sign-off-emails">
 		{#snippet title()}
-			Change status update emails
+			{$i18nMessages.t("web:NotificationSettings.changeStatusUpdateEmails")}
 		{/snippet}
 		{#snippet caption()}
-			Emails for updates on the review status of changes you are involved in.
+			{$i18nMessages.t("web:NotificationSettings.emailsForUpdatesOnTheReviewStatusOf")}
 		{/snippet}
 		{#snippet actions()}
 			<Toggle

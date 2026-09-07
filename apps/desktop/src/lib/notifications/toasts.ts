@@ -1,9 +1,14 @@
+import { createI18n, type LocalizedText } from "@gitbutler/i18n";
+import { resources } from "@gitbutler/i18n/catalogs/desktop";
 import posthog from "posthog-js";
 import { writable, type Writable } from "svelte/store";
 import type { MessageStyle } from "@gitbutler/ui";
 
+// Telemetry keeps its existing English grouping, regardless of the display language.
+export const canonicalMessages = createI18n(resources, "en");
+
 type ExtraAction = {
-	label: string;
+	label: LocalizedText;
 	testId?: string;
 	onClick: (dismiss: () => void) => void;
 };
@@ -11,9 +16,9 @@ type ExtraAction = {
 export interface Toast {
 	id?: string;
 	testId?: string;
-	message?: string;
+	message?: LocalizedText;
 	error?: any;
-	title?: string;
+	title?: LocalizedText;
 	style?: MessageStyle;
 	extraAction?: ExtraAction;
 }
@@ -51,7 +56,7 @@ export function showToast(toast: Toast) {
 	// to the semantic call, not in this low-level UI primitive. Callers
 	// of `showToast` directly don't emit telemetry; convert them to
 	// `showWarning` / `showError` if telemetry is wanted.
-	toast.message = toast.message?.replace(/^ */gm, "");
+	if (typeof toast.message === "string") toast.message = toast.message.replace(/^ */gm, "");
 	if (!toast.id) {
 		toast = { ...toast, id: `${idCounter++}` };
 	}
@@ -61,21 +66,21 @@ export function showToast(toast: Toast) {
 	]);
 }
 
-export function showInfo(title: string, message: string, extraAction?: ExtraAction) {
+export function showInfo(title: LocalizedText, message: LocalizedText, extraAction?: ExtraAction) {
 	showToast({ title, message, style: "info", extraAction });
 }
 
 export function showWarning(
-	title: string,
-	message: string,
+	title: LocalizedText,
+	message: LocalizedText,
 	extraAction?: ExtraAction,
 	testId?: string,
 ) {
 	if (shouldCaptureToast()) {
 		posthog.capture("toast:show_warning", {
 			warning_test_id: testId,
-			warning_title: title,
-			warning_message: message,
+			warning_title: canonicalMessages.text(title),
+			warning_message: canonicalMessages.text(message),
 		});
 	}
 	showToast({ title, message, style: "warning", extraAction, testId });

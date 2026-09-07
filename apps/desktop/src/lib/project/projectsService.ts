@@ -4,6 +4,7 @@ import { handleAddProjectOutcome, type Project } from "$lib/project/project";
 import { projectPath } from "$lib/routes/routes.svelte";
 import { getCookie } from "$lib/utils/cookies";
 import { InjectionToken } from "@gitbutler/core/context";
+import { message as i18nMessage } from "@gitbutler/i18n";
 import { persisted } from "@gitbutler/shared/persisted";
 import { chipToasts } from "@gitbutler/ui";
 import { get } from "svelte/store";
@@ -118,7 +119,11 @@ export class ProjectsService {
 
 		const project = await this.fetchProject(projectId, true);
 		await this.updateProject({ ...project, path });
-		chipToasts.success(`Project ${project.title} relocated`);
+		chipToasts.success(
+			i18nMessage("desktop:projectsService.projectValueRelocated", {
+				title: String(project.title),
+			}),
+		);
 		window.location.reload();
 	}
 
@@ -127,8 +132,8 @@ export class ProjectsService {
 		if (!capabilities?.canAddProjects) {
 			showToast({
 				style: "info",
-				title: "Adding projects is disabled",
-				message: "Projects can only be added when GitButler runs on your local machine.",
+				title: i18nMessage("desktop:projectsService.addingProjectsIsDisabled"),
+				message: i18nMessage("desktop:projectsService.projectsCanOnlyBeAddedWhenGitButlerRuns"),
 			});
 			return;
 		}
@@ -175,8 +180,8 @@ export class ProjectsService {
 			console.warn(message);
 			showToast({
 				style: "info",
-				title: "Use the Linux version of GitButler",
-				message,
+				title: i18nMessage("desktop:projectsService.useTheLinuxVersionOfGitButler"),
+				message: i18nMessage("desktop:project.wsl"),
 			});
 
 			return false;
@@ -190,8 +195,8 @@ export class ProjectsService {
 			console.warn(message);
 			showToast({
 				style: "info",
-				title: "UNC paths are not directly supported",
-				message,
+				title: i18nMessage("desktop:projectsService.uNCPathsAreNotDirectlySupported"),
+				message: i18nMessage("desktop:project.unc"),
 			});
 
 			return false;

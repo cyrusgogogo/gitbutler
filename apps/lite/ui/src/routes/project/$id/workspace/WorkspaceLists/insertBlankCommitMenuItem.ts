@@ -1,3 +1,4 @@
+import { message as i18nMessage } from "@gitbutler/i18n";
 import { nativeMenuItem } from "#ui/native-menu.ts";
 import { sidebarHotkeys, toElectronAccelerator } from "#ui/hotkeys.ts";
 
@@ -6,10 +7,10 @@ export const insertBlankCommitMenuItem = (
 	acceleratorSide: "above" | "below",
 ) =>
 	nativeMenuItem({
-		label: "Add Empty Commit",
+		label: i18nMessage("lite:insertBlankCommitMenuItem.addEmptyCommit"),
 		submenu: [
 			nativeMenuItem({
-				label: "Above",
+				label: i18nMessage("lite:insertBlankCommitMenuItem.above"),
 				accelerator:
 					acceleratorSide === "above"
 						? toElectronAccelerator(sidebarHotkeys.insertEmptyCommitAbove.hotkey)
@@ -17,7 +18,7 @@ export const insertBlankCommitMenuItem = (
 				onSelect: () => insertBlankCommit("above"),
 			}),
 			nativeMenuItem({
-				label: "Below",
+				label: i18nMessage("lite:insertBlankCommitMenuItem.below"),
 				accelerator: toElectronAccelerator(
 					acceleratorSide === "below"
 						? sidebarHotkeys.insertEmptyCommitAbove.hotkey

@@ -1,5 +1,7 @@
 <script lang="ts">
+	import { useTranslations } from "@gitbutler/i18n/svelte";
 	import { InfoMessage } from "@gitbutler/ui";
+	const i18nMessages = useTranslations();
 
 	// Number of events received.
 	let count = $state(0);
@@ -17,10 +19,12 @@
 	<div class="reload-warning">
 		<InfoMessage style="warning">
 			{#snippet title()}
-				Full reload pending
+				{$i18nMessages.t("desktop:ReloadWarning.fullReloadPending")}
 			{/snippet}
 			{#snippet content()}
-				Detected {count} events that require reloading this page.
+				{$i18nMessages.t("desktop:ReloadWarning.detectedValueEventsThatRequireReloadingThisPage", {
+					count: String(count),
+				})}
 			{/snippet}
 		</InfoMessage>
 	</div>

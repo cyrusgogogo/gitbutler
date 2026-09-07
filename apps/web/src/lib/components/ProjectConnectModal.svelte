@@ -1,15 +1,17 @@
 <script lang="ts">
 	import { WEB_STATE } from "$lib/redux/store.svelte";
 	import { inject } from "@gitbutler/core/context";
+	import { message as i18nMessage } from "@gitbutler/i18n";
+	import { useTranslations } from "@gitbutler/i18n/svelte";
 	import RegisterInterest from "@gitbutler/shared/interest/RegisterInterest.svelte";
 	import Loading from "@gitbutler/shared/network/Loading.svelte";
 	import { ORGANIZATION_SERVICE } from "@gitbutler/shared/organizations/organizationService";
 	import { getOrganizations } from "@gitbutler/shared/organizations/organizationsPreview.svelte";
 	import { PROJECT_SERVICE } from "@gitbutler/shared/organizations/projectService";
 	import { projectTable } from "@gitbutler/shared/organizations/projectsSlice";
-
 	import { Button, CardGroup, Modal, chipToasts } from "@gitbutler/ui";
 	import type { Project } from "@gitbutler/shared/organizations/types";
+	const i18nMessages = useTranslations();
 
 	type Props = {
 		projectRepositoryId: string;
@@ -66,7 +68,7 @@
 			}
 		} catch (error) {
 			console.error("Failed to fetch organization projects:", error);
-			chipToasts.error("Failed to fetch organization projects");
+			chipToasts.error(i18nMessage("web:ProjectConnectModal.failedToFetchOrganizationProjects"));
 			organizationProjects = [];
 		} finally {
 			isLoadingProjects = false;
@@ -99,7 +101,7 @@
 		const projectSlug = isCreatingNew ? newProjectSlug : selectedProjectSlug;
 
 		if (!projectSlug) {
-			chipToasts.error("Please select or create a project first");
+			chipToasts.error(i18nMessage("web:ProjectConnectModal.pleaseSelectOrCreateAProjectFirst"));
 			return;
 		}
 
@@ -109,18 +111,20 @@
 				organizationSlug,
 				projectSlug,
 			);
-			chipToasts.success("Project connected to organization");
+			chipToasts.success(i18nMessage("web:ProjectConnectModal.projectConnectedToOrganization"));
 			modal?.close();
 		} catch (error) {
 			chipToasts.error(
-				`Failed to connect project: ${error instanceof Error ? error.message : "Unknown error"}`,
+				i18nMessage("web:ProjectConnectModal.failedToConnectProjectValue", {
+					value: error instanceof Error ? error.message : i18nMessage("common:unknownError"),
+				}),
 			);
 		}
 	}
 
 	const title = $derived.by(() => {
-		if (project?.status !== "found") return "Connect Project";
-		return `Connect ${project.value.name} to an Organization`;
+		if (project?.status !== "found") return $i18nMessages.t("web:detail.54213613a6");
+		return $i18nMessages.t("web:detail.82ec4c664e", { value1: String(project.value.name) });
 	});
 
 	let modal = $state<ReturnType<typeof Modal>>();
@@ -159,7 +163,7 @@
 									{/if}
 								</div>
 								<Button style="pop" onclick={() => selectOrganization(organization.slug)}>
-									Select
+									{$i18nMessages.t("web:ProjectConnectModal.select")}
 								</Button>
 							</CardGroup.Item>
 						{/snippet}
@@ -168,20 +172,26 @@
 			</CardGroup>
 		{:else}
 			<div class="empty-state">
-				<p>You don't belong to any organizations yet.</p>
-				<p>Create or join an organization to connect this project.</p>
+				<p>{$i18nMessages.t("web:ProjectConnectModal.youDonTBelongToAnyOrganizationsYet")}</p>
+				<p>{$i18nMessages.t("web:ProjectConnectModal.createOrJoinAnOrganizationToConnectThis")}</p>
 			</div>
 		{/if}
 	{:else}
 		<!-- Project Selection Step -->
 		<div class="selection-header">
-			<h4>Select a project in {selectedOrgSlug}</h4>
-			<Button style="gray" onclick={() => (selectedOrgSlug = null)}>Back to Organizations</Button>
+			<h4>
+				{$i18nMessages.t("web:ProjectConnectModal.selectAProjectInValue", {
+					selectedOrgSlug: String(selectedOrgSlug),
+				})}
+			</h4>
+			<Button style="gray" onclick={() => (selectedOrgSlug = null)}
+				>{$i18nMessages.t("web:ProjectConnectModal.backToOrganizations")}</Button
+			>
 		</div>
 
 		{#if isLoadingProjects}
 			<div class="loading-container">
-				<p>Loading projects...</p>
+				<p>{$i18nMessages.t("web:ProjectConnectModal.loadingProjects")}</p>
 			</div>
 		{:else}
 			<CardGroup>
@@ -194,7 +204,11 @@
 									{#if orgProject.description}
 										<p class="description">{orgProject.description}</p>
 									{/if}
-									<p class="slug">Slug: {orgProject.slug}</p>
+									<p class="slug">
+										{$i18nMessages.t("web:ProjectConnectModal.slugValue", {
+											slug: String(orgProject.slug),
+										})}
+									</p>
 								</div>
 								<div class="radio-option">
 									<input
@@ -213,20 +227,26 @@
 				<div class={isCreatingNew ? "selected create-new" : "create-new"}>
 					<CardGroup.Item onclick={toggleCreateNew}>
 						<div class="project-info">
-							<h5 class="text-15 text-bold">Create New Project</h5>
+							<h5 class="text-15 text-bold">
+								{$i18nMessages.t("web:ProjectConnectModal.createNewProject")}
+							</h5>
 							{#if isCreatingNew}
 								<div class="new-project-form">
-									<label for="newProjectSlug">Project Slug:</label>
+									<label for="newProjectSlug"
+										>{$i18nMessages.t("web:ProjectConnectModal.projectSlug")}</label
+									>
 									<input
 										type="text"
 										id="newProjectSlug"
 										bind:value={newProjectSlug}
-										placeholder="Enter project slug"
+										placeholder={$i18nMessages.t("web:ProjectConnectModal.enterProjectSlug")}
 										class="form-input"
 									/>
 								</div>
 							{:else}
-								<p class="description">Create a new project with this repository</p>
+								<p class="description">
+									{$i18nMessages.t("web:ProjectConnectModal.createANewProjectWithThisRepository")}
+								</p>
 							{/if}
 						</div>
 						<div class="radio-option">
@@ -243,7 +263,7 @@
 
 			<div class="action-buttons">
 				<Button style="pop" onclick={() => connectToOrganization(selectedOrgSlug || "")}>
-					Connect
+					{$i18nMessages.t("web:ProjectConnectModal.connect")}
 				</Button>
 			</div>
 		{/if}

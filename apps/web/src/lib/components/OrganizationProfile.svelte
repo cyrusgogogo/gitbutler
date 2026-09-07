@@ -6,11 +6,12 @@
 	import { OWNER_SERVICE } from "$lib/owner/ownerService";
 	import { UserService, USER_SERVICE } from "$lib/user/userService";
 	import { inject } from "@gitbutler/core/context";
+	import { useTranslations } from "@gitbutler/i18n/svelte";
 	import { ORGANIZATION_SERVICE } from "@gitbutler/shared/organizations/organizationService";
 	import { Button, Modal } from "@gitbutler/ui";
 	import { untrack } from "svelte";
-
 	import type { ExtendedOrganization, OrganizationMember } from "$lib/owner/types";
+	const i18nMessages = useTranslations();
 
 	interface Props {
 		organization: ExtendedOrganization;
@@ -175,7 +176,9 @@
 			{#if localOrganization.avatarUrl}
 				<img
 					src={localOrganization.avatarUrl}
-					alt="{localOrganization.name}'s logo"
+					alt={$i18nMessages.t("web:OrganizationProfile.valueSLogo", {
+						name: String(localOrganization.name),
+					})}
 					class="avatar"
 				/>
 			{/if}
@@ -189,7 +192,7 @@
 			{#if currentUserIsAdmin()}
 				<div class="org-actions">
 					<Button style="pop" onclick={() => organizationEditModal?.show()}>
-						Edit Organization
+						{$i18nMessages.t("web:OrganizationProfile.editOrganization")}
 					</Button>
 				</div>
 			{/if}
@@ -210,7 +213,7 @@
 		<div class="side-column">
 			{#if localOrganization.inviteCode}
 				<div class="section-card invite-code-section">
-					<h2 class="section-title">Invite Code</h2>
+					<h2 class="section-title">{$i18nMessages.t("web:OrganizationProfile.inviteCode")}</h2>
 					<div class="invite-link-wrapper">
 						<InviteLink organizationSlug={ownerSlug} inviteCode={localOrganization.inviteCode} />
 					</div>
@@ -219,14 +222,16 @@
 
 			{#if localOrganization.members && localOrganization.members.length > 0}
 				<div class="section-card members-section">
-					<h2 class="section-title">Members</h2>
+					<h2 class="section-title">{$i18nMessages.t("web:OrganizationProfile.members")}</h2>
 					<div class="members-list">
 						{#each localOrganization.members as member}
 							<div class="member-card">
 								<a href="/{member.login}" class="member-link">
 									<img
 										src={member.avatar_url || "/images/default-avatar.png"}
-										alt="{member.login}'s avatar"
+										alt={$i18nMessages.t("web:OrganizationProfile.valueSAvatar", {
+											login: String(member.login),
+										})}
 										class="member-avatar"
 									/>
 									<div class="member-info">
@@ -234,7 +239,9 @@
 										<span class="member-role">
 											{member.name}
 											{#if isOwner(member)}
-												<span class="badge owner-badge">Owner</span>
+												<span class="badge owner-badge"
+													>{$i18nMessages.t("web:OrganizationProfile.owner")}</span
+												>
 											{/if}
 										</span>
 									</div>
@@ -247,7 +254,7 @@
 											style="gray"
 											onclick={() => confirmMakeOwnerDialog(member.login)}
 										>
-											Make Owner
+											{$i18nMessages.t("web:OrganizationProfile.makeOwner")}
 										</Button>
 									{/if}
 
@@ -257,7 +264,7 @@
 											style="danger"
 											onclick={() => confirmRemoveUserDialog(member.login)}
 										>
-											Remove
+											{$i18nMessages.t("web:OrganizationProfile.remove")}
 										</Button>
 									{/if}
 								</div>
@@ -272,23 +279,30 @@
 
 <!-- Remove User Confirmation Modal -->
 <Modal bind:this={confirmRemoveUserModal} width="small" onSubmit={removeUser}>
-	<p>Are you sure you want to remove this user from the organization?</p>
+	<p>{$i18nMessages.t("web:OrganizationProfile.areYouSureYouWantToRemoveThis")}</p>
 	{#snippet controls(close)}
-		<Button kind="outline" onclick={close}>Cancel</Button>
-		<Button style="danger" type="submit" loading={isRemoving}>Remove</Button>
+		<Button kind="outline" onclick={close}
+			>{$i18nMessages.t("web:OrganizationProfile.cancel")}</Button
+		>
+		<Button style="danger" type="submit" loading={isRemoving}
+			>{$i18nMessages.t("web:OrganizationProfile.remove")}</Button
+		>
 	{/snippet}
 </Modal>
 
 <!-- Make Owner Confirmation Modal -->
 <Modal bind:this={confirmMakeOwnerModal} width="small" onSubmit={makeUserOwner}>
-	<p>Are you sure you want to make this user an owner?</p>
+	<p>{$i18nMessages.t("web:OrganizationProfile.areYouSureYouWantToMakeThis")}</p>
 	<p class="modal-note">
-		Owners have full administrative access to the organization, including managing members,
-		projects, and settings.
+		{$i18nMessages.t("web:OrganizationProfile.ownersHaveFullAdministrativeAccessToTheOrganization")}
 	</p>
 	{#snippet controls(close)}
-		<Button kind="outline" onclick={close}>Cancel</Button>
-		<Button style="pop" type="submit" loading={isPromoting}>Make Owner</Button>
+		<Button kind="outline" onclick={close}
+			>{$i18nMessages.t("web:OrganizationProfile.cancel")}</Button
+		>
+		<Button style="pop" type="submit" loading={isPromoting}
+			>{$i18nMessages.t("web:OrganizationProfile.makeOwner")}</Button
+		>
 	{/snippet}
 </Modal>
 

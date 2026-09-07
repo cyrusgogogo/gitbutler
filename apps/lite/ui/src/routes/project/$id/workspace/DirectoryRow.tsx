@@ -1,3 +1,5 @@
+import { useTranslations } from "@gitbutler/i18n/react";
+import { Message as I18nMessage } from "@gitbutler/i18n/react";
 import { FolderIcon } from "#ui/components/FolderIcon.tsx";
 import { classes } from "#ui/components/classes.ts";
 import { TooltipPopup } from "#ui/components/Tooltip.tsx";
@@ -44,6 +46,7 @@ export const DirectoryRow: FC<
 	focusScope,
 	...restProps
 }) => {
+	const i18nMessages = useTranslations();
 	const noOperationPending = useAppSelector(
 		(state) => projectSlice.selectors.selectPendingOperation(state, projectId)._tag === "None",
 	);
@@ -57,7 +60,12 @@ export const DirectoryRow: FC<
 			<TreeSteps depth={depth}>
 				<Tooltip.Root disableHoverablePopup>
 					<Tooltip.Trigger
-						aria-label={`${isCollapsed ? "Expand" : "Collapse"} directory ${path}`}
+						aria-label={i18nMessages.t("lite:DirectoryRow.valueDirectoryValue", {
+							value: isCollapsed
+								? i18nMessages.t("lite:DirectoryRow.label9869e506c")
+								: i18nMessages.t("lite:DirectoryRow.label9cf188d3a"),
+							path,
+						})}
 						onClick={onToggleCollapsed}
 						render={<TreeStepsToggle isCollapsed={isCollapsed} />}
 					/>
@@ -71,7 +79,11 @@ export const DirectoryRow: FC<
 									/>
 								}
 							>
-								{isCollapsed ? "Expand directory" : "Collapse directory"}
+								{isCollapsed ? (
+									<I18nMessage value={{ key: "lite:DirectoryRow.expandDirectory" }} />
+								) : (
+									<I18nMessage value={{ key: "lite:DirectoryRow.collapseDirectory" }} />
+								)}
 							</Tooltip.Popup>
 						</Tooltip.Positioner>
 					</Tooltip.Portal>
@@ -84,7 +96,7 @@ export const DirectoryRow: FC<
 				<FolderIcon className={styles.leadingMark} />
 				<RowCheckbox
 					disabled={!noOperationPending || !canCheck}
-					aria-label={`Check directory ${path}`}
+					aria-label={i18nMessages.t("lite:DirectoryRow.checkDirectoryValue", { path })}
 					checked={checkedState === "checked"}
 					indeterminate={checkedState === "indeterminate"}
 					className={styles.leadingCheckbox}

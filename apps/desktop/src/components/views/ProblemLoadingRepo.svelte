@@ -9,10 +9,12 @@
 	import { PROJECTS_SERVICE } from "$lib/project/projectsService";
 	import { POSTHOG_WRAPPER } from "$lib/telemetry/posthog";
 	import { inject } from "@gitbutler/core/context";
-
+	import { message as i18nMessage } from "@gitbutler/i18n";
+	import { useTranslations } from "@gitbutler/i18n/svelte";
 	import { Icon, Spacer, chipToasts } from "@gitbutler/ui";
 	import { isDefined } from "@gitbutler/ui/utils/typeguards";
 	import { onMount } from "svelte";
+	const i18nMessages = useTranslations();
 
 	type Props = {
 		projectId: string;
@@ -33,7 +35,7 @@
 		try {
 			deleteConfirmationModal?.close();
 			await projectsService.deleteProject(projectId);
-			chipToasts.success("Project deleted");
+			chipToasts.success(i18nMessage("desktop:ProblemLoadingRepo.projectDeleted"));
 			goto("/");
 		} finally {
 			loading = false;
@@ -52,13 +54,13 @@
 				<ProjectNameLabel projectName={projectTitle} />
 			</div>
 			<h2 class="problem__title text-18 text-body text-bold">
-				There was a problem loading this repo
+				{$i18nMessages.t("desktop:ProblemLoadingRepo.thereWasAProblemLoadingThisRepo")}
 			</h2>
 
 			<div class="problem__error text-12 text-body">
 				<Icon name="danger" color="var(--fill-danger-bg)" />
 				{#if !isDefined(error)}
-					'An unknown error occured'
+					{$i18nMessages.t("desktop:ProblemLoadingRepo.anUnknownErrorOccured")}
 				{:else if error instanceof Object && "message" in error}
 					{error.message}
 				{:else}

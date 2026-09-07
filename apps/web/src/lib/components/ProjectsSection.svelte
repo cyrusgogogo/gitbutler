@@ -1,5 +1,7 @@
 <script lang="ts">
 	import { getRelativeTime } from "$lib/utils/dateUtils";
+	import { useTranslations } from "@gitbutler/i18n/svelte";
+	const i18nMessages = useTranslations();
 
 	interface Project {
 		name: string;
@@ -15,14 +17,14 @@
 		loading?: boolean;
 	}
 
-	let { projects, ownerSlug, sectionTitle = "Projects", loading = false }: Props = $props();
+	let { projects, ownerSlug, sectionTitle, loading = false }: Props = $props();
 </script>
 
 <div class="section-card projects-section">
-	<h2 class="section-title">{sectionTitle}</h2>
+	<h2 class="section-title">{sectionTitle ?? $i18nMessages.t("web:detail.53e890d5f0")}</h2>
 	{#if loading}
 		<div class="loading-state">
-			<p>Loading projects...</p>
+			<p>{$i18nMessages.t("web:ProjectsSection.loadingProjects")}</p>
 		</div>
 	{:else if projects.length > 0}
 		<div class="projects-grid">
@@ -33,7 +35,11 @@
 							<a href="/{ownerSlug}/{project.slug}">{project.name || project.slug}</a>
 						</h3>
 						{#if project.updated_at}
-							<span class="updated-at">Updated {getRelativeTime(project.updated_at)}</span>
+							<span class="updated-at"
+								>{$i18nMessages.t("web:ProjectsSection.updatedValue", {
+									value: String(getRelativeTime(project.updated_at, $i18nMessages.locale)),
+								})}</span
+							>
 						{/if}
 					</div>
 					{#if project.description}
@@ -44,7 +50,7 @@
 		</div>
 	{:else}
 		<div class="empty-state">
-			<p>No projects found.</p>
+			<p>{$i18nMessages.t("web:ProjectsSection.noProjectsFound")}</p>
 		</div>
 	{/if}
 </div>

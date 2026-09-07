@@ -1,7 +1,9 @@
 <script lang="ts">
 	import { getOS } from "$lib/utils/getOS";
+	import { useTranslations } from "@gitbutler/i18n/svelte";
 	import { untrack } from "svelte";
 	import type { ScriptStep } from "./terminal-types";
+	const i18nMessages = useTranslations();
 
 	interface Props {
 		height: string;
@@ -215,18 +217,27 @@
 	<div class="terminal-mockup__header">
 		{#if os === "macOS"}
 			<div class="terminal-mockup__window-controls">
-				<img src="/images/cli/mac-window-controls.svg" alt="Window controls" />
+				<img
+					src="/images/cli/mac-window-controls.svg"
+					alt={$i18nMessages.t("web:TerminalMockup.windowControls")}
+				/>
 			</div>
-			<div class="terminal-mockup__title">GitButler CLI</div>
+			<div class="terminal-mockup__title">{$i18nMessages.t("web:TerminalMockup.gitButlerCLI")}</div>
 		{:else if os === "Windows"}
-			<div class="terminal-mockup__title">GitButler CLI</div>
+			<div class="terminal-mockup__title">{$i18nMessages.t("web:TerminalMockup.gitButlerCLI")}</div>
 			<div class="terminal-mockup__window-controls">
-				<img src="/images/cli/windows-window-controls.svg" alt="Window controls" />
+				<img
+					src="/images/cli/windows-window-controls.svg"
+					alt={$i18nMessages.t("web:TerminalMockup.windowControls")}
+				/>
 			</div>
 		{:else if os === "Linux"}
-			<div class="terminal-mockup__title">GitButler CLI</div>
+			<div class="terminal-mockup__title">{$i18nMessages.t("web:TerminalMockup.gitButlerCLI")}</div>
 			<div class="terminal-mockup__window-controls">
-				<img src="/images/cli/linux-window-controls.svg" alt="Window controls" />
+				<img
+					src="/images/cli/linux-window-controls.svg"
+					alt={$i18nMessages.t("web:TerminalMockup.windowControls")}
+				/>
 			</div>
 		{/if}
 	</div>

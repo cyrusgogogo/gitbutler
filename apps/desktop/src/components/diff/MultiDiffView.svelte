@@ -22,9 +22,11 @@
 	import { ScrollSelectionLock } from "$lib/selection/scrollSelectionLock.svelte";
 	import { UI_STATE } from "$lib/state/uiState.svelte";
 	import { inject } from "@gitbutler/core/context";
+	import { useTranslations } from "@gitbutler/i18n/svelte";
 	import { Button, FileViewHeader, HunkDiffSkeleton, VirtualList } from "@gitbutler/ui";
 	import { untrack } from "svelte";
 	import type { TreeChange } from "@gitbutler/but-sdk";
+	const i18nMessages = useTranslations();
 
 	type Props = {
 		projectId: string;
@@ -116,7 +118,7 @@
 		kind="ghost"
 		icon="pop-out-bottom-right"
 		size="tag"
-		tooltip="Pop out diff view"
+		tooltip={$i18nMessages.t("desktop:MultiDiffView.popOutDiffView")}
 		onclick={openFloatingDiff}
 	/>
 {/snippet}
@@ -206,7 +208,7 @@
 				kind="ghost"
 				icon="pop-out-bottom-right"
 				size="tag"
-				tooltip="Pop out diff view"
+				tooltip={$i18nMessages.t("desktop:MultiDiffView.popOutDiffView")}
 				onclick={openFloatingDiff}
 			/>
 			<Button kind="ghost" icon="cross" size="tag" onclick={onclose} />

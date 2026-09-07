@@ -16,6 +16,8 @@
 	import { UI_STATE, withStackBusy } from "$lib/state/uiState.svelte";
 	import { WORKTREE_SERVICE } from "$lib/worktree/worktreeService.svelte";
 	import { inject } from "@gitbutler/core/context";
+	import { message as i18nMessage } from "@gitbutler/i18n";
+	import { useTranslations } from "@gitbutler/i18n/svelte";
 	import {
 		ContextMenu,
 		ContextMenuItem,
@@ -26,6 +28,7 @@
 	} from "@gitbutler/ui";
 	import type { SelectionId } from "$lib/selection/key";
 	import type { TreeChange } from "@gitbutler/but-sdk";
+	const i18nMessages = useTranslations();
 
 	type Props = {
 		projectId: string;
@@ -99,11 +102,11 @@
 	const showInFolderLabel = (() => {
 		switch (backend.platformName) {
 			case "macos":
-				return "Show in Finder";
+				return $i18nMessages.t("desktop:ChangedFilesContextMenu.detailf1ec2b16e");
 			case "windows":
-				return "Show in Explorer";
+				return $i18nMessages.t("desktop:ChangedFilesContextMenu.detail1cc1dd483");
 			default:
-				return "Show in File Manager";
+				return $i18nMessages.t("desktop:ChangedFilesContextMenu.detail5dc187419");
 		}
 	})();
 
@@ -185,7 +188,7 @@
 			{#if isConflictedFileItem(item)}
 				<ContextMenuSection>
 					<ContextMenuItem
-						label="Mark as Resolved"
+						label={$i18nMessages.t("desktop:ChangedFilesContextMenu.markAsResolved")}
 						icon="tick"
 						onclick={() => {
 							menuOpen = false;
@@ -199,7 +202,7 @@
 					{@const changes = item.changes}
 					{#if isUncommitted}
 						<ContextMenuItem
-							label="Discard changes…"
+							label={$i18nMessages.t("desktop:ChangedFilesContextMenu.discardChanges")}
 							testId={TestId.FileListItemContextMenu_DiscardChanges}
 							icon="bin"
 							onclick={() => {
@@ -208,7 +211,7 @@
 							}}
 						/>
 						<ContextMenuItem
-							label="Stash into branch…"
+							label={$i18nMessages.t("desktop:ChangedFilesContextMenu.stashIntoBranch")}
 							icon="branch-bottom-up-arrow"
 							onclick={() => {
 								stashModal.show(item);
@@ -216,7 +219,7 @@
 							}}
 						/>
 						<ContextMenuItem
-							label="Absorb changes"
+							label={$i18nMessages.t("desktop:ChangedFilesContextMenu.absorbChanges")}
 							icon="commit-absorb"
 							testId={TestId.FileListItemContextMenu_Absorb}
 							onclick={() => {
@@ -229,7 +232,7 @@
 					{#if selectionId.type === "commit" && stackId && !editMode}
 						{@const commitId = selectionId.commitId}
 						<ContextMenuItem
-							label="Uncommit changes"
+							label={$i18nMessages.t("desktop:ChangedFilesContextMenu.uncommitChanges")}
 							icon="commit-undo"
 							onclick={async () => uncommitChanges(stackId, commitId, changes)}
 						/>
@@ -239,11 +242,14 @@
 
 			{#if itemPath}
 				<ContextMenuSection>
-					<ContextMenuItemSubmenu label="Copy path" icon="copy">
+					<ContextMenuItemSubmenu
+						label={$i18nMessages.t("desktop:ChangedFilesContextMenu.copyPath")}
+						icon="copy"
+					>
 						{#snippet submenu(_sub)}
 							<ContextMenuSection>
 								<ContextMenuItem
-									label="Copy path"
+									label={$i18nMessages.t("desktop:ChangedFilesContextMenu.copyPath")}
 									onclick={async () => {
 										menuOpen = false;
 										const project = await projectService.fetchProject(projectId);
@@ -252,19 +258,21 @@
 											const absPath = await backend.joinPath(projectPath, itemPath);
 
 											await clipboardService.write(absPath, {
-												message: "Absolute path copied",
-												errorMessage: "Failed to copy absolute path",
+												message: i18nMessage("desktop:ChangedFilesContextMenu.inline0d3323e0a"),
+												errorMessage: i18nMessage(
+													"desktop:ChangedFilesContextMenu.inline07c9c055f",
+												),
 											});
 										}
 									}}
 								/>
 								<ContextMenuItem
-									label="Copy relative path"
+									label={$i18nMessages.t("desktop:ChangedFilesContextMenu.copyRelativePath")}
 									onclick={async () => {
 										menuOpen = false;
 										await clipboardService.write(itemPath, {
-											message: "Relative path copied",
-											errorMessage: "Failed to copy relative path",
+											message: i18nMessage("desktop:ChangedFilesContextMenu.inline90c67ab35"),
+											errorMessage: i18nMessage("desktop:ChangedFilesContextMenu.inline54c26c446"),
 										});
 									}}
 								/>
@@ -280,7 +288,9 @@
 						? [item.path]
 						: item.changes.map((change) => change.path)}
 					<ContextMenuItem
-						label="Open in {defaultCodeEditor.current.displayName}"
+						label={$i18nMessages.t("desktop:ChangedFilesContextMenu.openInValue", {
+							displayName: String(defaultCodeEditor.current.displayName),
+						})}
 						icon="open-in-ide"
 						disabled={deletion}
 						onclick={async () => {
@@ -298,8 +308,8 @@
 									}
 								}
 							} catch {
-								chipToasts.error("Failed to open in editor");
-								console.error("Failed to open in editor");
+								chipToasts.error(i18nMessage("desktop:ChangedFilesContextMenu.inline6b86caef4"));
+								console.error($i18nMessages.t("desktop:ChangedFilesContextMenu.inline6b86caef4"));
 							}
 						}}
 					/>
@@ -322,7 +332,9 @@
 			</ContextMenuSection>
 		{:else}
 			<ContextMenuSection>
-				<p class="text-13">'Woops! Malformed data :(</p>
+				<p class="text-13">
+					{$i18nMessages.t("desktop:ChangedFilesContextMenu.woopsMalformedData")}
+				</p>
 			</ContextMenuSection>
 		{/if}
 	</ContextMenu>

@@ -134,10 +134,16 @@ export class HistoryService {
 }
 
 /** Formats a date (milliseconds since epoch) as a human-readable day string. */
-export function createdOnDay(epochMs: number) {
+export function createdOnDay(epochMs: number, locale: "en" | "zh-CN" = "en") {
 	const d = new Date(epochMs);
 	const t = new Date();
-	return `${t.toDateString() === d.toDateString() ? "Today" : d.toLocaleDateString("en-US", { weekday: "short" })}, ${d.toLocaleDateString("en-US", { month: "short", day: "numeric" })}`;
+	const day =
+		t.toDateString() === d.toDateString()
+			? locale === "zh-CN"
+				? "今天"
+				: "Today"
+			: d.toLocaleDateString(locale, { weekday: "short" });
+	return `${day}${locale === "zh-CN" ? "，" : ", "}${d.toLocaleDateString(locale, { month: "short", day: "numeric" })}`;
 }
 
 function injectEndpoints(api: BackendApi) {

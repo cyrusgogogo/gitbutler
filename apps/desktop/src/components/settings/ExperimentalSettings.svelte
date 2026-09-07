@@ -3,7 +3,10 @@
 	import { SETTINGS_SERVICE } from "$lib/settings/appSettings";
 	import { USER_SERVICE } from "$lib/user/userService.svelte";
 	import { inject } from "@gitbutler/core/context";
+	import { useTranslations } from "@gitbutler/i18n/svelte";
 	import { CardGroup, Toggle } from "@gitbutler/ui";
+	import I18nRichMessage from "@gitbutler/ui/i18n/RichMessage.svelte";
+	const i18nMessages = useTranslations();
 
 	const settingsService = inject(SETTINGS_SERVICE);
 	const settingsStore = settingsService.appSettings;
@@ -12,18 +15,20 @@
 </script>
 
 <p class="text-12 text-body experimental-settings__text">
-	Flags for features in development or beta. Features may not work fully.
-	<br />
-	Use at your own risk.
+	{#snippet i18nSlot1()}<br />{/snippet}
+	<I18nRichMessage
+		value={{ key: "desktop:ExperimentalSettings.flagsForFeaturesInDevelopmentOrBetaFeatures" }}
+		components={{ slot1: i18nSlot1 }}
+	/>
 </p>
 
 <CardGroup>
 	<CardGroup.Item labelFor="f-mode">
 		{#snippet title()}
-			F Mode Navigation
+			{$i18nMessages.t("desktop:ExperimentalSettings.fModeNavigation")}
 		{/snippet}
 		{#snippet caption()}
-			Enable F mode for quick keyboard navigation to buttons using two-letter shortcuts.
+			{$i18nMessages.t("desktop:ExperimentalSettings.enableFModeForQuickKeyboardNavigationTo")}
 		{/snippet}
 		{#snippet actions()}
 			<Toggle
@@ -37,10 +42,10 @@
 	{#if userService.user?.role === "admin"}
 		<CardGroup.Item labelFor="single-branch">
 			{#snippet title()}
-				Single-branch mode
+				{$i18nMessages.t("desktop:ExperimentalSettings.singleBranchMode")}
 			{/snippet}
 			{#snippet caption()}
-				Stay in the workspace view when leaving the gitbutler/workspace branch.
+				{$i18nMessages.t("desktop:ExperimentalSettings.stayInTheWorkspaceViewWhenLeavingThe")}
 			{/snippet}
 			{#snippet actions()}
 				<Toggle
@@ -57,10 +62,12 @@
 
 	<CardGroup.Item labelFor="worktree-manipulation">
 		{#snippet title()}
-			Worktree manipulation
+			{$i18nMessages.t("desktop:ExperimentalSettings.worktreeManipulation")}
 		{/snippet}
 		{#snippet caption()}
-			Enable experimental support for working with linked git worktrees.
+			{$i18nMessages.t(
+				"desktop:ExperimentalSettings.enableExperimentalSupportForWorkingWithLinkedGit",
+			)}
 		{/snippet}
 		{#snippet actions()}
 			<Toggle

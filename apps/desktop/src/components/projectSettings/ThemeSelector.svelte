@@ -1,6 +1,8 @@
 <script lang="ts">
+	import { useTranslations } from "@gitbutler/i18n/svelte";
 	import { Icon } from "@gitbutler/ui";
 	import type { AppTheme, UiState } from "$lib/state/uiState.svelte";
+	const i18nMessages = useTranslations();
 
 	interface Props {
 		uiState: UiState;
@@ -10,23 +12,23 @@
 
 	const currentTheme = $derived(uiState.global.theme.current ?? "system");
 
-	const themes: { name: string; value: AppTheme; preview: string }[] = [
+	const themes: { name: string; value: AppTheme; preview: string }[] = $derived([
 		{
-			name: "Light",
+			name: $i18nMessages.t("desktop:ThemeSelector.detaila36ef8aba"),
 			value: "light",
 			preview: "/images/theme-previews/light.svg",
 		},
 		{
-			name: "Dark",
+			name: $i18nMessages.t("desktop:ThemeSelector.detailae1ef0143"),
 			value: "dark",
 			preview: "/images/theme-previews/dark.svg",
 		},
 		{
-			name: "System preference",
+			name: $i18nMessages.t("desktop:ThemeSelector.detail1ea882415"),
 			value: "system",
 			preview: "/images/theme-previews/system.svg",
 		},
-	];
+	]);
 </script>
 
 <fieldset class="cards-group">

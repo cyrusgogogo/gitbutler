@@ -5,9 +5,10 @@
 	import { createPollBackoff } from "$lib/forge/shared/pollErrorBackoff.svelte";
 	import { UI_STATE } from "$lib/state/uiState.svelte";
 	import { inject } from "@gitbutler/core/context";
-
+	import { useTranslations } from "@gitbutler/i18n/svelte";
 	import { Badge, TestId, type MessageStyle, type IconName } from "@gitbutler/ui";
 	import type { ComponentColorType } from "@gitbutler/ui/utils/colorTypes";
+	const i18nMessages = useTranslations();
 
 	type Props = {
 		projectId: string;
@@ -84,9 +85,9 @@
 			return {
 				style: "gray",
 				icon: undefined,
-				text: "No PR checks",
-				reducedText: "No checks",
-				tooltip: "Checks for forked repos only available on the web.",
+				text: $i18nMessages.t("desktop:CIChecksBadge.detailcf84db1c5"),
+				reducedText: $i18nMessages.t("desktop:CIChecksBadge.detail0148123ea"),
+				tooltip: $i18nMessages.t("desktop:CIChecksBadge.checksForForkedReposOnlyAvailableOnThe"),
 			};
 		}
 
@@ -98,11 +99,11 @@
 			return {
 				style: "danger",
 				icon: "warning",
-				text: "Failed to load checks",
-				reducedText: "Error",
+				text: $i18nMessages.t("desktop:CIChecksBadge.detailade31486d"),
+				reducedText: $i18nMessages.t("desktop:CIChecksBadge.detail7f2f6a15c"),
 				tooltip: classified.terminal
 					? classified.message
-					: "Failed to load checks. Click to retry.",
+					: $i18nMessages.t("desktop:CIChecksBadge.failedToLoadChecksClickToRetry"),
 			};
 		}
 
@@ -113,9 +114,9 @@
 				return {
 					style: "warning",
 					icon: "eye",
-					text: "Needs review",
-					reducedText: "Needs review",
-					tooltip: "Checks passed but the PR still needs approval.",
+					text: $i18nMessages.t("desktop:CIChecksBadge.detail33a506cf6"),
+					reducedText: $i18nMessages.t("desktop:CIChecksBadge.detail33a506cf6"),
+					tooltip: $i18nMessages.t("desktop:CIChecksBadge.checksPassedButThePRStillNeedsApproval"),
 				};
 			}
 
@@ -124,9 +125,13 @@
 				return {
 					style: "warning",
 					icon: "warning",
-					text: "Action required",
-					reducedText: "Action",
-					tooltip: checksList ? `Action required: ${checksList}` : "Action required.",
+					text: $i18nMessages.t("desktop:CIChecksBadge.detaila5f995a22"),
+					reducedText: $i18nMessages.t("desktop:CIChecksBadge.detail97c89a4d6"),
+					tooltip: checksList
+						? $i18nMessages.t("desktop:CIChecksBadge.detail1dd292b75", {
+								value1: String(checksList),
+							})
+						: $i18nMessages.t("desktop:CIChecksBadge.actionRequired"),
 				};
 			}
 
@@ -135,9 +140,9 @@
 				return {
 					style: "danger",
 					icon: "warning",
-					text: "Has conflicts",
-					reducedText: "Conflicts",
-					tooltip: "The PR has merge conflicts that need to be resolved.",
+					text: $i18nMessages.t("desktop:CIChecksBadge.detail608efa279"),
+					reducedText: $i18nMessages.t("desktop:CIChecksBadge.detail1e6b4f9a0"),
+					tooltip: $i18nMessages.t("desktop:CIChecksBadge.thePRHasMergeConflictsThatNeedTo"),
 				};
 			}
 
@@ -146,34 +151,40 @@
 			const icon = checks.completed ? (checks.success ? "tick" : "danger") : "spinner";
 			const text = checks.completed
 				? checks.success
-					? "Checks passed"
-					: "Checks failed"
-				: "Checks running";
+					? $i18nMessages.t("desktop:CIChecksBadge.detail30970547e")
+					: $i18nMessages.t("desktop:CIChecksBadge.detail69aba2413")
+				: $i18nMessages.t("desktop:CIChecksBadge.detail1d2b5b209");
 
 			const tooltip =
 				checks.completed && !checks.success
-					? `Checks failed: ${checks.failedChecks.join(", ")}`
+					? $i18nMessages.t("desktop:CIChecksBadge.detaild599e1627", {
+							value1: String(checks.failedChecks.join(", ")),
+						})
 					: undefined;
 
-			const reducedText = checks.completed ? (checks.success ? "Passed" : "Failed") : "Running";
+			const reducedText = checks.completed
+				? checks.success
+					? $i18nMessages.t("desktop:CIChecksBadge.detail271d60f48")
+					: $i18nMessages.t("desktop:CIChecksBadge.detail09fef5d8d")
+				: $i18nMessages.t("desktop:CIChecksBadge.detail73989d9c5");
 			return { style, icon, text, reducedText, tooltip };
 		}
 		if (loading) {
 			return {
 				style: "gray",
 				icon: "spinner",
-				text: "Loading checks",
-				reducedText: "Checks",
-				tooltip: "Waiting for checks to start…",
+				text: $i18nMessages.t("desktop:CIChecksBadge.detailf26a8da06"),
+				reducedText: $i18nMessages.t("desktop:CIChecksBadge.detail5098dd199"),
+				tooltip: $i18nMessages.t("desktop:CIChecksBadge.waitingForChecksToStart"),
 			};
 		}
 
 		return {
 			style: "gray",
 			icon: undefined,
-			text: "No checks configured",
-			reducedText: "No checks",
-			tooltip: "No CI checks are configured.",
+			text: $i18nMessages.t("desktop:CIChecksBadge.detaild0f315261"),
+			reducedText: $i18nMessages.t("desktop:CIChecksBadge.detail0148123ea"),
+			tooltip: $i18nMessages.t("desktop:CIChecksBadge.noCIChecksAreConfigured"),
 		};
 	});
 

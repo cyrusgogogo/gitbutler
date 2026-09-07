@@ -2,6 +2,9 @@
 	import ThemeSwitcher from "$lib/components/marketing/ThemeSwitcher.svelte";
 	import * as jsonLinks from "$lib/data/links.json";
 	import osIcons from "$lib/data/os-icons.json";
+	import { useTranslations } from "@gitbutler/i18n/svelte";
+	import I18nRichMessage from "@gitbutler/ui/i18n/RichMessage.svelte";
+	const i18nMessages = useTranslations();
 
 	interface Props {
 		showDownloadLinks?: boolean;
@@ -15,7 +18,14 @@
 		{#if showDownloadLinks}
 			<div class="banner-content-downloads">
 				<div class="stack-v">
-					<h2 class="banner-title">Download <i>the</i> app</h2>
+					<h2 class="banner-title">
+						{#snippet i18nSlot1(content: import("svelte").Snippet)}<i>{@render content()}</i
+							>{/snippet}
+						<I18nRichMessage
+							value={{ key: "web:Footer.downloadTheApp" }}
+							components={{ slot1: i18nSlot1 }}
+						/>
+					</h2>
 
 					<div class="download-links">
 						<div class="download-category">
@@ -28,9 +38,11 @@
 								<path d={osIcons.macos} fill="currentColor" />
 							</svg>
 
-							<a href={jsonLinks.downloads.appleSilicon.url} class="download-link">
-								macOS ({jsonLinks.downloads.appleSilicon.label})
-							</a>
+							<a href={jsonLinks.downloads.appleSilicon.url} class="download-link"
+								>{$i18nMessages.t("web:Footer.macOSValue", {
+									label: String(jsonLinks.downloads.appleSilicon.label),
+								})}</a
+							>
 						</div>
 
 						<div class="download-category">
@@ -43,8 +55,18 @@
 								<path d={osIcons.linux} fill="currentColor" />
 							</svg>
 							<div class="flex gap-12">
-								<a href={jsonLinks.downloads.linuxDeb.url} class="download-link"> .DEB </a>
-								<a href={jsonLinks.downloads.linuxRpm.url} class="download-link"> .RPM </a>
+								{#snippet i18nSlot3(content: import("svelte").Snippet)}<a
+										href={jsonLinks.downloads.linuxDeb.url}
+										class="download-link">{@render content()}</a
+									>{/snippet}
+								{#snippet i18nSlot4(content: import("svelte").Snippet)}<a
+										href={jsonLinks.downloads.linuxRpm.url}
+										class="download-link">{@render content()}</a
+									>{/snippet}
+								<I18nRichMessage
+									value={{ key: "web:Footer.dEBRPM" }}
+									components={{ slot3: i18nSlot3, slot4: i18nSlot4 }}
+								/>
 							</div>
 						</div>
 
@@ -67,22 +89,46 @@
 
 				<div class="stack-v gap-8">
 					<p class="banner-nightly-text">
-						<span class="op-50">Not your system? See more</span>
-						<a href="/downloads" class="nightly-link"> download options </a>
+						{#snippet i18nSlot5(content: import("svelte").Snippet)}<span class="op-50"
+								>{@render content()}</span
+							>{/snippet}
+						{#snippet i18nSlot6(content: import("svelte").Snippet)}<a
+								href="/downloads"
+								class="nightly-link">{@render content()}</a
+							>{/snippet}
+						<I18nRichMessage
+							value={{ key: "web:Footer.notYourSystemSeeMoreDownloadOptions" }}
+							components={{ slot5: i18nSlot5, slot6: i18nSlot6 }}
+						/>
 					</p>
 
 					<p class="banner-nightly-text">
-						<span class="op-50">Experience GitButler's newest features before anyone else.</span>
-						<a href="/nightly" class="nightly-link"> Get Nightly </a>
+						{#snippet i18nSlot7(content: import("svelte").Snippet)}<span class="op-50"
+								>{@render content()}</span
+							>{/snippet}
+						{#snippet i18nSlot8(content: import("svelte").Snippet)}<a
+								href="/nightly"
+								class="nightly-link">{@render content()}</a
+							>{/snippet}
+						<I18nRichMessage
+							value={{ key: "web:Footer.experienceGitButlerSNewestFeaturesBeforeAnyoneElse" }}
+							components={{ slot7: i18nSlot7, slot8: i18nSlot8 }}
+						/>
 					</p>
 				</div>
 			</div>
 		{:else}
 			<div class="banner-content-downloads">
 				<h2 class="banner-title">
-					<i>Version</i> Control
-					<br />
-					With <i>Attitude</i> ⧓
+					{#snippet i18nSlot9(content: import("svelte").Snippet)}<i>{@render content()}</i
+						>{/snippet}
+					{#snippet i18nSlot10()}<br />{/snippet}
+					{#snippet i18nSlot11(content: import("svelte").Snippet)}<i>{@render content()}</i
+						>{/snippet}
+					<I18nRichMessage
+						value={{ key: "web:Footer.versionControlWithAttitude" }}
+						components={{ slot9: i18nSlot9, slot10: i18nSlot10, slot11: i18nSlot11 }}
+					/>
 				</h2>
 			</div>
 		{/if}
@@ -112,7 +158,7 @@
 			{#each Object.values(jsonLinks.resources) as resource}
 				<li class="text-16 link">
 					<a href={resource.url}>
-						<span>{resource.label}</span>
+						<span>{$i18nMessages.text(resource.label)}</span>
 					</a>
 				</li>
 			{/each}
@@ -120,18 +166,39 @@
 
 		<div class="stack-v gap-20">
 			<div class="meta-links">
-				<span class="meta-links__copyright"
-					>©{new Date().getFullYear()} GitButler. All rights reserved.</span
-				>
-				<span class="meta-links__legal">
-					<a href={jsonLinks.legal.privacyPolicy.url} target="_blank">
-						{jsonLinks.legal.privacyPolicy.label}
-					</a>
-					<span> | </span>
-					<a href={jsonLinks.legal.termsOfService.url} target="_blank">
-						{jsonLinks.legal.termsOfService.label}
-					</a>
-				</span>
+				{#snippet i18nSlot12(content: import("svelte").Snippet)}<span class="meta-links__copyright"
+						>{@render content()}</span
+					>{/snippet}
+				{#snippet i18nSlot13(content: import("svelte").Snippet)}<span class="meta-links__legal"
+						>{@render content()}</span
+					>{/snippet}
+				{#snippet i18nSlot14(content: import("svelte").Snippet)}<a
+						href={jsonLinks.legal.privacyPolicy.url}
+						target="_blank">{@render content()}</a
+					>{/snippet}
+				{#snippet i18nSlot15(content: import("svelte").Snippet)}<span>{@render content()}</span
+					>{/snippet}
+				{#snippet i18nSlot16(content: import("svelte").Snippet)}<a
+						href={jsonLinks.legal.termsOfService.url}
+						target="_blank">{@render content()}</a
+					>{/snippet}
+				<I18nRichMessage
+					value={{
+						key: "web:Footer.valueGitButlerAllRightsReservedValueValue",
+						values: {
+							value: String(new Date().getFullYear()),
+							label: $i18nMessages.text(jsonLinks.legal.privacyPolicy.label),
+							label2: $i18nMessages.text(jsonLinks.legal.termsOfService.label),
+						},
+					}}
+					components={{
+						slot12: i18nSlot12,
+						slot13: i18nSlot13,
+						slot14: i18nSlot14,
+						slot15: i18nSlot15,
+						slot16: i18nSlot16,
+					}}
+				/>
 			</div>
 
 			<ThemeSwitcher />

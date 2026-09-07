@@ -2,11 +2,12 @@
 	import { FORGE_INFO_SERVICE } from "$lib/forge/forgeInfo.svelte";
 	import { MergeMethod } from "$lib/forge/interface/types";
 	import { inject } from "@gitbutler/core/context";
+	import { useTranslations } from "@gitbutler/i18n/svelte";
 	import { persisted, type Persisted } from "@gitbutler/shared/persisted";
-
 	import { ContextMenuItem, ContextMenuSection, DropdownButton, TestId } from "@gitbutler/ui";
 	import { untrack } from "svelte";
 	import type { ButtonProps } from "@gitbutler/ui";
+	const i18nMessages = useTranslations();
 
 	interface Props {
 		projectId: string;
@@ -62,9 +63,9 @@
 	);
 
 	const labels = $derived({
-		[MergeMethod.Merge]: "Merge",
-		[MergeMethod.Rebase]: "Rebase and merge",
-		[MergeMethod.Squash]: "Squash and merge",
+		[MergeMethod.Merge]: $i18nMessages.t("desktop:MergeButton.detailea8f0d023"),
+		[MergeMethod.Rebase]: $i18nMessages.t("desktop:MergeButton.detail5693314a7"),
+		[MergeMethod.Squash]: $i18nMessages.t("desktop:MergeButton.detailff2648147"),
 	});
 </script>
 
@@ -102,7 +103,9 @@
 		{#if onSetDraft}
 			<ContextMenuSection>
 				<ContextMenuItem
-					label={isDraft ? "Ready for review" : "Convert to draft"}
+					label={isDraft
+						? $i18nMessages.t("desktop:MergeButton.inline8c2d9db10")
+						: $i18nMessages.t("desktop:MergeButton.inlineab263713a")}
 					onclick={async () => {
 						dropDown?.close();
 						loading = true;

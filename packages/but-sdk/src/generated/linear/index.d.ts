@@ -3553,6 +3553,9 @@ export type InteractiveIntegrationStep = {
   kind: "merge";
 };
 
+/** A GUI language preference, independent of Git data and CLI output. */
+export type LanguagePreference = "en" | "zh-CN" | "system";
+
 /** Line statistics obtained from diffing the blobs of one or more [TreeChange](crate::TreeChange). */
 export type LineStats = {
   /** The total amount of lines added in the between blobs of the two trees. */
@@ -4493,6 +4496,8 @@ export type TreeStatus = {
 };
 
 export type UiSettings = {
+  /** Preferred GUI language. Older settings follow the operating system. */
+  language?: LanguagePreference;
   /** Whether to use the native system title bar. */
   useNativeTitleBar: boolean;
   /**
@@ -4517,6 +4522,7 @@ export type UiSettings = {
 
 /** Update request for [`crate::app_settings::UiSettings`]. */
 export type UiUpdate = {
+  language?: LanguagePreference | null;
   useNativeTitleBar?: boolean | null;
   noShadow?: boolean | null;
 };

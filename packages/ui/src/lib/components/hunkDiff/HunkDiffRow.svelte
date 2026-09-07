@@ -18,8 +18,10 @@
 		type Row,
 	} from "$lib/utils/diffParsing";
 	import { getHunkLineId } from "$lib/utils/hunk";
+	import { useTranslations } from "@gitbutler/i18n/svelte";
 	import { onDestroy, type Snippet } from "svelte";
 	import type LineSelection from "$components/hunkDiff/lineSelection.svelte";
+	const i18nMessages = useTranslations();
 
 	interface Props {
 		idx: number;
@@ -198,7 +200,7 @@
 				<button
 					type="button"
 					class="table__lockButton"
-					aria-label="Highlight depended-on commits"
+					aria-label={$i18nMessages.t("ui:HunkDiffRow.highlightDependedOnCommits")}
 					use:clearHighlightOnDestroy
 					onmouseenter={() => handleLockHover(row.locks ?? [])}
 					onmouseleave={handleLockUnhover}

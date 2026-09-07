@@ -18,8 +18,8 @@ use serde::{Deserialize, Serialize};
 use serde_json::json;
 use url::Url;
 
-const WORKSPACE_RESOURCE_URI: &str = "ui://gitbutler/workspace/v6.html";
-const REVIEW_RESOURCE_URI: &str = "ui://gitbutler/review/v2.html";
+const WORKSPACE_RESOURCE_URI: &str = "ui://gitbutler/workspace/v7.html";
+const REVIEW_RESOURCE_URI: &str = "ui://gitbutler/review/v3.html";
 const MCP_APP_MIME_TYPE: &str = "text/html;profile=mcp-app";
 #[cfg(but_mcp_app_built)]
 const WORKSPACE_HTML: &str = include_str!("workspace.html");
@@ -30,13 +30,20 @@ const WORKSPACE_HTML: &str = MCP_APP_NOT_BUILT_HTML;
 #[cfg(not(but_mcp_app_built))]
 const REVIEW_HTML: &str = MCP_APP_NOT_BUILT_HTML;
 #[cfg(not(but_mcp_app_built))]
-const MCP_APP_NOT_BUILT_HTML: &str = r#"<!doctype html>
-<html lang="en">
-<meta charset="utf-8">
-<title>GitButler MCP app unavailable</title>
-<p>This development build does not include the GitButler MCP app.</p>
-</html>
-"#;
+const MCP_APP_NOT_BUILT_HTML: &str = concat!(
+    include_str!("fallback.html"),
+    "<script id=\"mcp-en\" type=\"application/json\">",
+    include_str!("../../../../../packages/i18n/src/locales/en/mcp.json"),
+    "</script><script id=\"mcp-zh-CN\" type=\"application/json\">",
+    include_str!("../../../../../packages/i18n/src/locales/zh-CN/mcp.json"),
+    "</script><script id=\"common-en\" type=\"application/json\">",
+    include_str!("../../../../../packages/i18n/src/locales/en/common.json"),
+    "</script><script id=\"common-zh-CN\" type=\"application/json\">",
+    include_str!("../../../../../packages/i18n/src/locales/zh-CN/common.json"),
+    "</script><script>",
+    include_str!("fallback.js"),
+    "</script></body></html>",
+);
 
 /// Serve GitButler's MCP tools over standard input/output.
 pub(crate) async fn serve() -> Result<()> {

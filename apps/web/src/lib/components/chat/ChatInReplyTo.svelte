@@ -7,10 +7,12 @@
 </script>
 
 <script lang="ts">
+	import { useTranslations } from "@gitbutler/i18n/svelte";
 	import { Button } from "@gitbutler/ui";
 	import type { UserSimple } from "@gitbutler/shared/users/types";
+	const i18nMessages = useTranslations();
 
-	const UNKNOWN_AUTHOR = "Unknown author";
+	const UNKNOWN_AUTHOR = $derived($i18nMessages.t("web:chat.unknownAuthor"));
 
 	type Props = {
 		message: ReplyToMessage;

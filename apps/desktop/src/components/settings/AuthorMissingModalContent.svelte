@@ -1,9 +1,11 @@
 <script lang="ts">
 	import { GIT_SERVICE } from "$lib/git/gitService";
 	import { inject } from "@gitbutler/core/context";
+	import { useTranslations } from "@gitbutler/i18n/svelte";
 	import { TestId, ModalHeader, ModalFooter, Textbox, EmailTextbox, Button } from "@gitbutler/ui";
 	import { untrack } from "svelte";
 	import type { AuthorMissingModalState } from "$lib/state/uiState.svelte";
+	const i18nMessages = useTranslations();
 
 	type Props = {
 		data: AuthorMissingModalState;
@@ -36,15 +38,18 @@
 	}
 </script>
 
-<ModalHeader type="warning">Set up your git author information</ModalHeader>
+<ModalHeader type="warning"
+	>{$i18nMessages.t("desktop:AuthorMissingModalContent.setUpYourGitAuthorInformation")}</ModalHeader
+>
 <div class="author-missing__content">
-	Your commits need author information to identify who made the changes. This information will be
-	saved to your global git configuration and used for all future commits.
+	{$i18nMessages.t(
+		"desktop:AuthorMissingModalContent.yourCommitsNeedAuthorInformationToIdentifyWho",
+	)}
 
 	<Textbox
 		disabled={settingInfo.current.isLoading}
-		placeholder="Your full name"
-		label="Name"
+		placeholder={$i18nMessages.t("desktop:AuthorMissingModalContent.yourFullName")}
+		label={$i18nMessages.t("desktop:AuthorMissingModalContent.name")}
 		testId={TestId.GlobalModal_AuthorMissing_NameInput}
 		bind:value={name}
 		autofocus
@@ -52,15 +57,17 @@
 
 	<EmailTextbox
 		disabled={settingInfo.current.isLoading}
-		placeholder="your.email@example.com"
-		label="Email address"
+		placeholder={$i18nMessages.t("desktop:AuthorMissingModalContent.yourEmailExampleCom")}
+		label={$i18nMessages.t("desktop:AuthorMissingModalContent.emailAddress")}
 		testId={TestId.GlobalModal_AuthorMissing_EmailInput}
 		bind:value={email}
 		bind:this={emailTextbox}
 	/>
 </div>
 <ModalFooter>
-	<Button kind="outline" onclick={close} disabled={settingInfo.current.isLoading}>Cancel</Button>
+	<Button kind="outline" onclick={close} disabled={settingInfo.current.isLoading}
+		>{$i18nMessages.t("desktop:AuthorMissingModalContent.cancel")}</Button
+	>
 	<Button
 		testId={TestId.GlobalModal_AuthorMissing_ActionButton}
 		style="pop"
@@ -68,7 +75,9 @@
 		loading={settingInfo.current.isLoading}
 		disabled={!name || !email}
 	>
-		{settingInfo.current.isLoading ? "Saving..." : "Save & Continue"}
+		{settingInfo.current.isLoading
+			? $i18nMessages.t("desktop:AuthorMissingModalContent.saving")
+			: $i18nMessages.t("desktop:AuthorMissingModalContent.saveContinue")}
 	</Button>
 </ModalFooter>
 

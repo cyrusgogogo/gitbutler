@@ -1,8 +1,10 @@
 <script lang="ts">
 	import { injectOptional } from "@gitbutler/core/context";
+	import { useTranslations } from "@gitbutler/i18n/svelte";
 	import { DRAG_STATE_SERVICE } from "@gitbutler/ui/drag/dragStateService.svelte";
 	import { pxToRem } from "@gitbutler/ui/utils/pxToRem";
 	import { untrack } from "svelte";
+	const i18nMessages = useTranslations();
 
 	interface Props {
 		hovered: boolean;
@@ -17,7 +19,10 @@
 		};
 	}
 
-	const { visible, hovered, activated, label = "Drop here", extraPaddings }: Props = $props();
+	const { visible, hovered, activated, label: providedLabel, extraPaddings }: Props = $props();
+	const label = $derived(
+		providedLabel ?? $i18nMessages.t("desktop:DropzoneOverlay.default7c67e6fb7"),
+	);
 	let defaultPadding = 4;
 	const dragStateService = injectOptional(DRAG_STATE_SERVICE, undefined);
 

@@ -1,3 +1,5 @@
+import { message as i18nMessage } from "@gitbutler/i18n";
+import { useTranslations } from "@gitbutler/i18n/react";
 import {
 	useCommitDiscardChanges,
 	useCommitUncommitChanges,
@@ -31,6 +33,7 @@ export const ChangesHeaderRow: FC<{
 	className?: string;
 	onOpenFilter: () => void;
 }> = ({ projectId, fileParent, changes, lineStats, className, onOpenFilter }) => {
+	const i18nMessages = useTranslations();
 	const { isPending: isCommitUncommitChangesPending, mutate: commitUncommitChanges } =
 		useCommitUncommitChanges();
 	const { isPending: isCommitDiscardChangesPending, mutate: commitDiscardChanges } =
@@ -48,7 +51,7 @@ export const ChangesHeaderRow: FC<{
 				Commit: ({ commitId }) => [
 					[
 						nativeMenuItem({
-							label: "Uncommit All",
+							label: i18nMessage("lite:ChangesHeaderRow.uncommitAll"),
 							enabled: changes.length > 0 && !isCommitUncommitChangesPending,
 							onSelect: () =>
 								commitUncommitChanges({
@@ -60,7 +63,7 @@ export const ChangesHeaderRow: FC<{
 								}),
 						}),
 						nativeMenuItem({
-							label: "Discard All Changes",
+							label: i18nMessage("lite:ChangesHeaderRow.discardAllChanges"),
 							enabled: changes.length > 0 && !isCommitDiscardChangesPending,
 							onSelect: () =>
 								commitDiscardChanges({
@@ -75,7 +78,7 @@ export const ChangesHeaderRow: FC<{
 				UncommittedChanges: () => [
 					[
 						nativeMenuItem({
-							label: "Discard Changes",
+							label: i18nMessage("lite:ChangesHeaderRow.discardChanges"),
 							enabled: changes.length > 0 && !isDiscardWorktreeChangesPending,
 							onSelect: () => discardWorktreeChanges({ projectId, worktreeChanges: diffSpecs() }),
 						}),
@@ -87,7 +90,7 @@ export const ChangesHeaderRow: FC<{
 		),
 		[
 			nativeMenuItem({
-				label: "Copy File Paths",
+				label: i18nMessage("lite:ChangesHeaderRow.copyFilePaths"),
 				enabled: changes.length > 0,
 				onSelect: () =>
 					window.lite.clipboardWriteText(changes.map((change) => change.path).join("\n")),
@@ -98,16 +101,19 @@ export const ChangesHeaderRow: FC<{
 
 	return (
 		<SectionHeaderRow
-			label="Changes"
+			label={i18nMessages.t("lite:ChangesHeaderRow.changes")}
 			className={className}
 			onContextMenu={(event) => {
 				void showNativeContextMenu(event, menuItems);
 			}}
 			actions={
-				<Toolbar.Root aria-label="Changes actions" render={<RowToolbar forceVisible />}>
+				<Toolbar.Root
+					aria-label={i18nMessages.t("lite:ChangesHeaderRow.changesActions")}
+					render={<RowToolbar forceVisible />}
+				>
 					{changes.length > 0 && (
 						<Toolbar.Button
-							aria-label="Filter files"
+							aria-label={i18nMessages.t("lite:ChangesHeaderRow.filterFiles")}
 							onClick={onOpenFilter}
 							className={getRowButtonClassName({ size: "regular", iconOnly: true })}
 						>
@@ -116,7 +122,7 @@ export const ChangesHeaderRow: FC<{
 					)}
 
 					<Toolbar.Button
-						aria-label="Changes menu"
+						aria-label={i18nMessages.t("lite:ChangesHeaderRow.changesMenu")}
 						onClick={(event) => {
 							void showNativeMenuFromTrigger(event.currentTarget, menuItems);
 						}}

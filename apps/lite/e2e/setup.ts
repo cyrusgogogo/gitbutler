@@ -32,15 +32,15 @@ export const createLiteTestEnvironment = (): LiteTestEnvironment => {
 	for (const directory of [appDataDir, electronUserDataDir, workdir])
 		mkdirSync(directory, { recursive: true });
 
-	const credentialStore = path.join(rootDir, "git-credentials");
+	const credentialStore = path.join(rootDir, "git-credentials").replaceAll("\\", "/");
 	const baseGitConfig = readFileSync(fixtureGitConfig, "utf8").trimEnd();
 	writeFileSync(
 		gitConfig,
-		`${baseGitConfig}\n[credential]\n\thelper = store --file ${credentialStore}\n`,
+		`${baseGitConfig}\n[credential]\n\thelper = ${JSON.stringify(`store --file "${credentialStore}"`)}\n`,
 	);
 	writeFileSync(
 		path.join(electronUserDataDir, "settings.json"),
-		JSON.stringify({ version: 1, autoUpdate: false, theme: "light" }, null, "\t"),
+		JSON.stringify({ version: 1, autoUpdate: false, theme: "light", language: "en" }, null, "\t"),
 	);
 
 	return { appDataDir, electronUserDataDir, gitConfig, rootDir, workdir };
@@ -57,7 +57,9 @@ export const seedScenario = async (
 	const scriptPath = path.join(fixtureScriptsDir, scenario);
 	if (!existsSync(scriptPath)) throw new Error(`Fixture script does not exist: ${scriptPath}`);
 
-	const but = process.env.BUT ?? path.join(repoRoot, "target/debug/but");
+	const but =
+		process.env.BUT ??
+		path.join(repoRoot, `target/debug/but${process.platform === "win32" ? ".exe" : ""}`);
 	if (!existsSync(but)) {
 		throw new Error(
 			`GitButler CLI does not exist at ${but}; build it with \`cargo build -p but\`.`,

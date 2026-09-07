@@ -4,7 +4,10 @@
 	import { STACK_SERVICE } from "$lib/stacks/stackService.svelte";
 	import { UI_STATE, type RejectionReason } from "$lib/state/uiState.svelte";
 	import { inject } from "@gitbutler/core/context";
+	import { useTranslations } from "@gitbutler/i18n/svelte";
 	import { FileName, HunkDiff, Icon, Tooltip } from "@gitbutler/ui";
+	import I18nRichMessage from "@gitbutler/ui/i18n/RichMessage.svelte";
+	const i18nMessages = useTranslations();
 
 	type Props = {
 		path: string;
@@ -39,12 +42,9 @@
 
 			<div class="commit-failed__file-entry__header__unfold-action">
 				<span class="text-12 text-semibold"
-					>{isFolded ? "Show" : "Hide"}
-					hunks ({#if fileDependencies.response}
-						{fileDependencies.response.dependencies.length}
-					{:else}
-						0
-					{/if})</span
+					>{$i18nMessages.t(isFolded ? "desktop:commit.showHunks" : "desktop:commit.hideHunks", {
+						count: fileDependencies.response?.dependencies.length ?? 0,
+					})}</span
 				>
 
 				<Icon name={isFolded ? "chevron-down" : "chevron-up"} />
@@ -75,7 +75,9 @@
 							<div class="text-12 commit-failed__file-entry__dependency-locks">
 								<div class="commit-failed__file-entry__dependency-locks__label">
 									<Icon name="lock" color="var(--fill-warn-bg)" />
-									<span class="clr-text-2">Depends on:</span>
+									<span class="clr-text-2"
+										>{$i18nMessages.t("desktop:CommitFailedFileEntry.dependsOn")}</span
+									>
 								</div>
 								<div class="commit-failed__file-entry__dependency-locks__content">
 									{#each dependency.locks as lock}
@@ -85,16 +87,30 @@
 											{@const commitBranch = branch?.find((b) =>
 												b.commits.some((c) => c.id === lock.commitId),
 											)}
-											{@const branchName = commitBranch?.refName?.displayName || "Unknown branch"}
+											{@const branchName =
+												commitBranch?.refName?.displayName ||
+												$i18nMessages.t("desktop:CommitFailedFileEntry.inlineeb106e205")}
 											{@const commitMessage = commitBranch?.commits.find(
 												(c) => c.id === lock.commitId,
 											)}
 											{@const commitTitle =
-												commitMessage?.message.split("\n")[0] || "No commit message provided"}
+												commitMessage?.message.split("\n")[0] ||
+												$i18nMessages.t("desktop:CommitFailedFileEntry.inline2b29af1d2")}
 											<p class="text-body commit-failed__file-entry-dependency-lock">
 												<i class="commit-failed__text-icon"><Icon name="branch" /></i>
-												<span class="text-semibold">{branchName}</span>
-												<i class="clr-text-2">in commit</i>
+												{#snippet i18nSlot2(content: import("svelte").Snippet)}<span
+														class="text-semibold">{@render content()}</span
+													>{/snippet}
+												{#snippet i18nSlot3(content: import("svelte").Snippet)}<i class="clr-text-2"
+														>{@render content()}</i
+													>{/snippet}
+												<I18nRichMessage
+													value={{
+														key: "desktop:CommitFailedFileEntry.valueInCommit",
+														values: { branchName: String(branchName) },
+													}}
+													components={{ slot2: i18nSlot2, slot3: i18nSlot3 }}
+												/>
 												<i class="commit-failed__text-icon"><Icon name="commit" /></i>
 												<Tooltip text={commitTitle}>
 													<span class="commit-failed__tooltip-text text-semibold h-dotted-underline"
@@ -105,8 +121,16 @@
 										{:else}
 											<p class="text-body commit-failed__file-entry-dependency-lock">
 												<i class="commit-failed__text-icon"><Icon name="branch" /></i>
-												<span class="text-semibold">Unknown stack</span>
-												<i class="clr-text-2">in commit</i>
+												{#snippet i18nSlot4(content: import("svelte").Snippet)}<span
+														class="text-semibold">{@render content()}</span
+													>{/snippet}
+												{#snippet i18nSlot5(content: import("svelte").Snippet)}<i class="clr-text-2"
+														>{@render content()}</i
+													>{/snippet}
+												<I18nRichMessage
+													value={{ key: "desktop:CommitFailedFileEntry.unknownStackInCommit" }}
+													components={{ slot4: i18nSlot4, slot5: i18nSlot5 }}
+												/>
 												<i class="commit-failed__text-icon"><Icon name="commit" /></i>
 												<span class="text-semibold">{lock.commitId.substring(0, 7)}</span>
 											</p>

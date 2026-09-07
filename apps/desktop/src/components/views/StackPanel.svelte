@@ -21,8 +21,10 @@
 	import { UNCOMMITTED_SERVICE } from "$lib/selection/uncommittedService.svelte";
 	import { getStackContext } from "$lib/stacks/stackController.svelte";
 	import { inject } from "@gitbutler/core/context";
+	import { useTranslations } from "@gitbutler/i18n/svelte";
 	import { Button, TestId } from "@gitbutler/ui";
 	import type { Segment } from "@gitbutler/but-sdk";
+	const i18nMessages = useTranslations();
 
 	type Props = {
 		segments: Segment[];
@@ -153,7 +155,7 @@
 				class:dropzone-hovered={dropzoneHovered && changes.current.length === 0}
 			>
 				<WorktreeChanges
-					title="Staged"
+					title={$i18nMessages.t("desktop:StackPanel.staged")}
 					projectId={controller.projectId}
 					stackId={controller.stackId}
 					mode="assigned"
@@ -175,7 +177,7 @@
 						{#if !controller.isCommitting}
 							<div class="assigned-changes-empty">
 								<p class="text-12 text-body assigned-changes-empty__text">
-									Drop files to stage or commit directly
+									{$i18nMessages.t("desktop:StackPanel.dropFilesToStageOrCommitDirectly")}
 								</p>
 							</div>
 						{/if}
@@ -207,12 +209,14 @@
 						type="button"
 						wide
 						disabled={controller.isReadOnly || !topBranchName || !!controller.exclusiveAction}
-						tooltip={controller.isReadOnly ? "Read-only mode" : undefined}
+						tooltip={controller.isReadOnly
+							? $i18nMessages.t("desktop:StackPanel.inline893cd37c4")
+							: undefined}
 						onclick={() => {
 							if (topBranchName) startCommit(topBranchName);
 						}}
 					>
-						Start a commit…
+						{$i18nMessages.t("desktop:StackPanel.startACommit")}
 					</Button>
 				</div>
 			{:else if controller.isCommitting}

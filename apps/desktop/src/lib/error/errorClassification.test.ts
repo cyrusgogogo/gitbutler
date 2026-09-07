@@ -2,8 +2,14 @@ import { persistSwallowGitHubOrgAuthErrors } from "$lib/config/config";
 import { SilentError } from "$lib/error/error";
 import { classify, classifyGitHubDeviceOAuthFailure } from "$lib/error/errorClassification";
 import { IpcError } from "$lib/error/normalizedError";
+import { canonicalMessages } from "$lib/notifications/toasts";
 import { describe, expect, test } from "vitest";
 import type { Code } from "@gitbutler/but-sdk";
+import type { LocalizedText } from "@gitbutler/i18n";
+
+function display(value: LocalizedText | undefined) {
+	return value === undefined ? undefined : canonicalMessages.text(value);
+}
 
 /**
  * The classifier owns "how should this error show up to the user?"
@@ -79,8 +85,8 @@ describe("classify", () => {
 			);
 			const result = classify(error);
 			expect(result.severity).toBe("error");
-			expect(result.userMessage).toContain("gitbutler-git");
-			expect(result.userMessage).toContain("cargo build");
+			expect(display(result.userMessage)).toContain("gitbutler-git");
+			expect(display(result.userMessage)).toContain("cargo build");
 		});
 	});
 
@@ -102,7 +108,7 @@ describe("classify", () => {
 			);
 			const result = classify(error);
 			expect(result.severity).toBe("warning");
-			expect(result.userMessage).toContain("credentials");
+			expect(display(result.userMessage)).toContain("credentials");
 		});
 
 		test("ForgeUnrecognized is a terminal warning with guidance, not silence", () => {
@@ -118,8 +124,10 @@ describe("classify", () => {
 			const result = classify(error);
 			expect(result.severity).toBe("warning");
 			expect(result.terminal).toBe(true);
-			expect(result.message).toBe("No forge could be determined for this repository branch");
-			expect(result.userMessage).toContain("target branch");
+			expect(display(result.message)).toBe(
+				"No forge could be determined for this repository branch",
+			);
+			expect(display(result.userMessage)).toContain("target branch");
 		});
 	});
 
@@ -131,8 +139,8 @@ describe("classify", () => {
 			);
 			const result = classify(error);
 			expect(result.severity).toBe("error");
-			expect(result.userMessage).toContain("signing failed");
-			expect(result.userMessage).toContain("documentation");
+			expect(display(result.userMessage)).toContain("signing failed");
+			expect(display(result.userMessage)).toContain("documentation");
 		});
 
 		test("GitHubTokenExpired tells the user to log out and back in", () => {
@@ -141,8 +149,8 @@ describe("classify", () => {
 				"github_request",
 			);
 			const result = classify(error);
-			expect(result.userMessage).toContain("expired");
-			expect(result.userMessage).toContain("log out");
+			expect(display(result.userMessage)).toContain("expired");
+			expect(display(result.userMessage)).toContain("log out");
 		});
 
 		test("GitHubInsufficientPermissions is terminal with permission guidance", () => {
@@ -157,7 +165,7 @@ describe("classify", () => {
 			expect(result.severity).toBe("error");
 			// Terminal: telemetry captures once per session and pollers stop.
 			expect(result.terminal).toBe(true);
-			expect(result.userMessage).toContain("permission");
+			expect(display(result.userMessage)).toContain("permission");
 		});
 
 		test("GitHubOrgSamlRestricted is terminal with credential-neutral SSO guidance", () => {
@@ -173,10 +181,10 @@ describe("classify", () => {
 			expect(result.code).toBe("GitHubOrgSamlRestricted");
 			expect(result.severity).toBe("error");
 			expect(result.terminal).toBe(true);
-			expect(result.title).toBe("GitHub SAML SSO Authorization Required");
-			expect(result.userMessage).toContain("OAuth app");
-			expect(result.userMessage).toContain("personal access token");
-			expect(result.userMessage).toContain("then try again");
+			expect(display(result.title)).toBe("GitHub SAML SSO Authorization Required");
+			expect(display(result.userMessage)).toContain("OAuth app");
+			expect(display(result.userMessage)).toContain("personal access token");
+			expect(display(result.userMessage)).toContain("then try again");
 		});
 	});
 
@@ -190,7 +198,7 @@ describe("classify", () => {
 			const result = classify(error);
 			expect(result.code).toBe(code);
 			expect(result.severity).toBe(severity);
-			expect(result.userMessage).toMatch(guidance);
+			expect(display(result.userMessage)).toMatch(guidance);
 		});
 
 		test("pending statuses and arbitrary codes get no guidance", () => {
@@ -219,8 +227,12 @@ describe("classify", () => {
 			["GitHubDeviceFlowRejected", "error", /rejected the device authorization/],
 		])("%s yields its static guidance, code, and %s severity", (code, severity, guidance) => {
 			const result = classifyGitHubDeviceOAuthFailure({ message: raw, code });
-			expect(result).toEqual({ message: expect.stringMatching(guidance), code, severity });
-			expect(result.message).not.toContain("3584d274");
+			expect({ ...result, message: display(result.message) }).toEqual({
+				message: expect.stringMatching(guidance),
+				code,
+				severity,
+			});
+			expect(display(result.message)).not.toContain("3584d274");
 		});
 
 		test.each([
@@ -243,7 +255,8 @@ describe("classify", () => {
 				})(),
 			],
 		])("%s falls back to the generic label without a code", (_, error) => {
-			expect(classifyGitHubDeviceOAuthFailure(error)).toEqual(generic);
+			const result = classifyGitHubDeviceOAuthFailure(error);
+			expect({ ...result, message: display(result.message) }).toEqual(generic);
 		});
 	});
 
@@ -252,7 +265,7 @@ describe("classify", () => {
 			const error = new IpcError({ message: "boom" }, "some_command");
 			const result = classify(error);
 			expect(result.severity).toBe("error");
-			expect(result.userMessage).toBeUndefined();
+			expect(display(result.userMessage)).toBeUndefined();
 			expect(result.actionHint).toBeUndefined();
 		});
 	});
@@ -274,8 +287,8 @@ describe("classify", () => {
 
 			const result = classify(error);
 
-			expect(result.title).toBe("GitHub Organizations OAuth Error");
-			expect(result.actionHint?.label).toBe("Don't show this again");
+			expect(display(result.title)).toBe("GitHub Organizations OAuth Error");
+			expect(display(result.actionHint?.label)).toBe("Don't show this again");
 		});
 
 		test("uses the error's own name when present (IPC commands)", () => {
@@ -301,8 +314,8 @@ describe("classify", () => {
 			const result = classify(
 				"Although you appear to have the correct authorization credentials, the org has SSO enforced.",
 			);
-			expect(result.title).toBe("GitHub Organizations OAuth Error");
-			expect(result.actionHint?.label).toBe("Don't show this again");
+			expect(display(result.title)).toBe("GitHub Organizations OAuth Error");
+			expect(display(result.actionHint?.label)).toBe("Don't show this again");
 		});
 	});
 });

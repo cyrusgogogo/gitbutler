@@ -1,9 +1,17 @@
 <script lang="ts">
+	import I18nRichMessage from "@gitbutler/ui/i18n/RichMessage.svelte";
 	// import TwitterCard from '$home/components/TwitterCard.svelte';
 </script>
 
 <section class="reviews-wrapper" id="developers-preview">
-	<h2 class="title">What <i>developers<br />say</i> about us</h2>
+	<h2 class="title">
+		{#snippet i18nSlot1(content: import("svelte").Snippet)}<i>{@render content()}</i>{/snippet}
+		{#snippet i18nSlot2()}<br />{/snippet}
+		<I18nRichMessage
+			value={{ key: "web:DevelopersReview.whatDevelopersSayAboutUs" }}
+			components={{ slot1: i18nSlot1, slot2: i18nSlot2 }}
+		/>
+	</h2>
 	<section class="reviews">
 		<!-- <div class="reviews-column">
 			<TwitterCard

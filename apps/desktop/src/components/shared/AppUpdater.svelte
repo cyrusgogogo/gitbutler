@@ -2,9 +2,12 @@
 	import AppScrollableContainer from "$components/shared/AppScrollableContainer.svelte";
 	import { UPDATER_SERVICE, type InstallStatus } from "$lib/updater/updater";
 	import { inject } from "@gitbutler/core/context";
+	import { useTranslations } from "@gitbutler/i18n/svelte";
 	import { Button, Modal, Markdown } from "@gitbutler/ui";
+	import I18nRichMessage from "@gitbutler/ui/i18n/RichMessage.svelte";
 	import { fade } from "svelte/transition";
 	import { env } from "$env/dynamic/public";
+	const i18nMessages = useTranslations();
 
 	interface Release {
 		version: string;
@@ -99,27 +102,29 @@
 
 		<h4 class="text-13 text-semibold update-banner__status">
 			{#if status === "Up-to-date"}
-				You are up-to-date!
+				{$i18nMessages.t("desktop:AppUpdater.youAreUpToDate")}
 			{:else if status === "Downloading"}
-				Downloading update…
+				{$i18nMessages.t("desktop:AppUpdater.downloadingUpdate")}
 			{:else if status === "Downloaded"}
-				Update downloaded
+				{$i18nMessages.t("desktop:AppUpdater.updateDownloaded")}
 			{:else if status === "Installing"}
-				Installing update…
+				{$i18nMessages.t("desktop:AppUpdater.installingUpdate")}
 			{:else if status === "Done"}
-				Install complete
+				{$i18nMessages.t("desktop:AppUpdater.installComplete")}
 			{:else if status === "Checking"}
-				Checking for update…
+				{$i18nMessages.t("desktop:AppUpdater.checkingForUpdate")}
 			{:else if status === "Error"}
-				Error occurred
+				{$i18nMessages.t("desktop:AppUpdater.errorOccurred")}
 			{:else if version}
-				New version available
+				{$i18nMessages.t("desktop:AppUpdater.newVersionAvailable")}
 			{/if}
 		</h4>
 
 		<div class="buttons">
 			{#if releaseNotes}
-				<Button kind="outline" onclick={handleOpenModal}>Release notes</Button>
+				<Button kind="outline" onclick={handleOpenModal}
+					>{$i18nMessages.t("desktop:AppUpdater.releaseNotes")}</Button
+				>
 			{/if}
 			{#if !inFlatpak}
 				<div class="status-section">
@@ -136,7 +141,7 @@
 									await updaterService.downloadAndInstall();
 								}}
 							>
-								Update to {version}
+								{$i18nMessages.t("desktop:AppUpdater.updateToValue", { version: String(version) })}
 							</Button>
 						{:else if status === "Up-to-date"}
 							<Button
@@ -147,7 +152,7 @@
 									updaterService.dismiss();
 								}}
 							>
-								Got it!
+								{$i18nMessages.t("desktop:AppUpdater.gotIt")}
 							</Button>
 						{:else if status === "Done"}
 							<Button
@@ -156,7 +161,7 @@
 								testId="restart-app"
 								onclick={async () => await updaterService.relaunchApp()}
 							>
-								Restart
+								{$i18nMessages.t("desktop:AppUpdater.restart")}
 							</Button>
 						{/if}
 					</div>
@@ -172,12 +177,21 @@
 			<div class="p-16">
 				{#if loadingReleases}
 					<div class="loading-state">
-						<p class="text-12">Loading releases...</p>
+						<p class="text-12">{$i18nMessages.t("desktop:AppUpdater.loadingReleases")}</p>
 					</div>
 				{:else}
 					<div class="release-notes-header">
 						<h3 class="text-15 text-bold">
-							<span class="text-12 m-r-4">📒</span> Release Notes - {displayVersion}
+							{#snippet i18nSlot1(content: import("svelte").Snippet)}<span class="text-12 m-r-4"
+									>{@render content()}</span
+								>{/snippet}
+							<I18nRichMessage
+								value={{
+									key: "desktop:AppUpdater.releaseNotesValue",
+									values: { displayVersion: String(displayVersion) },
+								}}
+								components={{ slot1: i18nSlot1 }}
+							/>
 						</h3>
 
 						<div class="flex gap-2">
@@ -203,7 +217,9 @@
 					</div>
 
 					<div class="text-12 text-body release-notes-content">
-						<Markdown content={displayNotes || "No release notes available"} />
+						<Markdown
+							content={displayNotes || $i18nMessages.t("desktop:AppUpdater.inlinec8de3aad6")}
+						/>
 					</div>
 				{/if}
 			</div>

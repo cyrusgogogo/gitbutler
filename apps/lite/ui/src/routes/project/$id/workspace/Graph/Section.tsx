@@ -1,3 +1,4 @@
+import { Message as I18nMessage, useTranslations } from "@gitbutler/i18n/react";
 import { GraphSegment } from "#ui/components/GraphSegment.tsx";
 import { Icon } from "#ui/components/Icon.tsx";
 import { classes } from "#ui/components/classes.ts";
@@ -84,32 +85,40 @@ const Header: FC<{
 	className?: string;
 	style?: CSSProperties;
 	children?: ReactNode;
-}> = ({ label, caption, heading = false, fold, glyph, className, style, children }) => (
-	<Row
-		interactive={fold !== undefined}
-		onSelect={fold?.onToggle}
-		className={className}
-		style={style}
-	>
-		{fold === undefined ? (
-			glyph
-		) : (
-			<RowFoldToggle
-				folded={!fold.open}
-				glyph={glyph}
-				aria-label={`${fold.open ? "Fold" : "Unfold"} ${fold.name}`}
-				onClick={fold.onToggle}
-			/>
-		)}
-		<RowLabelContainer>
-			<RowLabel heading={heading} singleLine className={heading ? undefined : "text-bold"}>
-				{label}
-				{caption}
-			</RowLabel>
-			{children !== undefined && <span className={styles.action}>{children}</span>}
-		</RowLabelContainer>
-	</Row>
-);
+}> = ({ label, caption, heading = false, fold, glyph, className, style, children }) => {
+	const i18nMessages = useTranslations();
+	return (
+		<Row
+			interactive={fold !== undefined}
+			onSelect={fold?.onToggle}
+			className={className}
+			style={style}
+		>
+			{fold === undefined ? (
+				glyph
+			) : (
+				<RowFoldToggle
+					folded={!fold.open}
+					glyph={glyph}
+					aria-label={i18nMessages.t("lite:Section.valueValue", {
+						value: fold.open
+							? i18nMessages.t("lite:Section.labelb6ba0db1f")
+							: i18nMessages.t("lite:Section.label02d85ea4e"),
+						value1: fold.name,
+					})}
+					onClick={fold.onToggle}
+				/>
+			)}
+			<RowLabelContainer>
+				<RowLabel heading={heading} singleLine className={heading ? undefined : "text-bold"}>
+					{label}
+					{caption}
+				</RowLabel>
+				{children !== undefined && <span className={styles.action}>{children}</span>}
+			</RowLabelContainer>
+		</Row>
+	);
+};
 
 const Elided: FC<{
 	run: Run;
@@ -122,11 +131,15 @@ const Elided: FC<{
 		<GraphSegment glyph={run.hidden > 0 ? "group" : "parent"} status={status} centered />
 		<RowLabelContainer>
 			<RowLabel singleLine className={styles.elided}>
-				{run.hidden === 0
-					? "Show fewer"
-					: run.incoming
-						? `${run.hidden} more`
-						: `${run.hidden} ${run.hidden === 1 ? "commit" : "commits"} already in the workspace`}
+				{run.hidden === 0 ? (
+					<I18nMessage value={{ key: "lite:Section.showFewer" }} />
+				) : run.incoming ? (
+					<I18nMessage value={{ key: "lite:graph.more", values: { count: run.hidden } }} />
+				) : (
+					<I18nMessage
+						value={{ key: "lite:graph.alreadyInWorkspace", values: { count: run.hidden } }}
+					/>
+				)}
 			</RowLabel>
 		</RowLabelContainer>
 	</Row>
@@ -183,7 +196,11 @@ const Update: FC<{ projectId: string }> = ({ projectId }) => {
 			disabled={!enabled}
 			onClick={rebase}
 		>
-			{isPending ? "Updating…" : "Update"}
+			{isPending ? (
+				<I18nMessage value={{ key: "lite:Section.updating" }} />
+			) : (
+				<I18nMessage value={{ key: "lite:Section.update" }} />
+			)}
 		</Button>
 	);
 };
@@ -203,11 +220,13 @@ const ShowMore: FC<{ state: MoreBelow; onSelect: () => void }> = ({ state, onSel
 		<GraphSegment glyph="group" status="Integrated" railEnds centered />
 		<RowLabelContainer>
 			<RowLabel singleLine className={styles.elided}>
-				{state === "loading"
-					? "Loading…"
-					: state === "failed"
-						? "Could not load older commits; try again"
-						: "Show more"}
+				{state === "loading" ? (
+					<I18nMessage value={{ key: "lite:Section.loading" }} />
+				) : state === "failed" ? (
+					<I18nMessage value={{ key: "lite:Section.couldNotLoadOlderCommitsTryAgain" }} />
+				) : (
+					<I18nMessage value={{ key: "lite:Section.showMore" }} />
+				)}
 			</RowLabel>
 		</RowLabelContainer>
 	</Row>
@@ -238,6 +257,7 @@ export const Section: FC<{
 	onShowMore,
 	scrollElementRef,
 }) => {
+	const i18nMessages = useTranslations();
 	const branched = plan.header.incoming > 0;
 	const addressSpace = useAddressSpace();
 	// Opening from docked: scroll to the bottom and hold it while the fold grows.
@@ -283,7 +303,7 @@ export const Section: FC<{
 							fold={{
 								open: plan.incomingExpanded,
 								onToggle: onToggleIncoming,
-								name: "incoming commits",
+								name: i18nMessages.t("lite:Section.label9bbc7b7f7"),
 							}}
 							glyph={chevron(plan.incomingExpanded)}
 						/>
@@ -319,13 +339,20 @@ export const Section: FC<{
 				<>
 					{/* The ref's tip on the base: one row for both. Moved on: the row says how far. */}
 					<Header
-						label={plan.refOnBase ? plan.header.label : "Merge base"}
+						label={plan.refOnBase ? plan.header.label : i18nMessages.t("lite:Section.mergeBase")}
 						caption={
 							plan.refOnBase ? (
-								<span className={classes("text-12", styles.caption)}>merge base</span>
+								<span className={classes("text-12", styles.caption)}>
+									<I18nMessage value={{ key: "lite:control.mergebase" }} />
+								</span>
 							) : branched ? (
 								<span className={classes("text-12", styles.incoming)}>
-									{plan.header.incoming} new
+									<I18nMessage
+										value={{
+											key: "lite:graph.newCommits",
+											values: { count: plan.header.incoming },
+										}}
+									/>
 								</span>
 							) : undefined
 						}
@@ -333,7 +360,7 @@ export const Section: FC<{
 						fold={{
 							open: plan.baseExpanded,
 							onToggle: toggleBase,
-							name: "the merge base's history",
+							name: i18nMessages.t("lite:Section.label063f2ea38"),
 						}}
 						glyph={chevron(plan.baseExpanded)}
 						className={classes(styles.base, !plan.baseExpanded && styles.docked)}

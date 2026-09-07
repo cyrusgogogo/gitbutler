@@ -1,3 +1,4 @@
+import { message, type LocalizedText } from "@gitbutler/i18n";
 import type { ConflictEntryPresence, FileInfo } from "@gitbutler/but-sdk";
 
 export function emptyConflictEntryPresence(): ConflictEntryPresence {
@@ -8,26 +9,30 @@ export function emptyConflictEntryPresence(): ConflictEntryPresence {
 	};
 }
 
-export function conflictEntryHint(presence: ConflictEntryPresence): string {
-	let defaultVerb = "added";
+export function conflictEntryHint(presence: ConflictEntryPresence): LocalizedText {
+	type Verb = "added" | "modified" | "deleted";
+	let defaultVerb: Verb = "added";
 
 	if (presence.ancestor) {
 		defaultVerb = "modified";
 	}
 
-	let oursVerb = defaultVerb;
+	let oursVerb: Verb = defaultVerb;
 
 	if (!presence.ours) {
 		oursVerb = "deleted";
 	}
 
-	let theirsVerb = defaultVerb;
+	let theirsVerb: Verb = defaultVerb;
 
 	if (!presence.theirs) {
 		theirsVerb = "deleted";
 	}
 
-	return `You have ${theirsVerb} this file, They have ${oursVerb} this file.`;
+	return message("desktop:conflict.sides", {
+		you: message(`desktop:conflict.verb.${theirsVerb}`),
+		them: message(`desktop:conflict.verb.${oursVerb}`),
+	});
 }
 
 function looksConflicted(file: string): boolean {

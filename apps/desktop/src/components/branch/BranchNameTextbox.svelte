@@ -2,8 +2,12 @@
 	import { STACK_SERVICE } from "$lib/stacks/stackService.svelte";
 	import { debounce } from "$lib/utils/debounce";
 	import { inject } from "@gitbutler/core/context";
+	import { message as i18nMessage } from "@gitbutler/i18n";
+	import { useTranslations } from "@gitbutler/i18n/svelte";
 	import { Icon, Textbox } from "@gitbutler/ui";
 	import { onDestroy } from "svelte";
+	import type { LocalizedText } from "@gitbutler/i18n";
+	const i18nMessages = useTranslations();
 
 	type Props = {
 		value?: string;
@@ -25,7 +29,7 @@
 
 	let textbox = $state<ReturnType<typeof Textbox>>();
 	let isValidating = $state(false);
-	let validationError = $state<string | undefined>();
+	let validationError = $state<LocalizedText | undefined>();
 	let validationCounter = $state(0);
 	let isDestroyed = false;
 
@@ -47,7 +51,9 @@
 	);
 	const computedHelperText = $derived(
 		namesDiverge && normalizedResult
-			? `Will be created as '${normalizedResult.normalized}'`
+			? $i18nMessages.t("desktop:BranchNameTextbox.detail5608a26a9", {
+					value1: String(normalizedResult.normalized),
+				})
 			: helperText,
 	);
 
@@ -79,7 +85,7 @@
 			if (!isDestroyed && value === inputValue && currentValidation === validationCounter) {
 				normalizedResult = undefined;
 				onnormalizedvalue?.(undefined);
-				validationError = "Invalid branch name";
+				validationError = i18nMessage("desktop:detail.d12fcb87c3");
 			}
 		} finally {
 			if (!isDestroyed && currentValidation === validationCounter) {
@@ -106,7 +112,7 @@
 	bind:this={textbox}
 	bind:value
 	helperText={computedHelperText}
-	error={validationError}
+	error={$i18nMessages.text(validationError ?? "")}
 	{...restProps}
 >
 	{#snippet customIconRight()}

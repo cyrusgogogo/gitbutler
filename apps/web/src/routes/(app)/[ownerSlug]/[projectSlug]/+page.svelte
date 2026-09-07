@@ -5,15 +5,18 @@
 	import { featureShowProjectPage } from "$lib/featureFlags";
 	import { getTimeSince } from "$lib/utils/dateUtils";
 	import { inject } from "@gitbutler/core/context";
+	import { message as i18nMessage } from "@gitbutler/i18n";
+	import { useTranslations } from "@gitbutler/i18n/svelte";
 	import PermissionsSelector from "@gitbutler/shared/organizations/PermissionsSelector.svelte";
 	import { PROJECT_SERVICE } from "@gitbutler/shared/organizations/projectService";
 	import {
 		WEB_ROUTES_SERVICE,
 		type ProjectParameters,
 	} from "@gitbutler/shared/routing/webRoutes.svelte";
-
 	import { AsyncButton, Button, Markdown, Modal, chipToasts } from "@gitbutler/ui";
+	import I18nRichMessage from "@gitbutler/ui/i18n/RichMessage.svelte";
 	import { untrack } from "svelte";
+	const i18nMessages = useTranslations();
 
 	interface Props {
 		data: ProjectParameters;
@@ -75,10 +78,12 @@
 			};
 
 			editingReadme = false;
-			chipToasts.success("README updated successfully");
+			chipToasts.success(i18nMessage("web:page.rEADMEUpdatedSuccessfully"));
 		} catch (error) {
 			chipToasts.error(
-				`Failed to update README: ${error instanceof Error ? error.message : "Unknown error"}`,
+				i18nMessage("web:page.failedToUpdateREADMEValue", {
+					value: error instanceof Error ? error.message : i18nMessage("common:unknownError"),
+				}),
 			);
 		} finally {
 			isSavingReadme = false;
@@ -125,7 +130,7 @@
 			};
 
 			editProjectModal?.close();
-			chipToasts.success("Project updated successfully");
+			chipToasts.success(i18nMessage("web:page.projectUpdatedSuccessfully"));
 
 			// If the slug changed, redirect to the new URL
 			if (editedSlug !== data.projectSlug) {
@@ -137,9 +142,11 @@
 				);
 			}
 		} catch (error) {
-			chipToasts.error(`Failed to update project`);
+			chipToasts.error(i18nMessage("web:page.failedToUpdateProject"));
 			console.error(
-				`Failed to update project: ${error instanceof Error ? error.message : "Unknown error"}`,
+				i18nMessage("web:project.updateFailed", {
+					error: error instanceof Error ? error.message : i18nMessage("common:unknownError"),
+				}),
 			);
 		} finally {
 			isUpdatingProject = false;
@@ -147,7 +154,7 @@
 	}
 
 	async function deleteProject(repositoryId: string) {
-		if (!confirm("Are you sure you want to delete this project?")) {
+		if (!confirm($i18nMessages.t("web:detail.5b94c5a718"))) {
 			return;
 		}
 
@@ -156,7 +163,7 @@
 	}
 
 	async function handleDisconnectFromParent() {
-		if (!confirm("Are you sure you want to disconnect this project from its parent?")) {
+		if (!confirm($i18nMessages.t("web:detail.b7dcb41eb7"))) {
 			return;
 		}
 
@@ -167,11 +174,13 @@
 				parentProject: undefined,
 				parentProjectRepositoryId: undefined,
 			};
-			chipToasts.success("Project unlinked from parent");
+			chipToasts.success(i18nMessage("web:page.projectUnlinkedFromParent"));
 		} catch (error) {
-			chipToasts.error(`Failed to unlink project`);
+			chipToasts.error(i18nMessage("web:page.failedToUnlinkProject"));
 			console.error(
-				`Failed to unlink project: ${error instanceof Error ? error.message : "Unknown error"}`,
+				i18nMessage("web:project.unlinkFailed", {
+					error: error instanceof Error ? error.message : i18nMessage("common:unknownError"),
+				}),
 			);
 		}
 	}
@@ -181,7 +190,7 @@
 
 {#await projectPromise}
 	<div class="loading-container">
-		<p>Loading project...</p>
+		<p>{$i18nMessages.t("web:page.loadingProject")}</p>
 	</div>
 {:then _projectData}
 	{#if _projectData}
@@ -196,15 +205,25 @@
 				</div>
 				{#if projectData.parentProject}
 					<div class="parent-project-info">
-						<span class="label">Parent Project:</span>
-						<a
-							href={routes.projectPath({
-								ownerSlug: projectData.parentProject.owner,
-								projectSlug: projectData.parentProject.slug,
-							})}
-						>
-							{projectData.parentProject.owner}/{projectData.parentProject.slug}
-						</a>
+						{#snippet i18nSlot1(content: import("svelte").Snippet)}<span class="label"
+								>{@render content()}</span
+							>{/snippet}
+						{#snippet i18nSlot2(content: import("svelte").Snippet)}<a
+								href={routes.projectPath({
+									ownerSlug: projectData.parentProject.owner,
+									projectSlug: projectData.parentProject.slug,
+								})}>{@render content()}</a
+							>{/snippet}
+						<I18nRichMessage
+							value={{
+								key: "web:page.parentProjectValueValue",
+								values: {
+									owner: String(projectData.parentProject.owner),
+									slug: String(projectData.parentProject.slug),
+								},
+							}}
+							components={{ slot1: i18nSlot1, slot2: i18nSlot2 }}
+						/>
 					</div>
 				{/if}
 			</header>
@@ -213,25 +232,35 @@
 				<div class="main-content">
 					<!-- Reviews section using the ReviewsSection component -->
 					{#await patchStacksPromise}
-						<ReviewsSection reviews={[]} status="loading" sectionTitle="Active Reviews" />
+						<ReviewsSection
+							reviews={[]}
+							status="loading"
+							sectionTitle={$i18nMessages.t("web:page.activeReviews")}
+						/>
 					{:then _}
 						<ReviewsSection
 							reviews={patchStacksData || []}
 							status={patchStacksData && patchStacksData.length > 0 ? "found" : "not-found"}
-							sectionTitle="Active Reviews"
+							sectionTitle={$i18nMessages.t("web:page.activeReviews")}
 							allReviewsUrl={routes.projectReviewPath(data)}
 							reviewsCount={projectData.activeReviewsCount || 0}
 						/>
 					{:catch error}
-						<ReviewsSection reviews={[]} status="error" sectionTitle="Active Reviews" />
+						<ReviewsSection
+							reviews={[]}
+							status="error"
+							sectionTitle={$i18nMessages.t("web:page.activeReviews")}
+						/>
 						<div class="error-text">
-							Error loading reviews: {error.message || "Unknown error"}
+							{$i18nMessages.t("web:page.errorLoadingReviewsValue", {
+								value: error.localized ?? error.message ?? i18nMessage("common:unknownError"),
+							})}
 						</div>
 					{/await}
 
 					<section class="card">
 						<div class="readme-header">
-							<h2 class="card-title">README</h2>
+							<h2 class="card-title">{$i18nMessages.t("web:page.rEADME")}</h2>
 							{#if projectData.permissions?.canWrite}
 								<div class="readme-actions">
 									{#if editingReadme}
@@ -240,7 +269,7 @@
 											action={() => saveReadme(projectData.repositoryId)}
 											disabled={isSavingReadme}
 										>
-											Save
+											{$i18nMessages.t("web:page.save")}
 										</AsyncButton>
 										<Button
 											type="button"
@@ -248,7 +277,7 @@
 											onclick={cancelEditingReadme}
 											disabled={isSavingReadme}
 										>
-											Cancel
+											{$i18nMessages.t("web:page.cancel")}
 										</Button>
 									{:else}
 										<Button
@@ -256,7 +285,7 @@
 											style="gray"
 											onclick={() => startEditingReadme((projectData as any).readme)}
 										>
-											Edit README
+											{$i18nMessages.t("web:page.editREADME")}
 										</Button>
 									{/if}
 								</div>
@@ -268,11 +297,11 @@
 									bind:value={readmeContent}
 									class="readme-editor"
 									rows="15"
-									placeholder="Enter markdown content for the README..."
+									placeholder={$i18nMessages.t("web:page.enterMarkdownContentForTheREADME")}
 									disabled={isSavingReadme}
 								></textarea>
 								<div class="readme-preview">
-									<h3 class="preview-title">Preview</h3>
+									<h3 class="preview-title">{$i18nMessages.t("web:page.preview")}</h3>
 									<Markdown content={readmeContent} />
 								</div>
 							{:else if (projectData as any).readme}
@@ -280,9 +309,9 @@
 							{:else}
 								<div class="no-readme">
 									{#if projectData.permissions?.canWrite}
-										<p>No README available for this project. Click "Edit README" to create one.</p>
+										<p>{$i18nMessages.t("web:page.noREADMEAvailableForThisProjectClickEdit")}</p>
 									{:else}
-										<p>No README available for this project.</p>
+										<p>{$i18nMessages.t("web:page.noREADMEAvailableForThisProject")}</p>
 									{/if}
 								</div>
 							{/if}
@@ -293,7 +322,7 @@
 				<div class="sidebar">
 					<section class="card">
 						<div class="card-header">
-							<h2 class="card-title">Project Details</h2>
+							<h2 class="card-title">{$i18nMessages.t("web:page.projectDetails")}</h2>
 							{#if projectData.permissions?.canWrite}
 								<Button
 									type="button"
@@ -301,31 +330,31 @@
 									onclick={openEditProjectModal}
 									class="edit-project-btn"
 								>
-									Edit Project
+									{$i18nMessages.t("web:page.editProject")}
 								</Button>
 							{/if}
 						</div>
 						<div class="card-content">
 							{#if projectData.name}
-								<h3 class="sidebar-section-title">Name</h3>
+								<h3 class="sidebar-section-title">{$i18nMessages.t("web:page.name")}</h3>
 								<p class="description">
 									{projectData.name}
 								</p>
 							{/if}
 							{#if projectData.description}
-								<h3 class="sidebar-section-title">Description</h3>
+								<h3 class="sidebar-section-title">{$i18nMessages.t("web:page.description")}</h3>
 								<p class="description">
 									{projectData.description}
 								</p>
 							{/if}
 
-							<h3 class="sidebar-section-title">Last Updated</h3>
-							<p class="description">{getTimeSince(projectData.updatedAt)}</p>
+							<h3 class="sidebar-section-title">{$i18nMessages.t("web:page.lastUpdated")}</h3>
+							<p class="description">{getTimeSince(projectData.updatedAt, $i18nMessages.locale)}</p>
 
 							{#if projectData.lastPushedAt}
 								<div class="meta-info">
 									<div class="meta-item clone-url-container">
-										<h3 class="sidebar-section-title">Clone URL</h3>
+										<h3 class="sidebar-section-title">{$i18nMessages.t("web:page.cloneURL")}</h3>
 										<div class="clone-url">
 											<code>{projectData.codeGitUrl}</code>
 											<Button
@@ -333,10 +362,10 @@
 												style="pop"
 												onclick={() => {
 													navigator.clipboard.writeText(projectData.codeGitUrl);
-													chipToasts.success("copied to clipboard");
+													chipToasts.success(i18nMessage("web:page.inline20a35261a"));
 												}}
 											>
-												Copy
+												{$i18nMessages.t("web:page.copy")}
 											</Button>
 										</div>
 									</div>
@@ -347,25 +376,34 @@
 
 					{#if projectData.parentProject}
 						<section class="card">
-							<h2 class="card-title">Parent Project</h2>
+							<h2 class="card-title">{$i18nMessages.t("web:page.parentProject")}</h2>
 							<div class="card-content">
 								<div class="parent-project-info-card">
 									<p>
-										This project is linked to a parent project:
-										<a
-											href={routes.projectPath({
-												ownerSlug: projectData.parentProject?.owner || data.ownerSlug,
-												projectSlug: projectData.parentProject?.slug || "",
-											})}
-										>
-											{projectData.parentProject?.owner || data.ownerSlug}/{projectData
-												.parentProject?.slug || projectData.parentProjectRepositoryId}
-										</a>
+										{#snippet i18nSlot3(content: import("svelte").Snippet)}<a
+												href={routes.projectPath({
+													ownerSlug: projectData.parentProject?.owner || data.ownerSlug,
+													projectSlug: projectData.parentProject?.slug || "",
+												})}>{@render content()}</a
+											>{/snippet}
+										<I18nRichMessage
+											value={{
+												key: "web:page.thisProjectIsLinkedToAParentProject",
+												values: {
+													value: String(projectData.parentProject?.owner || data.ownerSlug),
+													value2: String(
+														projectData.parentProject?.slug ||
+															projectData.parentProjectRepositoryId,
+													),
+												},
+											}}
+											components={{ slot3: i18nSlot3 }}
+										/>
 									</p>
 
 									{#if projectData.permissions?.canWrite}
 										<Button style="danger" onclick={handleDisconnectFromParent}>
-											Disconnect from Parent
+											{$i18nMessages.t("web:page.disconnectFromParent")}
 										</Button>
 									{/if}
 								</div>
@@ -373,12 +411,12 @@
 						</section>
 					{:else if projectData.ownerType === "user" && projectData.permissions?.canWrite}
 						<section class="card">
-							<h2 class="card-title">Connect to Organization</h2>
+							<h2 class="card-title">{$i18nMessages.t("web:page.connectToOrganization")}</h2>
 							<div class="card-content">
 								<div class="connect-org-card">
-									<p>Connect this project to an organization to enable team collaboration.</p>
+									<p>{$i18nMessages.t("web:page.connectThisProjectToAnOrganizationToEnable")}</p>
 									<Button style="pop" onclick={() => connectModal?.show()}>
-										Connect to Organization
+										{$i18nMessages.t("web:page.connectToOrganization")}
 									</Button>
 								</div>
 							</div>
@@ -392,21 +430,33 @@
 
 					{#if projectData.permissions?.canWrite}
 						<section class="card">
-							<h2 class="card-title">Permissions</h2>
+							<h2 class="card-title">{$i18nMessages.t("web:page.permissions")}</h2>
 							<div class="card-content gap-2">
-								<p>This project is <b>{projectData.permissions.shareLevel}</b></p>
+								<p>
+									{#snippet i18nSlot4(content: import("svelte").Snippet)}<b>{@render content()}</b
+										>{/snippet}
+									<I18nRichMessage
+										value={{
+											key: "web:page.thisProjectIsValue",
+											values: { shareLevel: String(projectData.permissions.shareLevel) },
+										}}
+										components={{ slot4: i18nSlot4 }}
+									/>
+								</p>
 								<PermissionsSelector repositoryId={projectData.repositoryId} />
 							</div>
 						</section>
 
 						<section class="card danger-zone">
-							<h2 class="card-title danger-title">Danger Zone</h2>
+							<h2 class="card-title danger-title">
+								{$i18nMessages.t("web:page.dangerZone_8fc83aa")}
+							</h2>
 							<div class="card-content">
 								<AsyncButton
 									style="danger"
 									action={async () => await deleteProject(projectData.repositoryId)}
 								>
-									Delete Project
+									{$i18nMessages.t("web:page.deleteProject")}
 								</AsyncButton>
 							</div>
 						</section>
@@ -418,45 +468,47 @@
 		<!-- Edit Project Modal -->
 		<Modal
 			bind:this={editProjectModal}
-			title="Edit Project"
+			title={$i18nMessages.t("web:page.editProject")}
 			onClose={() => {
 				isUpdatingProject = false;
 			}}
 		>
 			<form class="edit-project-form">
 				<div class="form-group">
-					<label for="project-name">Project Name</label>
+					<label for="project-name">{$i18nMessages.t("web:page.projectName")}</label>
 					<input
 						id="project-name"
 						type="text"
 						bind:value={editedName}
-						placeholder="Project name"
+						placeholder={$i18nMessages.t("web:page.projectName_ab9773f")}
 						required
 						disabled={isUpdatingProject}
 					/>
 				</div>
 
 				<div class="form-group">
-					<label for="project-slug">Project Slug</label>
+					<label for="project-slug">{$i18nMessages.t("web:page.projectSlug")}</label>
 					<input
 						id="project-slug"
 						type="text"
 						bind:value={editedSlug}
-						placeholder="project-slug"
+						placeholder={$i18nMessages.t("web:page.projectSlug_b3673c9")}
 						required
 						disabled={isUpdatingProject}
 						pattern="[a-z0-9-]+"
-						title="Lowercase letters, numbers, and hyphens only"
+						title={$i18nMessages.t("web:page.lowercaseLettersNumbersAndHyphensOnly")}
 					/>
-					<small>Only lowercase letters, numbers, and hyphens are allowed</small>
+					<small
+						>{$i18nMessages.t("web:page.onlyLowercaseLettersNumbersAndHyphensAreAllowed")}</small
+					>
 				</div>
 
 				<div class="form-group">
-					<label for="project-description">Description</label>
+					<label for="project-description">{$i18nMessages.t("web:page.description")}</label>
 					<textarea
 						id="project-description"
 						bind:value={editedDescription}
-						placeholder="Project description"
+						placeholder={$i18nMessages.t("web:page.projectDescription")}
 						rows="4"
 						disabled={isUpdatingProject}
 					></textarea>
@@ -469,30 +521,38 @@
 						onclick={() => editProjectModal?.close()}
 						disabled={isUpdatingProject}
 					>
-						Cancel
+						{$i18nMessages.t("web:page.cancel")}
 					</Button>
 					<AsyncButton
 						style="pop"
 						action={() => saveProjectEdits(projectData.repositoryId)}
 						disabled={isUpdatingProject}
 					>
-						Save Changes
+						{$i18nMessages.t("web:page.saveChanges")}
 					</AsyncButton>
 				</div>
 			</form>
 		</Modal>
 	{:else}
 		<div class="error-message">
-			<h2>Project Not Found</h2>
-			<p>The project you requested could not be found. Please check the URL and try again.</p>
-			<Button onclick={() => goto(routes.projectsPath())}>Return to Projects</Button>
+			<h2>{$i18nMessages.t("web:page.projectNotFound")}</h2>
+			<p>{$i18nMessages.t("web:page.theProjectYouRequestedCouldNotBeFound")}</p>
+			<Button onclick={() => goto(routes.projectsPath())}
+				>{$i18nMessages.t("web:page.returnToProjects")}</Button
+			>
 		</div>
 	{/if}
 {:catch error}
 	<div class="error-message">
-		<h2>Error Loading Project</h2>
-		<p>There was a problem loading the project: {error.message || "Unknown error"}</p>
-		<Button onclick={() => goto(routes.projectsPath())}>Return to Projects</Button>
+		<h2>{$i18nMessages.t("web:page.errorLoadingProject")}</h2>
+		<p>
+			{$i18nMessages.t("web:page.thereWasAProblemLoadingTheProjectValue", {
+				value: error.localized ?? error.message ?? i18nMessage("common:unknownError"),
+			})}
+		</p>
+		<Button onclick={() => goto(routes.projectsPath())}
+			>{$i18nMessages.t("web:page.returnToProjects")}</Button
+		>
 	</div>
 {/await}
 

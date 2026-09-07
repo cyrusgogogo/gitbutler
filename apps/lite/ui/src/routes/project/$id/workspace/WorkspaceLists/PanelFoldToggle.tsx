@@ -1,3 +1,4 @@
+import { useTranslations } from "@gitbutler/i18n/react";
 import { Icon } from "#ui/components/Icon.tsx";
 import { TooltipPopup } from "#ui/components/Tooltip.tsx";
 import type { SidebarPanel } from "#ui/projects/project.ts";
@@ -6,11 +7,6 @@ import { useAppDispatch, useAppSelector } from "#ui/store.ts";
 import { Button, Tooltip } from "@base-ui/react";
 import type { FC } from "react";
 import styles from "./PanelFoldToggle.module.css";
-
-const label: Record<SidebarPanel, string> = {
-	uncommitted: "uncommitted changes",
-	stacks: "stacks and branches",
-};
 
 /**
  * Collapses one of the sidebar's two stacked panels to its header, so the other
@@ -25,11 +21,12 @@ export const PanelFoldToggle: FC<{ projectId: string; panel: SidebarPanel }> = (
 	projectId,
 	panel,
 }) => {
+	const i18nMessages = useTranslations();
 	const dispatch = useAppDispatch();
 	const collapsed = useAppSelector((state) =>
 		projectSlice.selectors.selectSidebarPanelCollapsed(state, projectId, panel),
 	);
-	const action = `${collapsed ? "Expand" : "Collapse"} ${label[panel]}`;
+	const action = i18nMessages.t(`lite:panel.${collapsed ? "expand" : "collapse"}.${panel}`);
 
 	return (
 		<Tooltip.Root>

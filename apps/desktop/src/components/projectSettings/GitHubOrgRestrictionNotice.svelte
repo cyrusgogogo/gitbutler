@@ -1,7 +1,8 @@
 <script lang="ts">
+	import { useTranslations } from "@gitbutler/i18n/svelte";
 	import { InfoMessage, Link } from "@gitbutler/ui";
-
 	import type { Code } from "@gitbutler/but-sdk";
+	const i18nMessages = useTranslations();
 
 	const { errorCode }: { errorCode: Code | undefined } = $props();
 </script>
@@ -9,27 +10,27 @@
 {#if errorCode === "GitHubOrgOAuthRestricted"}
 	<InfoMessage style="warning" filled outlined={false}>
 		{#snippet title()}
-			Restricted by a GitHub organization
+			{$i18nMessages.t("desktop:GitHubOrgRestrictionNotice.restrictedByAGitHubOrganization")}
 		{/snippet}
 		{#snippet content()}
-			An organization that owns this repository has blocked the GitButler OAuth app, so pull
-			requests can't be listed or created right now. Ask an organization owner to approve the app,
-			or connect an account that uses a personal access token — see the
+			{$i18nMessages.t(
+				"desktop:GitHubOrgRestrictionNotice.anOrganizationThatOwnsThisRepositoryHasBlocked",
+			)}
 			<Link
 				href="https://docs.gitbutler.com/features/forge-integration/github-integration?utm_source=gitbutler-app&utm_medium=settings-banner&utm_campaign=org-oauth-restriction#connect-a-github-account"
-				>docs</Link
+				>{$i18nMessages.t("desktop:GitHubOrgRestrictionNotice.docs")}</Link
 			>.
 		{/snippet}
 	</InfoMessage>
 {:else if errorCode === "GitHubOrgSamlRestricted"}
 	<InfoMessage style="warning" filled outlined={false}>
 		{#snippet title()}
-			GitHub organization requires SAML SSO
+			{$i18nMessages.t("desktop:GitHubOrgRestrictionNotice.gitHubOrganizationRequiresSAMLSSO")}
 		{/snippet}
 		{#snippet content()}
-			This repository's organization requires SAML SSO, but the selected GitHub credential isn't
-			authorized for it. In GitHub, authorize the GitButler OAuth app or your personal access token
-			for the organization, then try again.
+			{$i18nMessages.t(
+				"desktop:GitHubOrgRestrictionNotice.thisRepositorySOrganizationRequiresSAMLSSOBut",
+			)}
 		{/snippet}
 	</InfoMessage>
 {/if}

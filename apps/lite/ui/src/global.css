@@ -1,5 +1,11 @@
 @import "@gitbutler/design-core/core";
 
+:root:lang(zh-CN) {
+	--text-fontfamily-base: Inter, "PingFang SC", "Microsoft YaHei", "Noto Sans CJK SC", sans-serif;
+	--text-fontfamily-accent:
+		"But Head", "PingFang SC", "Microsoft YaHei", "Noto Sans CJK SC", sans-serif;
+}
+
 /*
     color-scheme isn't yet respected by prefers-color-scheme, so where we can't use light-dark() we
     can instead use this homegrown alternative. See:

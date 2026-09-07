@@ -1,8 +1,11 @@
 <script lang="ts">
 	import BranchesCardLayout from "$components/branchesPage/BranchesCardLayout.svelte";
 	import { getPrStatus } from "$lib/forge/interface/prUtils";
+	import { useTranslations } from "@gitbutler/i18n/svelte";
 	import { Avatar, ReviewBadge, SeriesIcon, TestId, TimeAgo } from "@gitbutler/ui";
 	import type { ForgeUnitInfo } from "@gitbutler/but-sdk";
+	const i18nMessages = useTranslations();
+
 	type basePrData = {
 		number: number;
 		isDraft: boolean;
@@ -43,7 +46,7 @@
 		onclick,
 	}: Props = $props();
 
-	const unknownName = "Unknown Author";
+	const unknownName = $derived($i18nMessages.t("desktop:PRListCard.detailb33211f7f"));
 
 	const prStatus = $derived(getPrStatus({ mergedAt, closedAt, draft: isDraft }));
 </script>
@@ -76,7 +79,7 @@
 			<span class="sidebar-entry__divider">•</span>
 
 			{#if noRemote || !sourceBranch}
-				<span>No remote</span>
+				<span>{$i18nMessages.t("desktop:PRListCard.noRemote")}</span>
 			{:else}
 				<div class="sidebar-entry__branch truncate">
 					<SeriesIcon single size={12} />
@@ -88,8 +91,8 @@
 	{#snippet details()}
 		{#if author && modifiedAt}
 			<Avatar srcUrl={author.gravatarUrl || ""} username={author.name || unknownName} />
-			<TimeAgo date={new Date(modifiedAt)} addSuffix /> by
-			{author.name || unknownName}
+			<TimeAgo date={new Date(modifiedAt)} addSuffix />
+			{$i18nMessages.t("desktop:PRListCard.byValue", { value: String(author.name || unknownName) })}
 		{/if}
 	{/snippet}
 </BranchesCardLayout>

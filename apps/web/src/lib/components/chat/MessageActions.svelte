@@ -1,9 +1,10 @@
 <script lang="ts">
 	import { inject } from "@gitbutler/core/context";
+	import { useTranslations } from "@gitbutler/i18n/svelte";
 	import { CHAT_CHANNELS_SERVICE } from "@gitbutler/shared/chat/chatChannelsService";
-
 	import { Button } from "@gitbutler/ui";
 	import type { ChatMessage } from "@gitbutler/shared/chat/types";
+	const i18nMessages = useTranslations();
 
 	interface Props {
 		projectId: string;
@@ -36,7 +37,7 @@
 {#if message.issue && !message.resolved}
 	<div class="chat-message-actions">
 		<Button style="gray" kind="outline" icon="tick" loading={isResolving} onclick={resolveIssue}
-			>Resolve issue</Button
+			>{$i18nMessages.t("web:MessageActions.resolveIssue")}</Button
 		>
 	</div>
 {/if}

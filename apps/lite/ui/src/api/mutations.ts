@@ -1,3 +1,6 @@
+import { message as i18nMessage } from "@gitbutler/i18n";
+import { createElement as createI18nElement } from "react";
+import { Message as I18nMessage, RichMessage as I18nRichMessage } from "@gitbutler/i18n/react";
 import { decodeBytes, encodeBytes } from "#ui/api/bytes.ts";
 import { remapSearchBranch, remapSearchCommits, setCursor } from "#ui/use-cursor.ts";
 import { getHeadInfoIndex } from "#ui/api/ref-info.ts";
@@ -37,7 +40,8 @@ import { commitAddress, addressEquals, type FileParent } from "#ui/addresses.ts"
 import { projectSlice } from "#ui/projects/state.ts";
 import { projectAiSettingsQueryOptions } from "#ui/project-ai-settings.ts";
 import { type AppDispatch, useAppDispatch, useAppStore } from "#ui/store.ts";
-import { formatRelativeTime } from "#ui/time.ts";
+import { RelativeTime } from "#ui/components/RelativeTime.tsx";
+import { i18n } from "#ui/i18n.ts";
 import { Toast } from "@base-ui/react";
 import { Match } from "effect";
 import type {
@@ -55,6 +59,7 @@ import { type QueryClient, useMutation, useQueryClient } from "@tanstack/react-q
 import type { GUISettings } from "#electron/settings.ts";
 import { moveDraftPR } from "#ui/pr.ts";
 import { presentableOperation } from "#ui/snapshot.ts";
+import type { LocalizedText } from "@gitbutler/i18n";
 
 declare module "@tanstack/react-query" {
 	interface Register {
@@ -64,11 +69,9 @@ declare module "@tanstack/react-query" {
 		 * write `onError` only for work of their own, like rolling back an
 		 * optimistic write or wording a title dynamically.
 		 */
-		mutationMeta: { failureTitle?: string };
+		mutationMeta: { failureTitle?: LocalizedText };
 	}
 }
-
-const pluralRules = new Intl.PluralRules("en");
 
 // oxlint-disable-next-line typescript/no-explicit-any
 type PromiseReturnType<T> = T extends (...args: Array<any>) => Promise<infer U> ? U : never;
@@ -103,7 +106,7 @@ export const useGenerateCommitMessage = () => {
 				() => input.onValue(input.previousMessage),
 			);
 		},
-		meta: { failureTitle: "Failed to generate commit message" },
+		meta: { failureTitle: i18nMessage("lite:mutations.failedToGenerateCommitMessage") },
 	});
 };
 
@@ -140,7 +143,7 @@ export const useAbsorb = ({ projectId }: { projectId: string }) =>
 			if (!absorptionPlan) return Promise.resolve(null);
 			return window.lite.absorb({ projectId, absorptionPlan });
 		},
-		meta: { failureTitle: "Failed to absorb" },
+		meta: { failureTitle: i18nMessage("lite:mutations.failedToAbsorb") },
 	});
 
 export const useApply = () => {
@@ -153,13 +156,20 @@ export const useApply = () => {
 			if (response.conflictingStacks.length > 0) {
 				const toastId = toastManager.add({
 					type: "error",
-					title: "Failed to apply branch",
-					description: `'${input.existingBranch}' conflicts with existing stack in the workspace: ${response.conflictingStacks
-						.map((stack) => stack.shortName)
-						.join(", ")}`,
+					title: createI18nElement(I18nMessage, {
+						value: i18nMessage("lite:mutations.failedToApplyBranch"),
+					}),
+					description: createI18nElement(I18nMessage, {
+						value: i18nMessage("lite:mutations.valueConflictsWithExistingStackInTheWorkspace", {
+							existingBranch: String(input.existingBranch),
+							value: String(response.conflictingStacks.map((stack) => stack.shortName).join(", ")),
+						}),
+					}),
 					priority: "high",
 					actionProps: {
-						children: "Switch to branch instead",
+						children: createI18nElement(I18nMessage, {
+							value: i18nMessage("lite:mutations.switchToBranchInstead"),
+						}),
 						onClick: () => {
 							(async () => {
 								const checkoutResponse = await window.lite.branchCheckout({
@@ -174,8 +184,12 @@ export const useApply = () => {
 
 								toastManager.add({
 									type: "error",
-									title: "Failed to switch branch",
-									description: errorMessageForToast(error),
+									title: createI18nElement(I18nMessage, {
+										value: i18nMessage("lite:mutations.failedToSwitchBranch"),
+									}),
+									description: createI18nElement(I18nMessage, {
+										value: errorMessageForToast(error),
+									}),
 									priority: "high",
 								});
 							});
@@ -184,7 +198,7 @@ export const useApply = () => {
 				});
 			}
 		},
-		meta: { failureTitle: "Failed to apply branch" },
+		meta: { failureTitle: i18nMessage("lite:mutations.failedToApplyBranch") },
 	});
 };
 
@@ -195,7 +209,7 @@ export const useBranchCreate = () => {
 		onSuccess: async (response, input, _context, mutation) => {
 			syncCoreCaches(mutation.client, dispatch, input.projectId, response);
 		},
-		meta: { failureTitle: "Failed to create branch" },
+		meta: { failureTitle: i18nMessage("lite:mutations.failedToCreateBranch") },
 	});
 };
 
@@ -211,7 +225,7 @@ export const useBranchCheckoutNew = () => {
 		onSuccess: async (response, input, _context, mutation) => {
 			syncCoreCaches(mutation.client, dispatch, input.projectId, response);
 		},
-		meta: { failureTitle: "Failed to create and switch to branch" },
+		meta: { failureTitle: i18nMessage("lite:mutations.failedToCreateAndSwitchToBranch") },
 	});
 };
 
@@ -219,7 +233,7 @@ export const usePublishReview = (projectId: string) =>
 	useMutation({
 		mutationKey: [projectId, "publishReview"],
 		mutationFn: window.lite.publishReview,
-		meta: { failureTitle: "Failed to create pull request" },
+		meta: { failureTitle: i18nMessage("lite:mutations.failedToCreatePullRequest") },
 	});
 
 type GeneratePrDescriptionInput = {
@@ -256,7 +270,7 @@ export const useGeneratePrDescription = () => {
 			);
 			return splitGeneratedDescription(response);
 		},
-		meta: { failureTitle: "Failed to generate description" },
+		meta: { failureTitle: i18nMessage("lite:mutations.failedToGenerateDescription") },
 	});
 };
 
@@ -272,12 +286,13 @@ export const useUploadFiles = () =>
 		mutationFn: async (files: Array<File>) => {
 			const tooLarge = oversizedFile(files);
 			if (tooLarge !== undefined) {
-				throw new Error(
-					`${tooLarge.name} is ${(tooLarge.size / (1024 * 1024)).toFixed(1)} MB, over the ${
-						UPLOAD_SIZE_LIMIT / (1024 * 1024)
-					} MB upload limit`,
-				);
+				throw i18n.error("lite:upload.tooLarge", {
+					name: tooLarge.name,
+					size: (tooLarge.size / (1024 * 1024)).toFixed(1),
+					limit: UPLOAD_SIZE_LIMIT / (1024 * 1024),
+				});
 			}
+
 			return Promise.all(
 				files.map(async (file) =>
 					window.lite.uploadFile({
@@ -288,28 +303,28 @@ export const useUploadFiles = () =>
 				),
 			);
 		},
-		meta: { failureTitle: "Failed to upload files" },
+		meta: { failureTitle: i18nMessage("lite:mutations.failedToUploadFiles") },
 	});
 
 export const useUpdateReview = (projectId: string) =>
 	useMutation({
 		mutationKey: [projectId, "updateReview"],
 		mutationFn: window.lite.updateReview,
-		meta: { failureTitle: "Failed to update pull request" },
+		meta: { failureTitle: i18nMessage("lite:mutations.failedToUpdatePullRequest") },
 	});
 
 export const useAddReviewLabels = (projectId: string) =>
 	useMutation({
 		mutationKey: [projectId, "addReviewLabels"],
 		mutationFn: window.lite.addReviewLabels,
-		meta: { failureTitle: "Failed to add label" },
+		meta: { failureTitle: i18nMessage("lite:mutations.failedToAddLabel") },
 	});
 
 export const useRemoveReviewLabel = (projectId: string) =>
 	useMutation({
 		mutationKey: [projectId, "removeReviewLabel"],
 		mutationFn: window.lite.removeReviewLabel,
-		meta: { failureTitle: "Failed to remove label" },
+		meta: { failureTitle: i18nMessage("lite:mutations.failedToRemoveLabel") },
 	});
 
 /**
@@ -364,7 +379,7 @@ export const useAddReviewReaction = (projectId: string) =>
 	useMutation({
 		mutationKey: [projectId, "addReviewReaction"],
 		mutationFn: window.lite.addReviewReaction,
-		meta: { failureTitle: "Failed to add reaction" },
+		meta: { failureTitle: i18nMessage("lite:mutations.failedToAddReaction") },
 		onMutate: async (input, ctx) => {
 			const key = listReviewReactionsQueryOptions(input).queryKey;
 			await ctx.client.cancelQueries({ queryKey: key });
@@ -395,7 +410,7 @@ export const useRemoveReviewReaction = (projectId: string) =>
 	useMutation({
 		mutationKey: [projectId, "removeReviewReaction"],
 		mutationFn: window.lite.removeReviewReaction,
-		meta: { failureTitle: "Failed to remove reaction" },
+		meta: { failureTitle: i18nMessage("lite:mutations.failedToRemoveReaction") },
 		onMutate: async (input, ctx) => {
 			const key = listReviewReactionsQueryOptions(input).queryKey;
 			await ctx.client.cancelQueries({ queryKey: key });
@@ -432,7 +447,7 @@ export const useAddCommentReaction = ({
 	useMutation({
 		mutationKey: [projectId, "addCommentReaction"],
 		mutationFn: window.lite.addCommentReaction,
-		meta: { failureTitle: "Failed to add reaction" },
+		meta: { failureTitle: i18nMessage("lite:mutations.failedToAddReaction") },
 		onMutate: async (input, ctx) => {
 			const reactionsKey = listCommentReactionsQueryOptions(input).queryKey;
 			const commentsKey = listReviewCommentsQueryOptions({
@@ -485,7 +500,7 @@ export const useRemoveCommentReaction = ({
 	useMutation({
 		mutationKey: [projectId, "removeCommentReaction"],
 		mutationFn: window.lite.removeCommentReaction,
-		meta: { failureTitle: "Failed to remove reaction" },
+		meta: { failureTitle: i18nMessage("lite:mutations.failedToRemoveReaction") },
 		onMutate: async (input, ctx) => {
 			const reactionsKey = listCommentReactionsQueryOptions(input).queryKey;
 			const commentsKey = listReviewCommentsQueryOptions({
@@ -532,21 +547,21 @@ export const useRequestReview = (projectId: string) =>
 	useMutation({
 		mutationKey: [projectId, "requestReview"],
 		mutationFn: window.lite.requestReview,
-		meta: { failureTitle: "Failed to request review" },
+		meta: { failureTitle: i18nMessage("lite:mutations.failedToRequestReview") },
 	});
 
 export const useWithdrawReviewRequest = (projectId: string) =>
 	useMutation({
 		mutationKey: [projectId, "withdrawReviewRequest"],
 		mutationFn: window.lite.withdrawReviewRequest,
-		meta: { failureTitle: "Failed to withdraw review request" },
+		meta: { failureTitle: i18nMessage("lite:mutations.failedToWithdrawReviewRequest") },
 	});
 
 export const useCreateReviewComment = (projectId: string) =>
 	useMutation({
 		mutationKey: [projectId, "createReviewComment"],
 		mutationFn: window.lite.createReviewComment,
-		meta: { failureTitle: "Failed to post comment" },
+		meta: { failureTitle: i18nMessage("lite:mutations.failedToPostComment") },
 		onMutate: async (input, ctx) => {
 			const key = listReviewCommentsQueryOptions(input).queryKey;
 			await ctx.client.cancelQueries({ queryKey: key });
@@ -587,7 +602,7 @@ export const useCreateReviewThreadReply = (projectId: string, reviewId: number) 
 	useMutation({
 		mutationKey: [projectId, "createReviewThreadReply"],
 		mutationFn: window.lite.createReviewThreadReply,
-		meta: { failureTitle: "Failed to post reply" },
+		meta: { failureTitle: i18nMessage("lite:mutations.failedToPostReply") },
 		onMutate: async (input, ctx) => {
 			const key = listReviewThreadsQueryOptions({ projectId, reviewId }).queryKey;
 			await ctx.client.cancelQueries({ queryKey: key });
@@ -629,14 +644,14 @@ export const useUpdateReviewComment = (projectId: string) =>
 	useMutation({
 		mutationKey: [projectId, "updateReviewComment"],
 		mutationFn: window.lite.updateReviewComment,
-		meta: { failureTitle: "Failed to update comment" },
+		meta: { failureTitle: i18nMessage("lite:mutations.failedToUpdateComment") },
 	});
 
 export const useDeleteReviewComment = (projectId: string) =>
 	useMutation({
 		mutationKey: [projectId, "deleteReviewComment"],
 		mutationFn: window.lite.deleteReviewComment,
-		meta: { failureTitle: "Failed to delete comment" },
+		meta: { failureTitle: i18nMessage("lite:mutations.failedToDeleteComment") },
 	});
 
 export const useSetReviewAutoMerge = (projectId: string) => {
@@ -684,8 +699,10 @@ export const useSetReviewAutoMerge = (projectId: string) => {
 
 			toastManager.add({
 				type: "error",
-				title: `Failed to ${input.enable ? "enable" : "disable"} pull request auto-merge`,
-				description: errorMessageForToast(error),
+				title: createI18nElement(I18nMessage, {
+					value: i18nMessage(input.enable ? "lite:merge.enableFailed" : "lite:merge.disableFailed"),
+				}),
+				description: createI18nElement(I18nMessage, { value: errorMessageForToast(error) }),
 				priority: "high",
 			});
 		},
@@ -712,7 +729,7 @@ export const useMergeReview = (projectId: string) =>
 				)
 				.catch(() => undefined);
 		},
-		meta: { failureTitle: "Failed to merge pull request" },
+		meta: { failureTitle: i18nMessage("lite:mutations.failedToMergePullRequest") },
 	});
 
 /**
@@ -736,90 +753,90 @@ export const useSetReviewDraftiness = (projectId: string) =>
 	useMutation({
 		mutationKey: [projectId, "setReviewDraftiness"],
 		mutationFn: window.lite.setReviewDraftiness,
-		meta: { failureTitle: "Failed to update pull request" },
+		meta: { failureTitle: i18nMessage("lite:mutations.failedToUpdatePullRequest") },
 	});
 
 export const useSetGbConfig = (projectId: string) =>
 	useMutation({
 		mutationKey: [projectId, "setGbConfig"],
 		mutationFn: window.lite.setGbConfig,
-		meta: { failureTitle: "Failed to save git settings" },
+		meta: { failureTitle: i18nMessage("lite:mutations.failedToSaveGitSettings") },
 	});
 
 export const useDeleteAllData = () =>
 	useMutation({
 		mutationKey: ["deleteAllData"],
 		mutationFn: window.lite.deleteAllData,
-		meta: { failureTitle: "Failed to remove projects" },
+		meta: { failureTitle: i18nMessage("lite:mutations.failedToRemoveProjects") },
 	});
 
 export const useForgetGithubAccount = () =>
 	useMutation({
 		mutationKey: ["forgetGithubAccount"],
 		mutationFn: window.lite.forgetGithubAccount,
-		meta: { failureTitle: "Failed to forget account" },
+		meta: { failureTitle: i18nMessage("lite:mutations.failedToForgetAccount") },
 	});
 
 export const useForgetGitlabAccount = () =>
 	useMutation({
 		mutationKey: ["forgetGitlabAccount"],
 		mutationFn: window.lite.forgetGitlabAccount,
-		meta: { failureTitle: "Failed to forget account" },
+		meta: { failureTitle: i18nMessage("lite:mutations.failedToForgetAccount") },
 	});
 
 export const useForgetBitbucketAccount = () =>
 	useMutation({
 		mutationKey: ["forgetBitbucketAccount"],
 		mutationFn: window.lite.forgetBitbucketAccount,
-		meta: { failureTitle: "Failed to forget account" },
+		meta: { failureTitle: i18nMessage("lite:mutations.failedToForgetAccount") },
 	});
 
 export const useStoreGithubPat = () =>
 	useMutation({
 		mutationKey: ["storeGithubPat"],
 		mutationFn: window.lite.storeGithubPat,
-		meta: { failureTitle: "Failed to add GitHub account" },
+		meta: { failureTitle: i18nMessage("lite:mutations.failedToAddGitHubAccount") },
 	});
 
 export const useStoreGitlabPat = () =>
 	useMutation({
 		mutationKey: ["storeGitlabPat"],
 		mutationFn: window.lite.storeGitlabPat,
-		meta: { failureTitle: "Failed to add GitLab account" },
+		meta: { failureTitle: i18nMessage("lite:mutations.failedToAddGitLabAccount") },
 	});
 
 export const useStoreBitbucketApiToken = () =>
 	useMutation({
 		mutationKey: ["storeBitbucketApiToken"],
 		mutationFn: window.lite.storeBitbucketApiToken,
-		meta: { failureTitle: "Failed to add Bitbucket account" },
+		meta: { failureTitle: i18nMessage("lite:mutations.failedToAddBitbucketAccount") },
 	});
 
 export const useDeleteProject = (projectId: string) =>
 	useMutation({
 		mutationKey: [projectId, "deleteProject"],
 		mutationFn: window.lite.deleteProject,
-		meta: { failureTitle: "Failed to remove project" },
+		meta: { failureTitle: i18nMessage("lite:mutations.failedToRemoveProject") },
 	});
 
 export const useAddProject = () =>
 	useMutation({
 		mutationKey: ["addProject"],
 		mutationFn: window.lite.addProject,
-		meta: { failureTitle: "Failed to add project" },
+		meta: { failureTitle: i18nMessage("lite:mutations.failedToAddProject") },
 	});
 
 export const useUpdateProjectSettings = (projectId: string) =>
 	useMutation({
 		mutationKey: [projectId, "updateProjectSettings"],
 		mutationFn: window.lite.updateProjectSettings,
-		meta: { failureTitle: "Failed to save project settings" },
+		meta: { failureTitle: i18nMessage("lite:mutations.failedToSaveProjectSettings") },
 	});
 
 export const useOpenInProgram = () =>
 	useMutation({
 		mutationFn: window.lite.openInProgram,
-		meta: { failureTitle: "Failed to open in editor" },
+		meta: { failureTitle: i18nMessage("lite:mutations.failedToOpenInEditor") },
 	});
 
 export const useCommitAmend = (projectId: string) => {
@@ -856,7 +873,7 @@ export const useCommitAmend = (projectId: string) => {
 				);
 			}
 		},
-		meta: { failureTitle: "Failed to amend commit" },
+		meta: { failureTitle: i18nMessage("lite:mutations.failedToAmendCommit") },
 	});
 };
 
@@ -893,7 +910,7 @@ export const useCommitCreate = () => {
 				);
 			}
 		},
-		meta: { failureTitle: "Failed to commit" },
+		meta: { failureTitle: i18nMessage("lite:mutations.failedToCommit") },
 	});
 };
 
@@ -904,7 +921,7 @@ export const useCommitDiscard = () => {
 		onSuccess: async (response, input, _context, mutation) => {
 			syncCoreCaches(mutation.client, dispatch, input.projectId, response);
 		},
-		meta: { failureTitle: "Failed to discard commit" },
+		meta: { failureTitle: i18nMessage("lite:mutations.failedToDiscardCommit") },
 	});
 };
 
@@ -915,7 +932,7 @@ export const useCommitDiscardChanges = () => {
 		onSuccess: async (response, input, _context, mutation) => {
 			syncCoreCaches(mutation.client, dispatch, input.projectId, response);
 		},
-		meta: { failureTitle: "Failed to discard changes" },
+		meta: { failureTitle: i18nMessage("lite:mutations.failedToDiscardChanges") },
 	});
 };
 
@@ -928,35 +945,35 @@ export const useDiscardWorktreeChanges = () => {
 			if (rejectedChanges.length > 0)
 				toastManager.add(discardChangesToastOptions({ rejectedChanges }));
 		},
-		meta: { failureTitle: "Failed to discard changes" },
+		meta: { failureTitle: i18nMessage("lite:mutations.failedToDiscardChanges") },
 	});
 };
 
 export const useResolveWorktreeConflicts = () =>
 	useMutation({
 		mutationFn: window.lite.resolveWorktreeConflicts,
-		meta: { failureTitle: "Failed to mark conflict as resolved" },
+		meta: { failureTitle: i18nMessage("lite:mutations.failedToMarkConflictAsResolved") },
 	});
 
 export const useEnterEditMode = (projectId: string) =>
 	useMutation({
 		mutationKey: [projectId, "enterEditMode"],
 		mutationFn: window.lite.enterEditMode,
-		meta: { failureTitle: "Failed to enter edit mode" },
+		meta: { failureTitle: i18nMessage("lite:mutations.failedToEnterEditMode") },
 	});
 
 export const useSaveEditAndReturnToWorkspace = (projectId: string) =>
 	useMutation({
 		mutationKey: [projectId, "saveEditAndReturnToWorkspace"],
 		mutationFn: window.lite.saveEditAndReturnToWorkspace,
-		meta: { failureTitle: "Failed to save the edited commit" },
+		meta: { failureTitle: i18nMessage("lite:mutations.failedToSaveTheEditedCommit") },
 	});
 
 export const useAbortEditAndReturnToWorkspace = (projectId: string) =>
 	useMutation({
 		mutationKey: [projectId, "abortEditAndReturnToWorkspace"],
 		mutationFn: window.lite.abortEditAndReturnToWorkspace,
-		meta: { failureTitle: "Failed to leave edit mode" },
+		meta: { failureTitle: i18nMessage("lite:mutations.failedToLeaveEditMode") },
 	});
 
 /** Discards a file's changes, whichever of the two discards its parent calls for. */
@@ -1032,8 +1049,10 @@ export const useDiscardFileChanges = ({
 
 			toastManager.add({
 				type: "error",
-				title: "Failed to discard changes",
-				description: errorMessageForToast(error),
+				title: createI18nElement(I18nMessage, {
+					value: i18nMessage("lite:mutations.failedToDiscardChanges"),
+				}),
+				description: createI18nElement(I18nMessage, { value: errorMessageForToast(error) }),
 				priority: "high",
 			});
 		}
@@ -1062,7 +1081,7 @@ export const useCommitInsertBlank = () => {
 				);
 			}
 		},
-		meta: { failureTitle: "Failed to insert commit" },
+		meta: { failureTitle: i18nMessage("lite:mutations.failedToInsertCommit") },
 	});
 };
 
@@ -1073,7 +1092,7 @@ export const useCommitMove = () => {
 		onSuccess: async (response, input, _context, mutation) => {
 			syncCoreCaches(mutation.client, dispatch, input.projectId, response);
 		},
-		meta: { failureTitle: "Failed to move commit" },
+		meta: { failureTitle: i18nMessage("lite:mutations.failedToMoveCommit") },
 	});
 };
 
@@ -1084,7 +1103,7 @@ export const useCommitReword = () => {
 		onSuccess: async (response, input, _context, mutation) => {
 			syncCoreCaches(mutation.client, dispatch, input.projectId, response);
 		},
-		meta: { failureTitle: "Failed to reword commit" },
+		meta: { failureTitle: i18nMessage("lite:mutations.failedToRewordCommit") },
 	});
 };
 
@@ -1109,10 +1128,16 @@ export const useResolveCommitConflictHunks = () => {
 			if (response.remaining.length === 0 && response.manual.length === 0) {
 				toastManager.add({
 					type: "success",
-					title: "All conflicts resolved",
+					title: createI18nElement(I18nMessage, {
+						value: i18nMessage("lite:mutations.allConflictsResolved"),
+					}),
 					description: response.commitEmptied
-						? "The commit keeps nothing of its own now, so it no longer changes anything. Undo from the operations history if that wasn't the intent."
-						: "The commit is no longer conflicted.",
+						? createI18nElement(I18nMessage, {
+								value: i18nMessage("lite:mutations.theCommitKeepsNothingOfItsOwnNow"),
+							})
+						: createI18nElement(I18nMessage, {
+								value: i18nMessage("lite:mutations.theCommitIsNoLongerConflicted"),
+							}),
 					priority: "low",
 				});
 			} else {
@@ -1121,17 +1146,27 @@ export const useResolveCommitConflictHunks = () => {
 					type: "success",
 					title:
 						response.resolved === 1
-							? "Conflict resolved"
-							: `${response.resolved} conflicts resolved`,
+							? createI18nElement(I18nMessage, {
+									value: i18nMessage("lite:mutations.conflictResolved"),
+								})
+							: createI18nElement(I18nMessage, {
+									value: i18nMessage("lite:mutations.valueConflictsResolved", {
+										resolved: String(response.resolved),
+									}),
+								}),
 					description:
 						remaining > 0
-							? `${remaining} conflict${remaining === 1 ? "" : "s"} remaining in this commit.`
-							: "The remaining files can only be resolved in edit mode.",
+							? createI18nElement(I18nMessage, {
+									value: i18nMessage("lite:conflict.remaining", { count: remaining }),
+								})
+							: createI18nElement(I18nMessage, {
+									value: i18nMessage("lite:mutations.theRemainingFilesCanOnlyBeResolvedIn"),
+								}),
 					priority: "low",
 				});
 			}
 		},
-		meta: { failureTitle: "Failed to resolve the conflict" },
+		meta: { failureTitle: i18nMessage("lite:mutations.failedToResolveTheConflict") },
 	});
 };
 
@@ -1142,7 +1177,7 @@ export const useCommitUncommit = () => {
 		onSuccess: async (response, input, _context, mutation) => {
 			syncCoreCaches(mutation.client, dispatch, input.projectId, response);
 		},
-		meta: { failureTitle: "Failed to uncommit" },
+		meta: { failureTitle: i18nMessage("lite:mutations.failedToUncommit") },
 	});
 };
 
@@ -1153,7 +1188,7 @@ export const useCommitUncommitChanges = () => {
 		onSuccess: async (response, input, _context, mutation) => {
 			syncCoreCaches(mutation.client, dispatch, input.projectId, response);
 		},
-		meta: { failureTitle: "Failed to uncommit" },
+		meta: { failureTitle: i18nMessage("lite:mutations.failedToUncommit") },
 	});
 };
 
@@ -1161,7 +1196,7 @@ export const useWorkspaceBranchAndAncestorsPush = (projectId: string) =>
 	useMutation({
 		mutationKey: [projectId, "workspaceBranchAndAncestorsPush"],
 		mutationFn: window.lite.workspaceBranchAndAncestorsPush,
-		meta: { failureTitle: "Failed to push" },
+		meta: { failureTitle: i18nMessage("lite:mutations.failedToPush") },
 	});
 
 export const useWorkspaceIntegrateUpstream = () => {
@@ -1176,8 +1211,10 @@ export const useWorkspaceIntegrateUpstream = () => {
 		onError: (error, input) => {
 			toastManager.add({
 				type: "error",
-				title: `Failed to update stack${pluralRules.select(input.updates.length) === "one" ? "" : "s"}`,
-				description: errorMessageForToast(error),
+				title: createI18nElement(I18nMessage, {
+					value: i18nMessage("lite:stack.updateFailed", { count: input.updates.length }),
+				}),
+				description: createI18nElement(I18nMessage, { value: errorMessageForToast(error) }),
 				priority: "high",
 			});
 		},
@@ -1192,7 +1229,7 @@ export const useBranchRemove = (projectId: string) => {
 		onSuccess: (response, input, _context, mutation) => {
 			syncCoreCaches(mutation.client, dispatch, input.projectId, response);
 		},
-		meta: { failureTitle: "Failed to delete branch reference" },
+		meta: { failureTitle: i18nMessage("lite:mutations.failedToDeleteBranchReference") },
 	});
 };
 
@@ -1235,27 +1272,41 @@ export const useRestoreSnapshot = ({ projectId }: { projectId: string }) => {
 			return peeled ?? snapshot;
 		},
 		onSuccess: (snapshot, input) => {
-			const title = input._tag === "redo" ? "Redo" : input._tag === "undo" ? "Undo" : "Restore";
+			const title = createI18nElement(I18nMessage, {
+				value: i18nMessage(`lite:restore.${input._tag}`),
+			});
 
 			if (!snapshot) {
-				toastManager.add({ title, description: `Nothing to ${input._tag}` });
+				toastManager.add({
+					title,
+					description: createI18nElement(I18nMessage, {
+						value: i18nMessage(`lite:restore.nothing.${input._tag}`),
+					}),
+				});
 				return;
 			}
 
 			const op = presentableOperation(snapshot.details).text;
-			const relativeTime = formatRelativeTime(snapshot.createdAt);
 
 			toastManager.add({
 				type: "info",
 				title,
-				description: `Restored to ${shortCommitId(snapshot.commitId)} (${op}, ${relativeTime})`,
+				description: createI18nElement(I18nRichMessage, {
+					value: i18nMessage("lite:restore.complete", { commit: shortCommitId(snapshot.commitId) }),
+					components: {
+						operation: createI18nElement(I18nMessage, { value: op }),
+						time: createI18nElement(RelativeTime, { timestamp: snapshot.createdAt }),
+					},
+				}),
 			});
 		},
 		onError: (error, input) => {
 			toastManager.add({
 				type: "error",
-				title: input._tag === "restore" ? "Failed to restore snapshot" : `Failed to ${input._tag}`,
-				description: errorMessageForToast(error),
+				title: createI18nElement(I18nMessage, {
+					value: i18nMessage(`lite:restore.failed.${input._tag}`),
+				}),
+				description: createI18nElement(I18nMessage, { value: errorMessageForToast(error) }),
 				priority: "high",
 			});
 		},
@@ -1269,14 +1320,14 @@ export const useTearOffBranch = () => {
 		onSuccess: async (response, input, _context, mutation) => {
 			syncCoreCaches(mutation.client, dispatch, input.projectId, response);
 		},
-		meta: { failureTitle: "Failed to tear off branch" },
+		meta: { failureTitle: i18nMessage("lite:mutations.failedToTearOffBranch") },
 	});
 };
 
 export const useUnapplyStack = () =>
 	useMutation({
 		mutationFn: window.lite.unapplyStack,
-		meta: { failureTitle: "Failed to unapply stack" },
+		meta: { failureTitle: i18nMessage("lite:mutations.failedToUnapplyStack") },
 	});
 
 export const useBranchRename = (projectId: string) => {
@@ -1311,7 +1362,7 @@ export const useBranchRename = (projectId: string) => {
 
 			dispatch(projectSlice.actions.clearPendingOperation({ projectId: input.projectId }));
 		},
-		meta: { failureTitle: "Failed to rename branch" },
+		meta: { failureTitle: i18nMessage("lite:mutations.failedToRenameBranch") },
 	});
 };
 
@@ -1333,7 +1384,17 @@ export const useSaveGUISettings = () =>
 			// app is usable. We shan't bother invalidating the query.
 			ctx.client.setQueryData(guiSettingsQueryOptions.queryKey, next);
 
-			return await window.lite.writeGUISettings(next);
+			try {
+				return await window.lite.writeGUISettings(next);
+			} catch (error) {
+				if (cfg.language !== undefined) {
+					ctx.client.setQueryData<GUISettings>(guiSettingsQueryOptions.queryKey, (current) => ({
+						...(current ?? next),
+						language: prev.language,
+					}));
+				}
+				throw error;
+			}
 		},
-		meta: { failureTitle: "Failed to save settings" },
+		meta: { failureTitle: i18nMessage("lite:mutations.failedToSaveSettings") },
 	});

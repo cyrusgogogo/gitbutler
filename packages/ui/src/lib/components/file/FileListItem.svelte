@@ -9,8 +9,11 @@
 	import FileName from "$components/file/FileName.svelte";
 	import FileStatusBadge from "$components/file/FileStatusBadge.svelte";
 	import { focusable } from "$lib/focus/focusable";
+	import { useTranslations } from "@gitbutler/i18n/svelte";
 	import type { FileStatus } from "$components/file/types";
 	import type { FocusableOptions } from "$lib/focus/focusTypes";
+	import type { LocalizedText } from "@gitbutler/i18n";
+	const i18nMessages = useTranslations();
 
 	interface Props {
 		ref?: HTMLDivElement;
@@ -30,7 +33,7 @@
 		checked?: boolean;
 		indeterminate?: boolean;
 		conflicted?: boolean;
-		conflictHint?: string;
+		conflictHint?: LocalizedText;
 		locked?: boolean;
 		lockText?: string;
 		active?: boolean;
@@ -153,7 +156,7 @@
 		{/if}
 
 		{#if conflicted}
-			<Tooltip text={conflictHint}>
+			<Tooltip text={conflictHint === undefined ? undefined : $i18nMessages.text(conflictHint)}>
 				<div class="conflicted-icon">
 					<Icon name="warning" />
 				</div>
@@ -167,7 +170,7 @@
 				<div
 					class="locked"
 					role="img"
-					aria-label="File is locked due to dependencies"
+					aria-label={$i18nMessages.t("ui:FileListItem.fileIsLockedDueToDependencies")}
 					onmouseenter={() => onlockhover?.()}
 					onmouseleave={() => onlockunhover?.()}
 				>
@@ -178,8 +181,8 @@
 
 		{#if onresolveclick}
 			{#if !conflicted}
-				<Tooltip text="Conflict resolved">
-					<Badge style="safe">Resolved</Badge>
+				<Tooltip text={$i18nMessages.t("ui:FileListItem.conflictResolved")}>
+					<Badge style="safe">{$i18nMessages.t("ui:FileListItem.resolved")}</Badge>
 				</Tooltip>
 			{:else}
 				<Button
@@ -192,7 +195,7 @@
 					}}
 					icon="tick"
 				>
-					Mark resolved
+					{$i18nMessages.t("ui:FileListItem.markResolved")}
 				</Button>
 			{/if}
 		{/if}

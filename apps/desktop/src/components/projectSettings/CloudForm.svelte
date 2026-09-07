@@ -6,7 +6,9 @@
 	import { useSettingsModal } from "$lib/settings/settingsModal.svelte";
 	import { USER_SERVICE } from "$lib/user/userService.svelte";
 	import { inject } from "@gitbutler/core/context";
+	import { useTranslations } from "@gitbutler/i18n/svelte";
 	import { Button, CardGroup, Spacer, Toggle } from "@gitbutler/ui";
+	const i18nMessages = useTranslations();
 
 	const { projectId }: { projectId: string } = $props();
 
@@ -19,9 +21,7 @@
 
 <SettingsSection>
 	{#snippet description()}
-		GitButler supports the use of OpenAI and Anthropic to provide commit message and branch name
-		generation. This works either through GitButler's API or in a bring your own key configuration
-		and can be configured in the main preferences screen.
+		{$i18nMessages.t("desktop:CloudForm.gitButlerSupportsTheUseOfOpenAIAndAnthropic")}
 	{/snippet}
 
 	<Spacer />
@@ -34,11 +34,10 @@
 	<CardGroup>
 		<CardGroup.Item labelFor="aiGenEnabled">
 			{#snippet title()}
-				Enable branch and commit message generation
+				{$i18nMessages.t("desktop:CloudForm.enableBranchAndCommitMessageGeneration")}
 			{/snippet}
 			{#snippet caption()}
-				If enabled, diffs will be sent to OpenAI or Anthropic's servers when pressing the "Generate
-				message" and "Generate branch name" button.
+				{$i18nMessages.t("desktop:CloudForm.ifEnabledDiffsWillBeSentToOpenAI")}
 			{/snippet}
 			{#snippet actions()}
 				<Toggle
@@ -56,11 +55,10 @@
 		<CardGroup>
 			<CardGroup.Item labelFor="aiExperimental">
 				{#snippet title()}
-					Enable experimental AI features
+					{$i18nMessages.t("desktop:CloudForm.enableExperimentalAIFeatures")}
 				{/snippet}
 				{#snippet caption()}
-					If enabled, you will be able to access the AI features currently in development. This also
-					requires you to use OpenAI through GitButler in order for the features to work.
+					{$i18nMessages.t("desktop:CloudForm.ifEnabledYouWillBeAbleToAccess")}
 				{/snippet}
 				{#snippet actions()}
 					<Toggle
@@ -78,7 +76,7 @@
 	<CardGroup>
 		<CardGroup.Item>
 			{#snippet title()}
-				Custom prompts
+				{$i18nMessages.t("desktop:CloudForm.customPrompts")}
 			{/snippet}
 
 			<AiPromptSelect {projectId} promptUse="commits" />
@@ -87,11 +85,10 @@
 			<Spacer margin={8} />
 
 			<p class="text-12 text-body">
-				You can apply your own custom prompts to the project. By default, the project uses GitButler
-				prompts, but you can create your own prompts in the general settings.
+				{$i18nMessages.t("desktop:CloudForm.youCanApplyYourOwnCustomPromptsTo")}
 			</p>
 			<Button kind="outline" icon="edit" onclick={() => openGeneralSettings("ai")}
-				>Customize prompts</Button
+				>{$i18nMessages.t("desktop:CloudForm.customizePrompts")}</Button
 			>
 		</CardGroup.Item>
 	</CardGroup>

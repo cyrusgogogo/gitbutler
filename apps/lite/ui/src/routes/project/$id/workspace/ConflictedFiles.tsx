@@ -1,3 +1,5 @@
+import { useTranslations } from "@gitbutler/i18n/react";
+import { Message as I18nMessage } from "@gitbutler/i18n/react";
 import { guiSettingsQueryOptions } from "#ui/api/queries.ts";
 import { Badge } from "#ui/components/Badge.tsx";
 import { getButtonClassName } from "#ui/components/Button.tsx";
@@ -194,7 +196,9 @@ const ConflictedFileC: FC<{
 							{fileName}
 							{directoryPath !== null && <span className={styles.pathInit}>{directoryPath}</span>}
 						</h4>
-						<Badge variant="danger">Conflicted</Badge>
+						<Badge variant="danger">
+							<I18nMessage value={{ key: "lite:control.Conflicted" }} />
+						</Badge>
 					</header>
 				)}
 				renderMergeConflictUtility={(action) => {
@@ -241,6 +245,7 @@ const ConflictActions: FC<{
 	editFileStyle: FileProps["style"];
 	onResolve: (resolution: HunkResolution) => void;
 }> = (p) => {
+	const i18nMessages = useTranslations();
 	const dispatch = useAppDispatch();
 	const [editing, setEditing] = useState(false);
 	// The editor owns its document; Apply reads it off the instance rather
@@ -272,7 +277,10 @@ const ConflictActions: FC<{
 					className={styles.check}
 					checked={checked}
 					disabled={p.busy}
-					aria-label={`Check conflict ${p.hunk} in ${p.path}`}
+					aria-label={i18nMessages.t("lite:ConflictedFiles.checkConflictValueInValue", {
+						value: p.hunk,
+						value1: p.path,
+					})}
 					onCheckedChange={(next) =>
 						dispatch(
 							projectSlice.actions.checkConflict({
@@ -292,7 +300,7 @@ const ConflictActions: FC<{
 						disabled={disabled}
 						onClick={() => apply({ type: "ours" })}
 					>
-						Accept current change
+						<I18nMessage value={{ key: "lite:ConflictedFiles.acceptCurrentChange" }} />
 					</button>
 					<span aria-hidden className={styles.actionSeparator}>
 						|
@@ -303,7 +311,7 @@ const ConflictActions: FC<{
 						disabled={disabled}
 						onClick={() => apply({ type: "theirs" })}
 					>
-						Accept incoming change
+						<I18nMessage value={{ key: "lite:ConflictedFiles.acceptIncomingChange" }} />
 					</button>
 					<span aria-hidden className={styles.actionSeparator}>
 						|
@@ -314,7 +322,7 @@ const ConflictActions: FC<{
 						disabled={disabled}
 						onClick={() => apply({ type: "content", subject: both })}
 					>
-						Accept both
+						<I18nMessage value={{ key: "lite:ConflictedFiles.acceptBoth" }} />
 					</button>
 					<span aria-hidden className={styles.actionSeparator}>
 						|
@@ -325,14 +333,15 @@ const ConflictActions: FC<{
 						disabled={disabled}
 						onClick={() => setEditing(true)}
 					>
-						Edit
+						<I18nMessage value={{ key: "lite:ConflictedFiles.edit" }} />
 					</button>
 				</>
 			) : (
 				<>
 					<div className={classes(styles.hint, "text-12")}>
-						This replaces the whole conflicted region. Leaving it empty deletes the region; never
-						include conflict markers.
+						<I18nMessage
+							value={{ key: "lite:ConflictedFiles.thisReplacesTheWholeConflictedRegionLeavingIt" }}
+						/>{" "}
 					</div>
 					<div className={styles.editor}>
 						<File
@@ -360,7 +369,7 @@ const ConflictActions: FC<{
 								})
 							}
 						>
-							Apply resolution
+							<I18nMessage value={{ key: "lite:ConflictedFiles.applyResolution" }} />
 						</button>
 						<button
 							type="button"
@@ -368,7 +377,7 @@ const ConflictActions: FC<{
 							disabled={p.busy}
 							onClick={() => setEditing(false)}
 						>
-							Cancel
+							<I18nMessage value={{ key: "lite:ConflictedFiles.cancel" }} />
 						</button>
 					</div>
 				</>

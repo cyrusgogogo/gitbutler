@@ -16,12 +16,15 @@
 	import { LISTING_SERVICE } from "$lib/forge/listingService.svelte";
 	import { debounce } from "$lib/utils/debounce";
 	import { inject } from "@gitbutler/core/context";
+	import { useTranslations } from "@gitbutler/i18n/svelte";
 	import { reactive } from "@gitbutler/shared/reactiveUtils.svelte";
 	import { Badge, Button, EmptyStatePlaceholder, SegmentControl } from "@gitbutler/ui";
+	import I18nRichMessage from "@gitbutler/ui/i18n/RichMessage.svelte";
 	import Fuse from "fuse.js";
 	import type { ForgeUser } from "$lib/forge/interface/types";
 	import type { BaseBranch } from "@gitbutler/but-sdk";
 	import type { Snippet } from "svelte";
+	const i18nMessages = useTranslations();
 
 	type Props = {
 		projectId: string;
@@ -126,14 +129,14 @@
 	const filterOptions = $derived.by<Partial<Record<BranchFilterOption, string>>>(() => {
 		if (listServiceEnabled) {
 			return {
-				all: "All",
+				all: $i18nMessages.t("desktop:BranchExplorer.detail6a7208565"),
 				pullRequest: "PRs",
-				local: "Local",
+				local: $i18nMessages.t("desktop:BranchExplorer.detaildc99d54d9"),
 			};
 		} else {
 			return {
-				all: "All",
-				local: "Local",
+				all: $i18nMessages.t("desktop:BranchExplorer.detail6a7208565"),
+				local: $i18nMessages.t("desktop:BranchExplorer.detaildc99d54d9"),
 			};
 		}
 	});
@@ -160,7 +163,10 @@
 	const EMPTY_STATE_WIDTH = 280;
 
 	// Helper to get a user-friendly forge name
-	const forgeName = $derived(FORGE_NAME_MAP[forgeInfo?.name ?? "default"] ?? "your forge");
+	const forgeName = $derived(
+		FORGE_NAME_MAP[forgeInfo?.name ?? "default"] ??
+			$i18nMessages.t("desktop:BranchExplorer.detail65d07583d"),
+	);
 
 	// Helper to determine if authentication message should be shown
 	// Show auth message when:
@@ -183,7 +189,7 @@
 	<div class="branches__header">
 		<div class="branches__header-info">
 			<div class="branches-title" class:hide-branch-title={searching}>
-				<span class="text-14 text-bold">Branches</span>
+				<span class="text-14 text-bold">{$i18nMessages.t("desktop:BranchExplorer.branches")}</span>
 
 				<Badge>{combined.length}</Badge>
 			</div>
@@ -203,7 +209,7 @@
 					oninput={debounceSearchInput}
 					class="search-input text-13"
 					type="text"
-					placeholder="Search branches"
+					placeholder={$i18nMessages.t("desktop:BranchExplorer.searchBranches")}
 					onkeydown={handleSearchKeyDown}
 				/>
 			</div>
@@ -227,27 +233,52 @@
 							{/each}
 						</div>
 					{:else}
-						{@render branchGroup({ title: "Applied", children: groupedBranches.applied })}
+						{@render branchGroup({
+							title: $i18nMessages.t("desktop:BranchExplorer.inlinea3e4a569e"),
+							children: groupedBranches.applied,
+						})}
 
 						{#if groupedBranches.authored.length > 0}
-							{@render branchGroup({ title: "Mine", children: groupedBranches.authored })}
+							{@render branchGroup({
+								title: $i18nMessages.t("desktop:BranchExplorer.inlined42af7968"),
+								children: groupedBranches.authored,
+							})}
 						{/if}
 
 						{#if groupedBranches.review.length > 0}
-							{@render branchGroup({ title: "Review Requested", children: groupedBranches.review })}
+							{@render branchGroup({
+								title: $i18nMessages.t("desktop:BranchExplorer.inlinefa9643ff7"),
+								children: groupedBranches.review,
+							})}
 						{/if}
 
-						{@render branchGroup({ title: "Today", children: groupedBranches.today })}
-						{@render branchGroup({ title: "Yesterday", children: groupedBranches.yesterday })}
-						{@render branchGroup({ title: "Last week", children: groupedBranches.lastWeek })}
-						{@render branchGroup({ title: "Older", children: groupedBranches.older })}
+						{@render branchGroup({
+							title: $i18nMessages.t("desktop:BranchExplorer.inline24345a143"),
+							children: groupedBranches.today,
+						})}
+						{@render branchGroup({
+							title: $i18nMessages.t("desktop:BranchExplorer.inlineda24830f1"),
+							children: groupedBranches.yesterday,
+						})}
+						{@render branchGroup({
+							title: $i18nMessages.t("desktop:BranchExplorer.inline76c1ed930"),
+							children: groupedBranches.lastWeek,
+						})}
+						{@render branchGroup({
+							title: $i18nMessages.t("desktop:BranchExplorer.inline63f34dd21"),
+							children: groupedBranches.older,
+						})}
 					{/if}
 				</ScrollableContainer>
 			</div>
 		{:else}
 			<EmptyStatePlaceholder image={noBranchesSvg} width={180} bottomMargin={48}>
 				{#snippet caption()}
-					No branches<br />match your filter
+					{#snippet i18nSlot2()}<br />{/snippet}
+					<I18nRichMessage
+						value={{ key: "desktop:BranchExplorer.noBranchesMatchYourFilter" }}
+						components={{ slot2: i18nSlot2 }}
+					/>
 				{/snippet}
 			</EmptyStatePlaceholder>
 		{/if}
@@ -256,24 +287,52 @@
 			<EmptyStatePlaceholder image={noBranchesSvg} width={EMPTY_STATE_WIDTH} bottomMargin={48}>
 				{#snippet title()}
 					{#if selectedOption === "local"}
-						No local branches found
+						{$i18nMessages.t("desktop:BranchExplorer.noLocalBranchesFound")}
 					{:else}
-						No branches or {reviewUnitAbbr}s found
+						{$i18nMessages.t("desktop:BranchExplorer.noBranchesOrValueSFound", {
+							reviewUnitAbbr: String(reviewUnitAbbr),
+						})}
 					{/if}
 				{/snippet}
 				{#snippet caption()}
 					{#if selectedOption === "pullRequest"}
-						No {reviewUnitAbbr}s found {#if baseBranch}
-							from <strong>{baseBranch.remoteName}</strong>{/if}.
+						{$i18nMessages.t("desktop:BranchExplorer.noValueSFound", {
+							reviewUnitAbbr: String(reviewUnitAbbr),
+						})}
+						{#if baseBranch}
+							{#snippet i18nSlot3(content: import("svelte").Snippet)}<strong
+									>{@render content()}</strong
+								>{/snippet}
+							<I18nRichMessage
+								value={{
+									key: "desktop:BranchExplorer.fromValue",
+									values: { remoteName: String(baseBranch.remoteName) },
+								}}
+								components={{ slot3: i18nSlot3 }}
+							/>{/if}.
 					{:else if selectedOption === "local"}
-						Create a new branch or fetch from your remote.
+						{$i18nMessages.t("desktop:BranchExplorer.createANewBranchOrFetchFromYour")}
 					{:else if baseBranch}
-						Branches and {reviewUnitAbbr}s from
-						<strong>{baseBranch.remoteName}/{baseBranch.shortName}</strong>
-						will appear here.
+						{#snippet i18nSlot4(content: import("svelte").Snippet)}<strong
+								>{@render content()}</strong
+							>{/snippet}
+						<I18nRichMessage
+							value={{
+								key: "desktop:BranchExplorer.branchesAndValueSFromValueValueWill",
+								values: {
+									reviewUnitAbbr: String(reviewUnitAbbr),
+									remoteName: String(baseBranch.remoteName),
+									shortName: String(baseBranch.shortName),
+								},
+							}}
+							components={{ slot4: i18nSlot4 }}
+						/>
 					{/if}
 					{#if shouldShowAuthMessage}
-						Authenticate with {forgeName} to see {reviewUnitAbbr}s.
+						{$i18nMessages.t("desktop:BranchExplorer.authenticateWithValueToSeeValueS", {
+							forgeName: String(forgeName),
+							reviewUnitAbbr: String(reviewUnitAbbr),
+						})}
 					{/if}
 				{/snippet}
 			</EmptyStatePlaceholder>

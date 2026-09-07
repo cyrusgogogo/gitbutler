@@ -1,3 +1,4 @@
+import { message as i18nMessage } from "@gitbutler/i18n";
 import { useBranchCheckoutNew, useBranchCreate } from "#ui/api/mutations.ts";
 import { operatingModeQueryOptions } from "#ui/api/queries.ts";
 import { toElectronAccelerator, workspaceHotkeys } from "#ui/hotkeys.ts";
@@ -75,13 +76,13 @@ export const useNewBranch = (projectId: string): NewBranchActions => {
 	return {
 		menuItems: [
 			nativeMenuItem({
-				label: "New Branch in Workspace",
+				label: i18nMessage("lite:useNewBranch.newBranchInWorkspace"),
 				enabled: canCreateInWorkspace,
 				accelerator: toElectronAccelerator(workspaceHotkeys.createIndependentBranch.hotkey),
 				onSelect: createInWorkspace,
 			}),
 			nativeMenuItem({
-				label: "New Branch and Switch to It",
+				label: i18nMessage("lite:useNewBranch.newBranchAndSwitchToIt"),
 				enabled: noOperationPending && !isCheckoutPending,
 				accelerator: toElectronAccelerator(workspaceHotkeys.createBranchAndSwitch.hotkey),
 				onSelect: createAndSwitch,

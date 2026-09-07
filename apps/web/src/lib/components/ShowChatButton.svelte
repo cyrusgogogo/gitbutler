@@ -1,5 +1,7 @@
 <script lang="ts">
+	import { useTranslations } from "@gitbutler/i18n/svelte";
 	import { Icon } from "@gitbutler/ui";
+	const i18nMessages = useTranslations();
 
 	interface Props {
 		onclick: () => void;
@@ -54,7 +56,8 @@
 		</div>
 	</div>
 	<div class="show-chat__content">
-		<span class="text-12 text-semibold">Show discussion</span>
+		<span class="text-12 text-semibold">{$i18nMessages.t("web:ShowChatButton.showDiscussion")}</span
+		>
 		<div class="show-chat__icon"><Icon name="chat" /></div>
 	</div>
 </button>

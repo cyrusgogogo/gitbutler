@@ -7,9 +7,12 @@
 	import { DATA_SHARING_SERVICE } from "$lib/support/dataSharing";
 	import { USER_SERVICE } from "$lib/user/userService.svelte";
 	import { inject } from "@gitbutler/core/context";
+	import { message as i18nMessage } from "@gitbutler/i18n";
+	import { useTranslations } from "@gitbutler/i18n/svelte";
 	import { HTTP_CLIENT } from "@gitbutler/shared/network/httpClient";
-
 	import { Button, Checkbox, Modal, Textarea, EmailTextbox, chipToasts } from "@gitbutler/ui";
+	import I18nRichMessage from "@gitbutler/ui/i18n/RichMessage.svelte";
+	const i18nMessages = useTranslations();
 
 	type Feedback = {
 		id: number;
@@ -105,10 +108,10 @@
 			{
 				loading:
 					!sendLogs && !sendProjectRepository && !sendGraph
-						? "Sending feedback..."
-						: "Uploading data...",
-				success: "Feedback sent successfully",
-				error: "Failed to send feedback",
+						? i18nMessage("desktop:ShareIssueModal.sendingFeedback")
+						: i18nMessage("desktop:ShareIssueModal.uploadingData"),
+				success: i18nMessage("desktop:ShareIssueModal.feedbackSentSuccessfully"),
+				error: i18nMessage("desktop:ShareIssueModal.failedToSendFeedback"),
 			},
 		);
 		close();
@@ -150,19 +153,18 @@
 
 <Modal
 	bind:this={modal}
-	title="Share debug data with GitButler team for review"
+	title={$i18nMessages.t("desktop:ShareIssueModal.shareDebugDataWithGitButlerTeamForReview")}
 	onSubmit={async () => await submit()}
 >
 	<div class="content-wrapper">
 		<p class="content-wrapper__help-text text-13 text-body">
-			If you are having trouble, please share your project and logs with the GitButler team. We will
-			review it for you and help identify how we can help resolve the issue.
+			{$i18nMessages.t("desktop:ShareIssueModal.ifYouAreHavingTroublePleaseShareYour")}
 		</p>
 
 		{#if !userService.user}
 			<EmailTextbox
-				label="Email"
-				placeholder="Provide an email so that we can get back to you"
+				label={$i18nMessages.t("desktop:ShareIssueModal.email")}
+				placeholder={$i18nMessages.t("desktop:ShareIssueModal.provideAnEmailSoThatWeCanGet")}
 				bind:value={emailInputValue}
 				required
 				autocomplete={false}
@@ -173,8 +175,10 @@
 		{/if}
 
 		<Textarea
-			label="Comments"
-			placeholder="Provide any steps necessary to reproduce the problem."
+			label={$i18nMessages.t("desktop:ShareIssueModal.comments")}
+			placeholder={$i18nMessages.t(
+				"desktop:ShareIssueModal.provideAnyStepsNecessaryToReproduceTheProblem",
+			)}
 			spellcheck
 			id="comments"
 			minRows={6}
@@ -183,27 +187,38 @@
 		/>
 
 		<div class="content-wrapper__section">
-			<span class="text-16 text-semibold"> Share logs </span>
-			<span class="content-wrapper__help-text text-13 text-body">
-				We personally ensure all information you share with us will be reviewed internally only and
-				discarded post-resolution
-			</span>
+			{#snippet i18nSlot1(content: import("svelte").Snippet)}<span class="text-16 text-semibold"
+					>{@render content()}</span
+				>{/snippet}
+			{#snippet i18nSlot2(content: import("svelte").Snippet)}<span
+					class="content-wrapper__help-text text-13 text-body">{@render content()}</span
+				>{/snippet}
+			<I18nRichMessage
+				value={{ key: "desktop:ShareIssueModal.shareLogsWePersonallyEnsureAllInformationYou" }}
+				components={{ slot1: i18nSlot1, slot2: i18nSlot2 }}
+			/>
 		</div>
 
 		<div class="content-wrapper__checkbox-group">
 			<div class="content-wrapper__checkbox">
 				<Checkbox name="logs" bind:checked={sendLogs} />
-				<label class="text-13" for="logs">Share logs</label>
+				<label class="text-13" for="logs"
+					>{$i18nMessages.t("desktop:ShareIssueModal.shareLogs")}</label
+				>
 			</div>
 
 			{#if projectId}
 				<div class="content-wrapper__checkbox">
 					<Checkbox name="project-repository" bind:checked={sendProjectRepository} />
-					<label class="text-13" for="project-repository">Share project repository</label>
+					<label class="text-13" for="project-repository"
+						>{$i18nMessages.t("desktop:ShareIssueModal.shareProjectRepository")}</label
+					>
 				</div>
 				<div class="content-wrapper__checkbox">
 					<Checkbox name="graph" bind:checked={sendGraph} />
-					<label class="text-13" for="graph">Share anonymized commit-graph</label>
+					<label class="text-13" for="graph"
+						>{$i18nMessages.t("desktop:ShareIssueModal.shareAnonymizedCommitGraph")}</label
+					>
 				</div>
 			{/if}
 		</div>
@@ -211,9 +226,11 @@
 
 	<!-- Use our own close function -->
 	{#snippet controls()}
-		<Button kind="outline" type="reset" onclick={close}>Close</Button>
+		<Button kind="outline" type="reset" onclick={close}
+			>{$i18nMessages.t("desktop:ShareIssueModal.close")}</Button
+		>
 		<Button disabled={!sendLogs && !sendProjectRepository && !sendGraph} style="pop" type="submit"
-			>Share with GitButler</Button
+			>{$i18nMessages.t("desktop:ShareIssueModal.shareWithGitButler")}</Button
 		>
 	{/snippet}
 </Modal>

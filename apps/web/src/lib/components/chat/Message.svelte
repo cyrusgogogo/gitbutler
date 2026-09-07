@@ -22,10 +22,10 @@
 	import { parseDiffPatchToEncodedSelection } from "$lib/diff/lineSelection.svelte";
 	import { USER_SERVICE } from "$lib/user/userService";
 	import { inject } from "@gitbutler/core/context";
+	import { useTranslations } from "@gitbutler/i18n/svelte";
 	import { eventTimeStamp } from "@gitbutler/shared/branches/utils";
 	import { CHAT_CHANNELS_SERVICE } from "@gitbutler/shared/chat/chatChannelsService";
 	import { type ChatMessageReaction } from "@gitbutler/shared/chat/types";
-
 	import {
 		Badge,
 		Button,
@@ -41,11 +41,12 @@
 		markRecentlyUsedEmoji,
 		type EmojiInfo,
 	} from "@gitbutler/ui/components/emoji/utils";
-
 	import { SvelteSet } from "svelte/reactivity";
 	import type { ChatEvent } from "@gitbutler/shared/patchEvents/types";
 	import type { UserSimple } from "@gitbutler/shared/users/types";
-	const UNKNOWN_AUTHOR = "Unknown author";
+	const i18nMessages = useTranslations();
+
+	const UNKNOWN_AUTHOR = $derived($i18nMessages.t("web:chat.unknownAuthor"));
 
 	const {
 		event,
@@ -84,7 +85,7 @@
 		message.user.login ?? message.user.name ?? message.user.email ?? UNKNOWN_AUTHOR,
 	);
 
-	const timestamp = $derived(eventTimeStamp(event));
+	const timestamp = $derived(eventTimeStamp(event, $i18nMessages.locale));
 
 	const content = $derived(parseDiffPatchToContentSection(message.diffPatchArray));
 	const diffSelectionString = $derived.by(() => {
@@ -140,14 +141,14 @@
 	function getReactionTooltip(users: UserSimple[]) {
 		const thisUsername = $user?.login;
 		if (users.length === 0) return "";
-		const formatted = users.map((user) => (user.login === thisUsername ? "You" : user.login));
-		if (formatted.length < 4) return formatted.map((user) => user).join(", ");
-		return (
-			formatted
-				.slice(0, 3)
-				.map((user) => user)
-				.join(", ") + ` and ${formatted.length - 3} more`
+		const formatted = users.map((user) =>
+			user.login === thisUsername ? $i18nMessages.t("web:chat.you") : user.login,
 		);
+		if (formatted.length < 4) return formatted.map((user) => user).join(", ");
+		return $i18nMessages.t("web:chat.moreReactions", {
+			names: formatted.slice(0, 3).join(", "),
+			count: formatted.length - 3,
+		});
 	}
 
 	function thisUserReacted(users: UserSimple[]) {
@@ -185,9 +186,9 @@
 
 			{#if message.issue}
 				{#if message.resolved}
-					<Badge style="safe">Issue resolved</Badge>
+					<Badge style="safe">{$i18nMessages.t("web:Message.issueResolved")}</Badge>
 				{:else}
-					<Badge style="warning">Issue</Badge>
+					<Badge style="warning">{$i18nMessages.t("web:Message.issue")}</Badge>
 				{/if}
 			{/if}
 
@@ -266,7 +267,7 @@
 				bind:el={emojiPickerTrigger}
 				activated={isOpenedByEmojiPicker}
 				icon="smile"
-				tooltip="Give me more emojis"
+				tooltip={$i18nMessages.t("web:Message.giveMeMoreEmojis")}
 				thin
 				overrideYScroll={0}
 				onclick={() => {
@@ -277,7 +278,7 @@
 			<!-- Reply -->
 			<PopoverActionsItem
 				icon="arrow-corner-up-right"
-				tooltip="Reply"
+				tooltip={$i18nMessages.t("web:Message.reply")}
 				thin
 				onclick={() => onReply()}
 				overrideYScroll={0}
@@ -288,7 +289,7 @@
 				bind:el={kebabMenuTrigger}
 				activated={isOpenedByKebabButton}
 				icon="kebab"
-				tooltip="More options"
+				tooltip={$i18nMessages.t("web:Message.moreOptions")}
 				thin
 				onclick={() => {
 					contextMenuOpen = !contextMenuOpen;

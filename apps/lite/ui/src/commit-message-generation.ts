@@ -1,3 +1,5 @@
+import type { LocalizedText } from "@gitbutler/i18n";
+import { message as i18nMessage } from "@gitbutler/i18n";
 import type { TreeChange, UnifiedPatch } from "@gitbutler/but-sdk";
 
 export const COMMIT_MESSAGE_SYSTEM_PROMPT =
@@ -20,10 +22,13 @@ export const commitMessageGenerationButtonState = ({
 	configured: boolean;
 	busy: boolean;
 	changeCount: number;
-}): { disabled: boolean; hint: string | null } => {
-	if (!configured) return { disabled: true, hint: "Set up AI in Settings → Application → AI" };
-	if (!enabled) return { disabled: true, hint: "Enable AI in Settings → Project → AI" };
-	if (changeCount === 0) return { disabled: true, hint: "No changes to commit" };
+}): { disabled: boolean; hint: LocalizedText | null } => {
+	if (!configured)
+		return { disabled: true, hint: i18nMessage("lite:commitmessagegeneration.static557c1c515") };
+	if (!enabled)
+		return { disabled: true, hint: i18nMessage("lite:commitmessagegeneration.staticac25c4634") };
+	if (changeCount === 0)
+		return { disabled: true, hint: i18nMessage("lite:commitmessagegeneration.static89ec36865") };
 
 	return { disabled: busy, hint: null };
 };

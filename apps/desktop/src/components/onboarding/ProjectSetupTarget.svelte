@@ -13,6 +13,7 @@
 	import { OnboardingEvent, POSTHOG_WRAPPER } from "$lib/telemetry/posthog";
 	import { unique } from "$lib/utils/array";
 	import { inject } from "@gitbutler/core/context";
+	import { useTranslations } from "@gitbutler/i18n/svelte";
 	import {
 		Button,
 		CardGroup,
@@ -25,8 +26,10 @@
 		TestId,
 		Toggle,
 	} from "@gitbutler/ui";
+	import I18nRichMessage from "@gitbutler/ui/i18n/RichMessage.svelte";
 	import { slide } from "svelte/transition";
 	import type { RemoteBranchInfo } from "$lib/baseBranch/baseBranch";
+	const i18nMessages = useTranslations();
 
 	interface Props {
 		projectId: string;
@@ -107,7 +110,13 @@
 <div class="project-setup">
 	<div class="stack-v gap-4">
 		<ProjectNameLabel {projectName} />
-		<h1 class="text-serif-42">Configure your <i>workspace</i></h1>
+		<h1 class="text-serif-42">
+			{#snippet i18nSlot1(content: import("svelte").Snippet)}<i>{@render content()}</i>{/snippet}
+			<I18nRichMessage
+				value={{ key: "desktop:ProjectSetupTarget.configureYourWorkspace" }}
+				components={{ slot1: i18nSlot1 }}
+			/>
+		</h1>
 	</div>
 
 	<div class="project-setup__fields">
@@ -120,7 +129,7 @@
 				onselect={(value) => {
 					selectedBranch = { name: value };
 				}}
-				label="Target branch"
+				label={$i18nMessages.t("desktop:ProjectSetupTarget.targetBranch")}
 				searchable
 			>
 				{#snippet itemSnippet({ item, highlighted })}
@@ -131,10 +140,16 @@
 			</Select>
 
 			<p class="text-12 text-body project-setup__field-caption">
-				Your main "production" branch, typically <code class="code-string">origin/master</code> or
-				<code class="code-string">upstream/main</code>.
-				<br />
-				<Link href="https://docs.gitbutler.com/overview#target-branch">Learn more</Link>
+				{#snippet i18nSlot2()}<code class="code-string">origin/master</code>{/snippet}
+				{#snippet i18nSlot3()}<code class="code-string">upstream/main</code>{/snippet}
+				{#snippet i18nSlot4()}<br />{/snippet}
+				<I18nRichMessage
+					value={{ key: "desktop:ProjectSetupTarget.yourMainProductionBranchTypicallyOr" }}
+					components={{ slot2: i18nSlot2, slot3: i18nSlot3, slot4: i18nSlot4 }}
+				/>
+				<Link href="https://docs.gitbutler.com/overview#target-branch"
+					>{$i18nMessages.t("desktop:ProjectSetupTarget.learnMore")}</Link
+				>
 			</p>
 		</div>
 
@@ -157,8 +172,7 @@
 				</Select>
 
 				<p class="text-12 text-body clr-text-2">
-					You have branches from multiple remotes. If you want to specify a remote for creating
-					branches that is different from the remote that your target branch is on, change it here.
+					{$i18nMessages.t("desktop:ProjectSetupTarget.youHaveBranchesFromMultipleRemotesIfYou")}
 				</p>
 			</div>
 		{/if}
@@ -178,14 +192,15 @@
 							{@html gerritLogoSvg}
 						{/snippet}
 						{#snippet title()}
-							Enable Gerrit project
+							{$i18nMessages.t("desktop:ProjectSetupTarget.enableGerritProject")}
 						{/snippet}
 						{#snippet caption()}
-							It looks like this project might be a Gerrit project.
-							<br />
-							Do you want to enable Gerrit mode?
-							<br />
-							You can adjust this later in the project settings if needed.
+							{#snippet i18nSlot5()}<br />{/snippet}
+							{#snippet i18nSlot6()}<br />{/snippet}
+							<I18nRichMessage
+								value={{ key: "desktop:ProjectSetupTarget.itLooksLikeThisProjectMightBeA" }}
+								components={{ slot5: i18nSlot5, slot6: i18nSlot6 }}
+							/>
 						{/snippet}
 						{#snippet actions()}
 							<Toggle
@@ -204,7 +219,9 @@
 
 	<label for="landDirectly" class="land-directly">
 		<Checkbox name="landDirectly" small bind:checked={$landDirectly} />
-		<span class="text-12 clr-text-2">Push to main / Skip pull requests mode</span>
+		<span class="text-12 clr-text-2"
+			>{$i18nMessages.t("desktop:ProjectSetupTarget.pushToMainSkipPullRequestsMode")}</span
+		>
 	</label>
 
 	<!-- With the singleBranch feature flag, setting the target only updates project
@@ -243,20 +260,31 @@
 					</svg>
 
 					<h3 class="text-13 text-body text-semibold">
-						GitButler switches your active branch to <span class="text-bold"
-							>gitbutler/workspace</span
-						>
+						{#snippet i18nSlot8(content: import("svelte").Snippet)}<span class="text-bold"
+								>{@render content()}</span
+							>{/snippet}
+						<I18nRichMessage
+							value={{
+								key: "desktop:ProjectSetupTarget.gitButlerSwitchesYourActiveBranchToGitbutlerWorkspace",
+							}}
+							components={{ slot8: i18nSlot8 }}
+						/>
 					</h3>
 				</div>
 
 				{#if showMoreInfo}
 					<p class="text-12 text-body" transition:slide={{ duration: 200 }}>
-						In order to support working on multiple branches simultaneously, GitButler creates and
-						automatically manages a special branch <span class="text-bold">gitbutler/workspace</span
-						>. You can always switch back and forth as needed between normal git branches and the
-						Gitbutler workspace.
+						{#snippet i18nSlot9(content: import("svelte").Snippet)}<span class="text-bold"
+								>{@render content()}</span
+							>{/snippet}
+						<I18nRichMessage
+							value={{
+								key: "desktop:ProjectSetupTarget.inOrderToSupportWorkingOnMultipleBranches",
+							}}
+							components={{ slot9: i18nSlot9 }}
+						/>
 						<Link href="https://docs.gitbutler.com/features/branch-management/integration-branch"
-							>Learn more</Link
+							>{$i18nMessages.t("desktop:ProjectSetupTarget.learnMore")}</Link
 						>
 					</p>
 				{/if}
@@ -274,7 +302,9 @@
 	{/if}
 
 	<div class="action-buttons">
-		<Button kind="outline" disabled={loading} onclick={deleteProjectAndGoBack}>Cancel</Button>
+		<Button kind="outline" disabled={loading} onclick={deleteProjectAndGoBack}
+			>{$i18nMessages.t("desktop:ProjectSetupTarget.cancel")}</Button
+		>
 		<Button
 			style="pop"
 			{loading}
@@ -283,7 +313,9 @@
 			testId={TestId.ProjectSetupPageTargetContinueButton}
 			id="set-base-branch"
 		>
-			{targetWasSet ? "Open project" : "Let's go"}
+			{targetWasSet
+				? $i18nMessages.t("desktop:ProjectSetupTarget.openProject")
+				: $i18nMessages.t("desktop:ProjectSetupTarget.letSGo")}
 		</Button>
 	</div>
 </div>

@@ -15,6 +15,7 @@ import {
 	providesList,
 	ReduxTag,
 } from "$lib/state/tags";
+import { message as i18nMessage } from "@gitbutler/i18n";
 import { createEntityAdapter, type EntityState } from "@reduxjs/toolkit";
 import type { Stack, GerritPushFlag } from "$lib/stacks/stack";
 import type { BackendEndpointBuilder } from "$lib/state/backendApi";
@@ -60,6 +61,7 @@ import type {
 	BranchRenameResult,
 	PushResult,
 } from "@gitbutler/but-sdk";
+import type { LocalizedText } from "@gitbutler/i18n";
 
 export type BranchParams = {
 	name?: string;
@@ -107,28 +109,28 @@ type BackendRejectedChange = {
 	path: string;
 };
 
-export function readableRejectionReason(reason: RejectionReason): string {
+export function readableRejectionReason(reason: RejectionReason): LocalizedText {
 	switch (reason) {
 		case "cherryPickMergeConflict":
-			return "Cherry-pick merge conflict";
+			return i18nMessage("desktop:detail.c1df982918");
 		case "noEffectiveChanges":
-			return "No effective changes";
+			return i18nMessage("desktop:detail.caac401a0c");
 		case "workspaceMergeConflict":
-			return "Workspace merge conflict";
+			return i18nMessage("desktop:detail.f7425ae7d6");
 		case "workspaceMergeConflictOfUnrelatedFile":
-			return "Workspace merge conflict of unrelated file";
+			return i18nMessage("desktop:detail.ad2b354df4");
 		case "worktreeFileMissingForObjectConversion":
-			return "Worktree file missing for object conversion";
+			return i18nMessage("desktop:detail.f594b3d725");
 		case "fileToLargeOrBinary":
-			return "File too large or binary";
+			return i18nMessage("desktop:detail.8954a100b9");
 		case "pathNotFoundInBaseTree":
-			return "Path not found in base tree";
+			return i18nMessage("desktop:detail.a8bcb442ee");
 		case "unsupportedDirectoryEntry":
-			return "Unsupported directory entry";
+			return i18nMessage("desktop:detail.640538eac6");
 		case "unsupportedTreeEntry":
-			return "Unsupported tree entry";
+			return i18nMessage("desktop:detail.a3ab1ebb19");
 		case "missingDiffSpecAssociation":
-			return "Missing diff spec association";
+			return i18nMessage("desktop:detail.6dd0e1ae45");
 	}
 }
 

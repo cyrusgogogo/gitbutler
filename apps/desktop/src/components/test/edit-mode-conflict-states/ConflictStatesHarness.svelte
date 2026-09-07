@@ -1,14 +1,17 @@
 <script lang="ts">
+	import { refreshConflictStates } from "$lib/files/conflictCheck";
+	import { useTranslations } from "@gitbutler/i18n/svelte";
+	import { SvelteMap } from "svelte/reactivity";
+	import type { ConflictState } from "$lib/files/conflictEntryPresence";
+	import type { FileService } from "$lib/files/fileService";
+	import type { ConflictEntryPresence } from "@gitbutler/but-sdk";
+	const i18nMessages = useTranslations();
+
 	/**
 	 * Test harness that mirrors the conflict-tracking $effect from
 	 * EditCommitPanel: an effect re-runs refreshConflictStates whenever
 	 * the watched response changes, exactly like the real component does.
 	 */
-	import { refreshConflictStates } from "$lib/files/conflictCheck";
-	import { SvelteMap } from "svelte/reactivity";
-	import type { ConflictState } from "$lib/files/conflictEntryPresence";
-	import type { FileService } from "$lib/files/fileService";
-	import type { ConflictEntryPresence } from "@gitbutler/but-sdk";
 
 	type FileEntry = {
 		path: string;
@@ -37,6 +40,7 @@
 		data-testid="file-{file.path}"
 		data-conflict-state={conflictStates.get(file.path) ?? "unknown"}
 	>
-		{file.path}: {conflictStates.get(file.path) ?? "unknown"}
+		{file.path}: {conflictStates.get(file.path) ??
+			$i18nMessages.t("desktop:ConflictStatesHarness.unknown")}
 	</div>
 {/each}

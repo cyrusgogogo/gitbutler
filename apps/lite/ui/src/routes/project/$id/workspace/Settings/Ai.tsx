@@ -1,3 +1,6 @@
+import { message as i18nMessage } from "@gitbutler/i18n";
+import type { LocalizedText } from "@gitbutler/i18n";
+import { Message as I18nMessage, useTranslations } from "@gitbutler/i18n/react";
 import { useQueryClient, useSuspenseQueries } from "@tanstack/react-query";
 import { useState, type FC } from "react";
 import type { AiConfiguration, AiConfigurationUpdate } from "@gitbutler/but-sdk";
@@ -25,11 +28,11 @@ const providerLabels: Record<Provider, string> = {
 	lmstudio: "LM Studio",
 };
 
-const modelLabels: Record<string, string> = {
+const modelLabels: Record<string, LocalizedText> = {
 	"gpt-5.4": "GPT 5.4",
 	"gpt-5.4-mini": "GPT 5.4 Mini",
-	"gpt-5.4-nano": "GPT 5.4 Nano (recommended)",
-	"claude-haiku-4-5": "Haiku (recommended)",
+	"gpt-5.4-nano": i18nMessage("lite:model.GPT54Nanorecommended"),
+	"claude-haiku-4-5": i18nMessage("lite:model.Haikurecommended"),
 	"claude-sonnet-4-6": "Sonnet",
 	"claude-opus-4-6": "Opus",
 };
@@ -41,6 +44,7 @@ const ModelField: FC<{
 	presets: ReadonlyArray<string>;
 	onChange: (model: string) => void;
 }> = (p) => {
+	const i18nMessages = useTranslations();
 	const selection = modelSelection(p.model, p.presets);
 	return (
 		<>
@@ -55,14 +59,16 @@ const ModelField: FC<{
 				>
 					{p.presets.map((model) => (
 						<option key={model} value={model}>
-							{modelLabels[model] ?? model}
+							{i18nMessages.text(modelLabels[model] ?? model)}
 						</option>
 					))}
-					<option value="custom">Custom…</option>
+					<option value="custom">
+						<I18nMessage value={{ key: "lite:Ai.custom" }} />
+					</option>
 				</select>
 			</Row>
 			{selection === "custom" && (
-				<Row label="Custom model" htmlFor={`${p.id}-custom`}>
+				<Row label={i18nMessages.t("lite:Ai.customModel")} htmlFor={`${p.id}-custom`}>
 					<input
 						id={`${p.id}-custom`}
 						type="text"
@@ -76,6 +82,7 @@ const ModelField: FC<{
 };
 
 export const Ai: FC = () => {
+	const i18nMessages = useTranslations();
 	const [{ data: configuration }, { data: profile }] = useSuspenseQueries({
 		queries: [aiConfigurationQueryOptions, userProfileQueryOptions],
 	});
@@ -89,7 +96,7 @@ export const Ai: FC = () => {
 	const [resetting, setResetting] = useState(false);
 	const [testing, setTesting] = useState(false);
 	const [result, setResult] = useState("");
-	const [error, setError] = useState<string | null>(null);
+	const [error, setError] = useState<LocalizedText | null>(null);
 
 	const change = <K extends keyof AiConfigurationUpdate>(
 		key: K,
@@ -135,7 +142,7 @@ export const Ai: FC = () => {
 	};
 
 	const reset = async () => {
-		if (!window.confirm("Reset AI settings and delete all stored AI API keys?")) return;
+		if (!window.confirm(i18nMessages.t("lite:Ai.label03798a286"))) return;
 		setResetting(true);
 		setError(null);
 		setResult("");
@@ -157,12 +164,11 @@ export const Ai: FC = () => {
 	return (
 		<>
 			<p className={classes("text-13", styles.intro)}>
-				Configure the Rust AI provider used by GitButler Lite. API keys stay in secure backend
-				storage.
+				<I18nMessage value={{ key: "lite:Ai.configureTheRustAIProviderUsedByGitButler" }} />{" "}
 			</p>
 
 			<Section>
-				<Row label="Provider" htmlFor="ai-provider">
+				<Row label={i18nMessages.t("lite:Ai.provider")} htmlFor="ai-provider">
 					<select
 						id="ai-provider"
 						value={provider}
@@ -178,7 +184,7 @@ export const Ai: FC = () => {
 
 				{provider === "openai" && (
 					<>
-						<Row label="Credentials" htmlFor="openai-credentials">
+						<Row label={i18nMessages.t("lite:Ai.credentials")} htmlFor="openai-credentials">
 							<select
 								id="openai-credentials"
 								value={update.openaiKeyOption}
@@ -186,23 +192,29 @@ export const Ai: FC = () => {
 									change("openaiKeyOption", event.currentTarget.value as KeyOption)
 								}
 							>
-								<option value="butlerAPI">GitButler account</option>
-								<option value="bringYourOwn">Your own key</option>
+								<option value="butlerAPI">
+									<I18nMessage value={{ key: "lite:Ai.gitButlerAccount" }} />
+								</option>
+								<option value="bringYourOwn">
+									<I18nMessage value={{ key: "lite:Ai.yourOwnKey" }} />
+								</option>
 							</select>
 						</Row>
 						{update.openaiKeyOption === "bringYourOwn" && (
 							<Row
-								label="API key"
+								label={i18nMessages.t("lite:Ai.aPIKey")}
 								htmlFor="openai-api-key"
 								hint={
-									saved.openaiHasApiKey ? "A key is configured. Leave blank to keep it." : undefined
+									saved.openaiHasApiKey
+										? i18nMessages.t("lite:Ai.aKeyIsConfiguredLeaveBlankToKeep")
+										: undefined
 								}
 							>
 								<input
 									id="openai-api-key"
 									type="password"
 									autoComplete="off"
-									placeholder={saved.openaiHasApiKey ? "••••••••" : "sk-…"}
+									placeholder={saved.openaiHasApiKey ? "••••••••" : i18nMessages.t("lite:Ai.sk")}
 									value={update.openaiApiKey ?? ""}
 									onChange={(event) => change("openaiApiKey", event.currentTarget.value)}
 								/>
@@ -210,13 +222,17 @@ export const Ai: FC = () => {
 						)}
 						<ModelField
 							id="openai-model"
-							label="Model"
+							label={i18nMessages.t("lite:Ai.model")}
 							model={update.openaiModel}
 							presets={openAiModels}
 							onChange={(model) => change("openaiModel", model)}
 						/>
 						{update.openaiKeyOption === "bringYourOwn" && (
-							<Row label="Custom endpoint" htmlFor="openai-endpoint" hint="Optional.">
+							<Row
+								label={i18nMessages.t("lite:Ai.customEndpoint")}
+								htmlFor="openai-endpoint"
+								hint={i18nMessages.t("lite:Ai.optional")}
+							>
 								<input
 									id="openai-endpoint"
 									type="url"
@@ -231,7 +247,7 @@ export const Ai: FC = () => {
 
 				{provider === "anthropic" && (
 					<>
-						<Row label="Credentials" htmlFor="anthropic-credentials">
+						<Row label={i18nMessages.t("lite:Ai.credentials")} htmlFor="anthropic-credentials">
 							<select
 								id="anthropic-credentials"
 								value={update.anthropicKeyOption}
@@ -239,17 +255,21 @@ export const Ai: FC = () => {
 									change("anthropicKeyOption", event.currentTarget.value as KeyOption)
 								}
 							>
-								<option value="butlerAPI">GitButler account</option>
-								<option value="bringYourOwn">Your own key</option>
+								<option value="butlerAPI">
+									<I18nMessage value={{ key: "lite:Ai.gitButlerAccount" }} />
+								</option>
+								<option value="bringYourOwn">
+									<I18nMessage value={{ key: "lite:Ai.yourOwnKey" }} />
+								</option>
 							</select>
 						</Row>
 						{update.anthropicKeyOption === "bringYourOwn" && (
 							<Row
-								label="API key"
+								label={i18nMessages.t("lite:Ai.aPIKey")}
 								htmlFor="anthropic-api-key"
 								hint={
 									saved.anthropicHasApiKey
-										? "A key is configured. Leave blank to keep it."
+										? i18nMessages.t("lite:Ai.aKeyIsConfiguredLeaveBlankToKeep")
 										: undefined
 								}
 							>
@@ -257,7 +277,9 @@ export const Ai: FC = () => {
 									id="anthropic-api-key"
 									type="password"
 									autoComplete="off"
-									placeholder={saved.anthropicHasApiKey ? "••••••••" : "sk-ant-…"}
+									placeholder={
+										saved.anthropicHasApiKey ? "••••••••" : i18nMessages.t("lite:Ai.skAnt")
+									}
 									value={update.anthropicApiKey ?? ""}
 									onChange={(event) => change("anthropicApiKey", event.currentTarget.value)}
 								/>
@@ -265,7 +287,7 @@ export const Ai: FC = () => {
 						)}
 						<ModelField
 							id="anthropic-model"
-							label="Model"
+							label={i18nMessages.t("lite:Ai.model")}
 							model={update.anthropicModel}
 							presets={anthropicModels}
 							onChange={(model) => change("anthropicModel", model)}
@@ -275,7 +297,11 @@ export const Ai: FC = () => {
 
 				{provider === "ollama" && (
 					<>
-						<Row label="Endpoint" htmlFor="ollama-endpoint" hint="Use host:port format.">
+						<Row
+							label={i18nMessages.t("lite:Ai.endpoint")}
+							htmlFor="ollama-endpoint"
+							hint={i18nMessages.t("lite:Ai.useHostPortFormat")}
+						>
 							<input
 								id="ollama-endpoint"
 								type="text"
@@ -283,7 +309,7 @@ export const Ai: FC = () => {
 								onChange={(event) => change("ollamaEndpoint", event.currentTarget.value)}
 							/>
 						</Row>
-						<Row label="Model" htmlFor="ollama-model">
+						<Row label={i18nMessages.t("lite:Ai.model")} htmlFor="ollama-model">
 							<input
 								id="ollama-model"
 								type="text"
@@ -296,7 +322,11 @@ export const Ai: FC = () => {
 
 				{provider === "lmstudio" && (
 					<>
-						<Row label="Endpoint" htmlFor="lmstudio-endpoint" hint="OpenAI-compatible base URL.">
+						<Row
+							label={i18nMessages.t("lite:Ai.endpoint")}
+							htmlFor="lmstudio-endpoint"
+							hint={i18nMessages.t("lite:Ai.openAICompatibleBaseURL")}
+						>
 							<input
 								id="lmstudio-endpoint"
 								type="url"
@@ -304,7 +334,7 @@ export const Ai: FC = () => {
 								onChange={(event) => change("lmstudioEndpoint", event.currentTarget.value)}
 							/>
 						</Row>
-						<Row label="Model" htmlFor="lmstudio-model">
+						<Row label={i18nMessages.t("lite:Ai.model")} htmlFor="lmstudio-model">
 							<input
 								id="lmstudio-model"
 								type="text"
@@ -318,14 +348,13 @@ export const Ai: FC = () => {
 
 			{saved.provider === "openrouter" && (
 				<p className={classes("text-12", styles.warning)}>
-					OpenRouter is configured but is not supported in Lite. Save to switch providers, or reset
-					these settings.
+					<I18nMessage value={{ key: "lite:Ai.openRouterIsConfiguredButIsNotSupportedIn" }} />{" "}
 				</p>
 			)}
 
 			{usesGitButler && profile === null && (
 				<p className={classes("text-12", styles.warning)}>
-					Sign in on the General page before using the GitButler AI API.
+					<I18nMessage value={{ key: "lite:Ai.signInOnTheGeneralPageBeforeUsing" }} />{" "}
 				</p>
 			)}
 
@@ -336,7 +365,11 @@ export const Ai: FC = () => {
 					disabled={busy}
 					onClick={() => void reset()}
 				>
-					{resetting ? "Resetting…" : "Reset settings"}
+					{resetting ? (
+						<I18nMessage value={{ key: "lite:Ai.resetting" }} />
+					) : (
+						<I18nMessage value={{ key: "lite:Ai.resetSettings" }} />
+					)}
 				</button>
 				<button
 					type="button"
@@ -344,7 +377,11 @@ export const Ai: FC = () => {
 					disabled={busy || !dirty}
 					onClick={() => void save()}
 				>
-					{saving ? "Saving…" : "Save"}
+					{saving ? (
+						<I18nMessage value={{ key: "lite:Ai.saving" }} />
+					) : (
+						<I18nMessage value={{ key: "lite:Ai.save" }} />
+					)}
 				</button>
 				<button
 					type="button"
@@ -352,7 +389,11 @@ export const Ai: FC = () => {
 					disabled={busy || (usesGitButler && profile === null)}
 					onClick={() => void test()}
 				>
-					{testing ? "AI is responding…" : "Test connection"}
+					{testing ? (
+						<I18nMessage value={{ key: "lite:Ai.aIIsResponding" }} />
+					) : (
+						<I18nMessage value={{ key: "lite:Ai.testConnection" }} />
+					)}
 				</button>
 			</div>
 
@@ -361,7 +402,7 @@ export const Ai: FC = () => {
 					aria-live="polite"
 					className={classes("text-12", styles.result, error !== null && styles.resultError)}
 				>
-					{error ?? result}
+					<I18nMessage value={error ?? result} />
 				</output>
 			)}
 		</>

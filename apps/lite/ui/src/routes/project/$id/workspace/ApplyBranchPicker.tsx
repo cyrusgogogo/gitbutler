@@ -1,3 +1,4 @@
+import { useTranslations } from "@gitbutler/i18n/react";
 import { useApply } from "#ui/api/mutations.ts";
 import { branchListQueryOptions } from "#ui/api/queries.ts";
 import { branchDetailsParams } from "#ui/branch.ts";
@@ -82,6 +83,7 @@ const listedStacksToApplyBranchPickerGroups = (
 	);
 
 export const ApplyBranchPicker: FC<Props> = ({ open, onOpenChange, projectId }) => {
+	const i18nMessages = useTranslations();
 	const {
 		data: groups,
 		isError,
@@ -93,9 +95,9 @@ export const ApplyBranchPicker: FC<Props> = ({ open, onOpenChange, projectId }) 
 	const [now] = useState(() => Date.now());
 	const { mutate: apply } = useApply();
 	const statusLabel = isPending
-		? "Loading branches…"
+		? i18nMessages.t("lite:ApplyBranchPicker.label8fc3fba36")
 		: isError
-			? "Unable to load branches."
+			? i18nMessages.t("lite:ApplyBranchPicker.label32a7856a9")
 			: undefined;
 
 	const selectBranch = (option: ApplyBranchPickerOption) => {
@@ -105,19 +107,21 @@ export const ApplyBranchPicker: FC<Props> = ({ open, onOpenChange, projectId }) 
 
 	return (
 		<PickerDialog
-			ariaLabel="Apply branch"
-			closeLabel="Close apply branch picker"
-			emptyLabel="No available branches found."
+			ariaLabel={i18nMessages.t("lite:ApplyBranchPicker.applyBranch")}
+			closeLabel={i18nMessages.t("lite:ApplyBranchPicker.closeApplyBranchPicker")}
+			emptyLabel={i18nMessages.t("lite:ApplyBranchPicker.noAvailableBranchesFound")}
 			getItemKey={(x) => x.branchRef}
 			getItemLabel={(x) => x.label}
-			getItemType={(x) => (x.updatedAt === null ? undefined : formatRelativeTime(x.updatedAt, now))}
+			getItemType={(x) =>
+				x.updatedAt === null ? undefined : formatRelativeTime(x.updatedAt, now, i18nMessages.locale)
+			}
 			itemToStringValue={(x) => x.label}
 			items={groups ?? []}
 			open={open}
 			onOpenChange={onOpenChange}
 			onSelectItem={selectBranch}
-			placeholder="Search for branches to apply…"
-			selectLabel="Apply branch"
+			placeholder={i18nMessages.t("lite:ApplyBranchPicker.searchForBranchesToApply")}
+			selectLabel={i18nMessages.t("lite:ApplyBranchPicker.applyBranch")}
 			statusLabel={statusLabel}
 		/>
 	);

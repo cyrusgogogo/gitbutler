@@ -1,5 +1,7 @@
 <script lang="ts">
+	import { useTranslations } from "@gitbutler/i18n/svelte";
 	import { Badge, TestId } from "@gitbutler/ui";
+	const i18nMessages = useTranslations();
 
 	type Props = {
 		commitId: string | undefined;
@@ -27,7 +29,9 @@
 			<div class="pin__circle"></div>
 		</div>
 		<div class="indicator__label waving-animation">
-			<Badge size="tag" style="pop">Your commit goes here</Badge>
+			<Badge size="tag" style="pop"
+				>{$i18nMessages.t("desktop:CommitPositionIndicator.yourCommitGoesHere")}</Badge
+			>
 		</div>
 	</div>
 {/snippet}
@@ -45,7 +49,9 @@
 		<div class="commit-here__line"></div>
 		<div class="commit-here__circle"></div>
 
-		<div class="commit-here__label text-11 text-semibold">Commit here</div>
+		<div class="commit-here__label text-11 text-semibold">
+			{$i18nMessages.t("desktop:CommitPositionIndicator.commitHere")}
+		</div>
 	</button>
 {/snippet}
 

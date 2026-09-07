@@ -1,3 +1,5 @@
+import { createI18n } from "@gitbutler/i18n";
+import { resources } from "@gitbutler/i18n/catalogs/lite";
 /** @vitest-environment jsdom */
 
 import { operatingModeQueryOptions } from "#ui/api/queries.ts";
@@ -44,10 +46,12 @@ import { useStackMenuItems } from "./useStackMenuItems.ts";
 const projectId = "project-id";
 const stack = { id: "stack-id", base: null, segments: [] } as Stack;
 
+const english = createI18n(resources, "en");
+
 const Probe: FC = () => {
 	const unapply = useStackMenuItems(projectId, stack).find(
 		(item): item is Extract<NativeMenuItem, { _tag: "Item" }> =>
-			item._tag === "Item" && item.label === "Unapply Stack",
+			item._tag === "Item" && english.text(item.label) === "Unapply Stack",
 	);
 	return <output data-enabled={String(unapply?.enabled)} />;
 };

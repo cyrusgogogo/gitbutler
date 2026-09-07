@@ -5,9 +5,11 @@
 	import { PROJECTS_SERVICE } from "$lib/project/projectsService";
 	import { useSettingsModal } from "$lib/settings/settingsModal.svelte";
 	import { inject } from "@gitbutler/core/context";
-
+	import { message as i18nMessage } from "@gitbutler/i18n";
+	import { useTranslations } from "@gitbutler/i18n/svelte";
 	import { CardGroup, chipToasts } from "@gitbutler/ui";
 	import type { Project } from "$lib/project/project";
+	const i18nMessages = useTranslations();
 
 	const { projectId }: { projectId: string } = $props();
 
@@ -44,7 +46,7 @@
 				await goto("/");
 			}
 
-			chipToasts.success("Project deleted");
+			chipToasts.success(i18nMessage("desktop:RemoveProjectForm.projectDeleted"));
 		} finally {
 			isDeleting = false;
 		}
@@ -55,10 +57,12 @@
 	{#snippet children(project)}
 		<CardGroup.Item standalone>
 			{#snippet title()}
-				Remove project
+				{$i18nMessages.t("desktop:RemoveProjectForm.removeProject")}
 			{/snippet}
 			{#snippet caption()}
-				Removing projects only clears configuration — your code stays safe.
+				{$i18nMessages.t(
+					"desktop:RemoveProjectForm.removingProjectsOnlyClearsConfigurationYourCodeStays",
+				)}
 			{/snippet}
 
 			<div>

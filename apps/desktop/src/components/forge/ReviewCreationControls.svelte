@@ -1,6 +1,6 @@
 <script lang="ts">
+	import { useTranslations } from "@gitbutler/i18n/svelte";
 	import { persisted } from "@gitbutler/shared/persisted";
-
 	import {
 		Button,
 		ContextMenuItem,
@@ -8,6 +8,7 @@
 		DropdownButton,
 		TestId,
 	} from "@gitbutler/ui";
+	const i18nMessages = useTranslations();
 
 	interface Props {
 		isCreatingPR: boolean;
@@ -41,7 +42,7 @@
 		kind="outline"
 		disabled={isFormBusy || isCreatingPR}
 		width={120}
-		onclick={onCancel}>Cancel</Button
+		onclick={onCancel}>{$i18nMessages.t("desktop:ReviewCreationControls.cancel")}</Button
 	>
 
 	<DropdownButton
@@ -57,12 +58,16 @@
 		disabled={submitDisabled || isFormBusy}
 		hotkey="⌘↵"
 	>
-		{$createDraft ? `Create ${unit} draft` : `Create ${unit}`}
+		{$createDraft
+			? $i18nMessages.t("desktop:ReviewCreationControls.inline387359290", { value1: String(unit) })
+			: $i18nMessages.t("desktop:ReviewCreationControls.inlineb8f6b0e1e", { value1: String(unit) })}
 
 		{#snippet contextMenuSlot()}
 			<ContextMenuSection>
 				<ContextMenuItem
-					label="Create {unit} draft"
+					label={$i18nMessages.t("desktop:ReviewCreationControls.createValueDraft", {
+						unit: String(unit),
+					})}
 					onclick={() => {
 						$createDraft = true;
 						commitButton?.close();
@@ -71,7 +76,9 @@
 				/>
 
 				<ContextMenuItem
-					label="Create {unit}"
+					label={$i18nMessages.t("desktop:ReviewCreationControls.createValue", {
+						unit: String(unit),
+					})}
 					onclick={() => {
 						$createDraft = false;
 						commitButton?.close();

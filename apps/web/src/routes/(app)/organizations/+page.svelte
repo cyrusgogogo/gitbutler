@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { inject } from "@gitbutler/core/context";
+	import { useTranslations } from "@gitbutler/i18n/svelte";
 	import RegisterInterest from "@gitbutler/shared/interest/RegisterInterest.svelte";
 	import Loading from "@gitbutler/shared/network/Loading.svelte";
 	import { HTTP_CLIENT } from "@gitbutler/shared/network/httpClient";
@@ -9,6 +10,7 @@
 	import { organizationTable } from "@gitbutler/shared/organizations/organizationsSlice";
 	import { APP_STATE } from "@gitbutler/shared/redux/store.svelte";
 	import { Button, CardGroup, EmptyStatePlaceholder, Icon } from "@gitbutler/ui";
+	const i18nMessages = useTranslations();
 
 	const organizationService = inject(ORGANIZATION_SERVICE);
 	const appState = inject(APP_STATE);
@@ -45,18 +47,20 @@
 	<header class="page-header">
 		<div class="page-title">
 			<Icon name="settings" />
-			<h1>Organizations</h1>
+			<h1>{$i18nMessages.t("web:page.organizations")}</h1>
 		</div>
-		<p class="page-description">Manage your organizations and team collaboration settings</p>
+		<p class="page-description">
+			{$i18nMessages.t("web:page.manageYourOrganizationsAndTeamCollaborationSettings")}
+		</p>
 	</header>
 
 	<div class="content-wrapper">
 		<div class="main-content">
 			{#if organizations.length > 0}
 				<div class="organizations-header">
-					<h2>Your Organizations</h2>
+					<h2>{$i18nMessages.t("web:page.yourOrganizations")}</h2>
 					<Button style="pop" onclick={() => createOrganizationModal?.show()}
-						>Create an Organization</Button
+						>{$i18nMessages.t("web:page.createAnOrganization")}</Button
 					>
 				</div>
 
@@ -85,11 +89,19 @@
 											<div class="organization-stats">
 												<div class="stat">
 													<Icon name="user" />
-													<span>{getOrganizationMembersCount(organization)} members</span>
+													<span
+														>{$i18nMessages.t("web:page.valueMembers", {
+															value: String(getOrganizationMembersCount(organization)),
+														})}</span
+													>
 												</div>
 												<div class="stat">
 													<Icon name="search" />
-													<span>{getOrganizationProjectsCount(organization)} projects</span>
+													<span
+														>{$i18nMessages.t("web:page.valueProjects", {
+															value: String(getOrganizationProjectsCount(organization)),
+														})}</span
+													>
 												</div>
 											</div>
 										</div>
@@ -101,7 +113,7 @@
 												kind="outline"
 												onclick={() => navigateToOrganization(organization.slug)}
 											>
-												View
+												{$i18nMessages.t("web:page.view")}
 											</Button>
 										</div>
 									{/snippet}
@@ -114,15 +126,15 @@
 				<div class="empty-state-wrapper">
 					<EmptyStatePlaceholder>
 						{#snippet title()}
-							No Organizations Yet
+							{$i18nMessages.t("web:page.noOrganizationsYet")}
 						{/snippet}
 						{#snippet caption()}
-							Create your first organization to collaborate with your team
+							{$i18nMessages.t("web:page.createYourFirstOrganizationToCollaborateWithYour")}
 						{/snippet}
 					</EmptyStatePlaceholder>
 					<div class="empty-state-action">
 						<Button style="pop" onclick={() => createOrganizationModal?.show()}
-							>Create an Organization</Button
+							>{$i18nMessages.t("web:page.createAnOrganization")}</Button
 						>
 					</div>
 				</div>
@@ -133,9 +145,13 @@
 	<!-- Mobile Join Organization section -->
 	<div class="join-section">
 		<div class="join-card">
-			<h3 class="join-title">Join an Organization</h3>
-			<p class="join-description">Have an invitation code? Join an existing organization.</p>
-			<Button style="pop" onclick={() => joinOrganizationModal?.show()}>Join Organization</Button>
+			<h3 class="join-title">{$i18nMessages.t("web:page.joinAnOrganization")}</h3>
+			<p class="join-description">
+				{$i18nMessages.t("web:page.haveAnInvitationCodeJoinAnExistingOrganization")}
+			</p>
+			<Button style="pop" onclick={() => joinOrganizationModal?.show()}
+				>{$i18nMessages.t("web:page.joinOrganization")}</Button
+			>
 		</div>
 	</div>
 </div>

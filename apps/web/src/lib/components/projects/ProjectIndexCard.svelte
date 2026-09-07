@@ -1,12 +1,15 @@
 <script lang="ts">
+	import "dayjs/locale/zh-cn";
 	import { featureShowProjectPage } from "$lib/featureFlags";
 	import { inject } from "@gitbutler/core/context";
+	import { useTranslations as useTimeTranslations } from "@gitbutler/i18n/svelte";
 	import Loading from "@gitbutler/shared/network/Loading.svelte";
 	import { getProjectByRepositoryId } from "@gitbutler/shared/organizations/projectsPreview.svelte";
 	import { WEB_ROUTES_SERVICE } from "@gitbutler/shared/routing/webRoutes.svelte";
 	import dayjs from "dayjs";
 	import relativeTime from "dayjs/plugin/relativeTime";
 	import { untrack } from "svelte";
+	const timeTranslations = useTimeTranslations();
 
 	dayjs.extend(relativeTime);
 	type Props = {
@@ -37,10 +40,14 @@
 				</div>
 			</td>
 			<td>
-				<div class="norm">{dayjs(project.createdAt).fromNow()}</div>
+				<div class="norm">
+					{dayjs(project.createdAt).locale($timeTranslations.locale.toLowerCase()).fromNow()}
+				</div>
 			</td>
 			<td>
-				<div class="norm">{dayjs(project.updatedAt).fromNow()}</div>
+				<div class="norm">
+					{dayjs(project.updatedAt).locale($timeTranslations.locale.toLowerCase()).fromNow()}
+				</div>
 			</td>
 		</tr>
 	{/snippet}

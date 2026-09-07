@@ -1,3 +1,6 @@
+import { Message as I18nMessage } from "@gitbutler/i18n/react";
+import { useTranslations } from "@gitbutler/i18n/react";
+import { message as i18nMessage } from "@gitbutler/i18n";
 import { useDiscardWorktreeChanges } from "#ui/api/mutations.ts";
 import { startAbsorb, startKeyboardTransfer } from "#ui/use-cursor.ts";
 import { Icon } from "#ui/components/Icon.tsx";
@@ -42,6 +45,7 @@ export const UncommittedChangesRow: FC<{
 	projectId: string;
 	onOpenFilter: () => void;
 }> = ({ changes, isClean, headingId, projectId, onOpenFilter }) => {
+	const i18nMessages = useTranslations();
 	const { data: lineStats = getLineStats([]) } = useQuery({
 		...treeChangesDiffsQueryOptions({ projectId, changes }),
 		select: getLineStats,
@@ -98,17 +102,17 @@ export const UncommittedChangesRow: FC<{
 
 	const menuItems: Array<NativeMenuItem> = [
 		nativeMenuItem({
-			label: "Cut Changes",
+			label: i18nMessage("lite:UncommittedChangesRow.cutChanges"),
 			enabled: changes.length > 0,
 			onSelect: cutChanges,
 		}),
 		nativeMenuSeparator,
 		nativeMenuItem({
-			label: "Absorb",
+			label: i18nMessage("lite:UncommittedChangesRow.absorb"),
 			onSelect: absorb,
 		}),
 		nativeMenuItem({
-			label: "Discard Changes",
+			label: i18nMessage("lite:UncommittedChangesRow.discardChanges"),
 			enabled: changes.length > 0 && !isDiscardWorktreeChangesPending,
 			onSelect: discardChanges,
 		}),
@@ -118,7 +122,7 @@ export const UncommittedChangesRow: FC<{
 		// Apart from the two above: those are exclusive of each other, this is
 		// ordering and combines with either.
 		nativeMenuItem({
-			label: "Sort by Last Modified",
+			label: i18nMessage("lite:UncommittedChangesRow.sortByLastModified"),
 			checked: recentFirst,
 			onSelect: () => {
 				dispatch(projectSlice.actions.toggleUncommittedFilesRecentFirst({ projectId }));
@@ -137,11 +141,13 @@ export const UncommittedChangesRow: FC<{
 			label={
 				isClean ? (
 					<>
-						<span className={styles.headingName}>Uncommitted. </span>
-						Nothing to commit
+						<span className={styles.headingName}>
+							<I18nMessage value={{ key: "lite:control.Uncommitted" }} />
+						</span>
+						<I18nMessage value={{ key: "lite:control.Nothingtocommit" }} />
 					</>
 				) : (
-					"Uncommitted"
+					i18nMessages.t("lite:UncommittedChangesRow.label4dd924a70")
 				)
 			}
 			leading={<PanelFoldToggle projectId={projectId} panel="uncommitted" />}
@@ -151,12 +157,12 @@ export const UncommittedChangesRow: FC<{
 			actions={
 				noOperationPending && (
 					<Toolbar.Root
-						aria-label="Uncommitted changes actions"
+						aria-label={i18nMessages.t("lite:UncommittedChangesRow.uncommittedChangesActions")}
 						render={<RowToolbar forceVisible />}
 					>
 						{changes.length > 0 && (
 							<Toolbar.Button
-								aria-label="Filter files"
+								aria-label={i18nMessages.t("lite:UncommittedChangesRow.filterFiles")}
 								onClick={onOpenFilter}
 								className={getRowButtonClassName({ size: "regular", iconOnly: true })}
 							>
@@ -165,7 +171,7 @@ export const UncommittedChangesRow: FC<{
 						)}
 
 						<Toolbar.Button
-							aria-label="Uncommitted changes menu"
+							aria-label={i18nMessages.t("lite:UncommittedChangesRow.uncommittedChangesMenu")}
 							onClick={(event) => {
 								void showNativeMenuFromTrigger(event.currentTarget, menuItems);
 							}}

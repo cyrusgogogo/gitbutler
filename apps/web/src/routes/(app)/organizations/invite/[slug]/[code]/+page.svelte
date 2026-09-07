@@ -4,11 +4,14 @@
 	import { page } from "$app/stores";
 	import { USER_SERVICE } from "$lib/user/userService";
 	import { inject } from "@gitbutler/core/context";
+	import { message as i18nMessage, type LocalizedText } from "@gitbutler/i18n";
+	import { useTranslations } from "@gitbutler/i18n/svelte";
 	import { ORGANIZATION_SERVICE } from "@gitbutler/shared/organizations/organizationService";
 	import { WEB_ROUTES_SERVICE } from "@gitbutler/shared/routing/webRoutes.svelte";
 	import { Button } from "@gitbutler/ui";
-
+	import I18nRichMessage from "@gitbutler/ui/i18n/RichMessage.svelte";
 	import { env } from "$env/dynamic/public";
+	const i18nMessages = useTranslations();
 
 	const userService = inject(USER_SERVICE);
 	const organizationService = inject(ORGANIZATION_SERVICE);
@@ -25,7 +28,7 @@
 	// Track the auth and join status
 	const isLoggedIn = $derived(!!$user?.id);
 	let isJoining = $state(false);
-	let joinError = $state<string | null>(null);
+	let joinError = $state<LocalizedText | null>(null);
 	let joinSuccess = $state(false);
 	let showConfirmation = $state(false);
 
@@ -49,7 +52,7 @@
 			}, 1500);
 		} catch (error: any) {
 			// Try to extract error message from JSON response if available
-			let errorMessage = "Failed to join organization";
+			let errorMessage: LocalizedText = i18nMessage("web:detail.cdb3a6aaa5");
 			try {
 				// Check if error has a response with JSON data
 				if (error.response && error.response.data) {
@@ -98,32 +101,51 @@
 
 <div class="invite-container">
 	<div class="invite-card">
-		<h1>Organization Invitation</h1>
+		<h1>{$i18nMessages.t("web:page.organizationInvitation")}</h1>
 
 		{#if !isLoggedIn}
-			<p>You've been invited to join <strong>{slug}</strong>.</p>
-			<p>Please log in to continue.</p>
-			<Button onclick={goToLogin} style="pop">Log In</Button>
+			<p>
+				{#snippet i18nSlot1(content: import("svelte").Snippet)}<strong>{@render content()}</strong
+					>{/snippet}
+				<I18nRichMessage
+					value={{ key: "web:page.youVeBeenInvitedToJoinValue", values: { slug: String(slug) } }}
+					components={{ slot1: i18nSlot1 }}
+				/>
+			</p>
+			<p>{$i18nMessages.t("web:page.pleaseLogInToContinue")}</p>
+			<Button onclick={goToLogin} style="pop">{$i18nMessages.t("web:page.logIn_d527bf3")}</Button>
 		{:else if isJoining}
 			<div class="loading-container">
-				<p>Joining organization...</p>
+				<p>{$i18nMessages.t("web:page.joiningOrganization")}</p>
 			</div>
 		{:else if joinError}
-			<p>{joinError}</p>
+			<p>{$i18nMessages.text(joinError ?? "")}</p>
 			<div class="button-container">
-				<Button onclick={handleRetry} style="pop">Try Again</Button>
+				<Button onclick={handleRetry} style="pop">{$i18nMessages.t("web:page.tryAgain")}</Button>
 			</div>
 		{:else if joinSuccess}
-			<p>You have successfully joined the organization.</p>
-			<p>Redirecting to the organization page...</p>
+			<p>{$i18nMessages.t("web:page.youHaveSuccessfullyJoinedTheOrganization")}</p>
+			<p>{$i18nMessages.t("web:page.redirectingToTheOrganizationPage")}</p>
 		{:else if showConfirmation}
-			<p>You've been invited to join <strong>{slug}</strong>.</p>
-			<p>Would you like to accept this invitation?</p>
+			<p>
+				{#snippet i18nSlot2(content: import("svelte").Snippet)}<strong>{@render content()}</strong
+					>{/snippet}
+				<I18nRichMessage
+					value={{
+						key: "web:page.youVeBeenInvitedToJoinValue_5394a96",
+						values: { slug: String(slug) },
+					}}
+					components={{ slot2: i18nSlot2 }}
+				/>
+			</p>
+			<p>{$i18nMessages.t("web:page.wouldYouLikeToAcceptThisInvitation")}</p>
 			<div class="button-container">
-				<Button onclick={handleConfirm} style="pop">Join Organization</Button>
+				<Button onclick={handleConfirm} style="pop"
+					>{$i18nMessages.t("web:page.joinOrganization")}</Button
+				>
 			</div>
 		{:else}
-			<p>Processing your invitation...</p>
+			<p>{$i18nMessages.t("web:page.processingYourInvitation")}</p>
 		{/if}
 	</div>
 </div>

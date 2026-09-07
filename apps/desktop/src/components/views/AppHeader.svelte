@@ -12,8 +12,10 @@
 	import { SETTINGS_SERVICE } from "$lib/settings/appSettings";
 	import { SHORTCUT_SERVICE } from "$lib/shortcuts/shortcutService";
 	import { inject } from "@gitbutler/core/context";
+	import { useTranslations } from "@gitbutler/i18n/svelte";
 	import { Button, Icon, OptionsGroup, Select, SelectItem, TestId, Tooltip } from "@gitbutler/ui";
 	import { focusable } from "@gitbutler/ui/focus/focusable";
+	const i18nMessages = useTranslations();
 
 	type Props = {
 		projectId: string;
@@ -42,7 +44,7 @@
 		if (currentMode?.type === "OpenWorkspace") {
 			return "gitbutler/workspace";
 		} else if (currentMode?.type === "OutsideWorkspace") {
-			return currentMode.subject.branchName || "detached HEAD";
+			return currentMode.subject.branchName || $i18nMessages.t("desktop:AppHeader.detailac1ce32f2");
 		} else if (currentMode?.type === "Edit") {
 			return "gitbutler/edit";
 		}
@@ -96,9 +98,9 @@
 		}
 
 		return [
-			{ header: "Recent" },
+			{ header: $i18nMessages.t("desktop:AppHeader.detail76eec760c") },
 			...recent.map((project) => ({ value: project.id, label: project.title })),
-			{ header: "Other projects" },
+			{ header: $i18nMessages.t("desktop:AppHeader.detail193c99c12") },
 			...others.map((project) => ({ value: project.id, label: project.title })),
 		];
 	});
@@ -174,20 +176,23 @@
 			<SyncButton {projectId} disabled={actionsDisabled} />
 
 			{#if isHasUpstreamCommits}
-				<Tooltip text={isDetached ? "HEAD is detached" : undefined} disabled={!isDetached}>
+				<Tooltip
+					text={isDetached ? $i18nMessages.t("desktop:AppHeader.inline1b377d218") : undefined}
+					disabled={!isDetached}
+				>
 					<Button
 						testId={TestId.IntegrateUpstreamCommitsButton}
 						style="pop"
 						onclick={openModal}
 						disabled={!projectId || actionsDisabled || isDetached}
 					>
-						{upstreamCommits} upstream {upstreamCommits === 1 ? "commit" : "commits"}
+						{$i18nMessages.t("desktop:upstream.commits", { count: upstreamCommits })}
 					</Button>
 				</Tooltip>
 			{:else}
 				<div class="chrome-you-are-up-to-date">
 					<Icon name="tick" />
-					<span class="text-12">You’re up to date</span>
+					<span class="text-12">{$i18nMessages.t("desktop:AppHeader.youReUpToDate")}</span>
 				</div>
 			{/if}
 		</div>
@@ -263,7 +268,7 @@
 								}
 							}}
 						>
-							Add local repository
+							{$i18nMessages.t("desktop:AppHeader.addLocalRepository")}
 						</SelectItem>
 					{/if}
 					<SelectItem
@@ -272,23 +277,29 @@
 							goto("/onboarding/clone");
 						}}
 					>
-						Clone repository
+						{$i18nMessages.t("desktop:AppHeader.cloneRepository")}
 					</SelectItem>
 				</OptionsGroup>
 
 				<div class="text-11 new-window-hint">
 					<Icon name="open-in-folder" color="var(--text-3)" size={14} />
-					<span>Hold {newWindowModifierLabel} to open in a new window</span>
+					<span
+						>{$i18nMessages.t("desktop:AppHeader.holdValueToOpenInANewWindow", {
+							newWindowModifierLabel: String(newWindowModifierLabel),
+						})}</span
+					>
 				</div>
 			</Select>
 			{#if singleBranchMode}
-				<Tooltip text="Current branch">
+				<Tooltip text={$i18nMessages.t("desktop:AppHeader.currentBranch")}>
 					<div class="chrome-current-branch" data-testid={TestId.ChromeHeaderCurrentBranch}>
 						<div class="chrome-current-branch__content">
 							<Icon name="branch" color="var(--text-2)" />
 							<span class="text-12 text-bold clr-text-2 truncate">{currentBranchName}</span>
 							{#if isNotInWorkspace}
-								<span class="text-12 text-bold clr-text-2 op-60"> read-only </span>
+								<span class="text-12 text-bold clr-text-2 op-60"
+									>{$i18nMessages.t("desktop:AppHeader.readOnly")}</span
+								>
 							{/if}
 						</div>
 					</div>
@@ -297,7 +308,7 @@
 		</div>
 
 		{#if currentMode && isNotInWorkspace}
-			<Tooltip text="Switch back to gitbutler/workspace">
+			<Tooltip text={$i18nMessages.t("desktop:AppHeader.switchBackToGitbutlerWorkspace")}>
 				<Button
 					kind="outline"
 					testId={TestId.ChromeHeaderSwitchBackToWorkspaceButton}
@@ -307,7 +318,7 @@
 					reversedDirection
 					disabled={workspaceSwitch.current.isLoading}
 				>
-					Back to workspace
+					{$i18nMessages.t("desktop:AppHeader.backToWorkspace")}
 				</Button>
 			</Tooltip>
 		{/if}
@@ -323,7 +334,7 @@
 				reversedDirection
 				onclick={() => createBranchModal?.show()}
 			>
-				Create branch
+				{$i18nMessages.t("desktop:AppHeader.createBranch")}
 			</Button>
 		{/if}
 	</div>

@@ -5,6 +5,7 @@
 	import ChatInput from "$lib/components/chat/ChatInput.svelte";
 	import Event from "$lib/components/chat/Event.svelte";
 	import { inject } from "@gitbutler/core/context";
+	import { useTranslations } from "@gitbutler/i18n/svelte";
 	import Loading from "@gitbutler/shared/network/Loading.svelte";
 	import { isFound } from "@gitbutler/shared/network/loadable";
 	import { PATCH_EVENTS_SERVICE } from "@gitbutler/shared/patchEvents/patchEventsService";
@@ -12,6 +13,7 @@
 	import { APP_STATE } from "@gitbutler/shared/redux/store.svelte";
 	import { Button } from "@gitbutler/ui";
 	import type { PatchCommit } from "@gitbutler/shared/patches/types";
+	const i18nMessages = useTranslations();
 
 	type Props = {
 		messageUuid: string | undefined;
@@ -95,9 +97,14 @@
 {:else}
 	<div class="chat-wrapper" class:tablet-mode={isTabletMode}>
 		<div class="chat-header">
-			<h3 class="text-13 text-bold">Discussion</h3>
+			<h3 class="text-13 text-bold">{$i18nMessages.t("web:ChatComponent.discussion")}</h3>
 			<div class="chat-header-actions">
-				<Button icon="minus" kind="ghost" tooltip="Hide discussion" onclick={onMinimizeToggle} />
+				<Button
+					icon="minus"
+					kind="ghost"
+					tooltip={$i18nMessages.t("web:ChatComponent.hideDiscussion")}
+					onclick={onMinimizeToggle}
+				/>
 			</div>
 		</div>
 
@@ -122,11 +129,11 @@
 								<div class="blank-state-content">
 									{@html blankChat}
 									<div class="blank-message">
-										<div class="text-18 text-semibold blank-message-title">Give some feedback!</div>
+										<div class="text-18 text-semibold blank-message-title">
+											{$i18nMessages.t("web:ChatComponent.giveSomeFeedback")}
+										</div>
 										<p class="text-12 text-body blank-message-text">
-											If you're here, you must be important. This patch can use your help. Leave a
-											comment or ask a question. Does this look right to you? How can it be
-											improved? Is it perfect? Just let us know!
+											{$i18nMessages.t("web:ChatComponent.ifYouReHereYouMustBeImportant")}
 										</p>
 									</div>
 								</div>

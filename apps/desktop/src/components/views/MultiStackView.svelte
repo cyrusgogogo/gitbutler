@@ -25,10 +25,13 @@
 	import { UI_STATE } from "$lib/state/uiState.svelte";
 	import { throttle } from "$lib/utils/misc";
 	import { inject } from "@gitbutler/core/context";
+	import { useTranslations } from "@gitbutler/i18n/svelte";
 	import { DRAG_STATE_SERVICE } from "@gitbutler/ui/drag/dragStateService.svelte";
+	import I18nRichMessage from "@gitbutler/ui/i18n/RichMessage.svelte";
 	import { resizeObserver } from "@gitbutler/ui/utils/resizeObserver";
 	import { isDefined } from "@gitbutler/ui/utils/typeguards";
 	import { flip } from "svelte/animate";
+	const i18nMessages = useTranslations();
 
 	type Props = {
 		projectId: string;
@@ -263,11 +266,13 @@
 				>
 					{#if stack.id && foldedStackIds.includes(stack.id)}
 						<FoldedStack
-							branchNames={getStackBranchNames(stack)}
+							branchNames={getStackBranchNames(stack, $i18nMessages.t("desktop:stack.unnamed"))}
 							onUnfold={() => unfoldStack(stack.id)}
 						/>
 					{:else}
-						<ErrorBoundary title="Something went wrong in this stack">
+						<ErrorBoundary
+							title={$i18nMessages.t("desktop:MultiStackView.somethingWentWrongInThisStack")}
+						>
 							<StackView
 								{projectId}
 								{stack}
@@ -297,35 +302,39 @@
 			>
 				{#snippet title()}
 					{#if stacks.length === 0}
-						No branches in Workspace
+						{$i18nMessages.t("desktop:MultiStackView.noBranchesInWorkspace")}
 					{/if}
 				{/snippet}
 				{#snippet description()}
 					{#if stacks.length === 0}
-						Drop files to start a branch,
-						<br />
-						apply from the
-						<a
-							class="pointer-events underline-dotted clr-text-2 link-hover-2"
-							aria-label="Branches view"
-							href={branchesPath(projectId)}>branches view</a
-						>
-						↗
-						<br />
-						or
+						{#snippet i18nSlot1()}<br />{/snippet}
+						{#snippet i18nSlot2(content: import("svelte").Snippet)}<a
+								class="pointer-events underline-dotted clr-text-2 link-hover-2"
+								aria-label={$i18nMessages.t("desktop:MultiStackView.branchesView")}
+								href={branchesPath(projectId)}>{@render content()}</a
+							>{/snippet}
+						{#snippet i18nSlot3()}<br />{/snippet}
+						<I18nRichMessage
+							value={{ key: "desktop:MultiStackView.dropFilesToStartABranchApplyFrom" }}
+							components={{ slot1: i18nSlot1, slot2: i18nSlot2, slot3: i18nSlot3 }}
+						/>
 						<button
 							type="button"
 							class="underline-dotted pointer-events clr-text-2 link-hover-2"
-							onclick={() => createBranchModal?.show()}>create a new branch</button
+							onclick={() => createBranchModal?.show()}
+							>{$i18nMessages.t("desktop:MultiStackView.createANewBranch")}</button
 						> +
 					{:else}
-						Drop files to start a branch,
-						<br />
-						or
+						{#snippet i18nSlot4()}<br />{/snippet}
+						<I18nRichMessage
+							value={{ key: "desktop:MultiStackView.dropFilesToStartABranchOr" }}
+							components={{ slot4: i18nSlot4 }}
+						/>
 						<button
 							type="button"
 							class="underline-dotted pointer-events clr-text-2 link-hover-2"
-							onclick={() => createBranchModal?.show()}>create a new branch</button
+							onclick={() => createBranchModal?.show()}
+							>{$i18nMessages.t("desktop:MultiStackView.createANewBranch")}</button
 						> +
 					{/if}
 				{/snippet}

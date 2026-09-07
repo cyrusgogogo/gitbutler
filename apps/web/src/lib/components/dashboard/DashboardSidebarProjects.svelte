@@ -3,6 +3,7 @@
 	import { WEB_STATE } from "$lib/redux/store.svelte";
 	import { USER_SERVICE } from "$lib/user/userService";
 	import { inject } from "@gitbutler/core/context";
+	import { useTranslations } from "@gitbutler/i18n/svelte";
 	import Loading from "@gitbutler/shared/network/Loading.svelte";
 	import { ORGANIZATION_SERVICE } from "@gitbutler/shared/organizations/organizationService";
 	import { getOrganizations } from "@gitbutler/shared/organizations/organizationsPreview.svelte";
@@ -10,6 +11,7 @@
 		getAllUserProjects,
 		getRecentlyPushedProjects,
 	} from "@gitbutler/shared/organizations/projectsPreview.svelte";
+	const i18nMessages = useTranslations();
 
 	const webState = inject(WEB_STATE);
 	const organizationService = inject(ORGANIZATION_SERVICE);
@@ -32,7 +34,9 @@
 
 {#if recentProjects.current.length > 0}
 	<div class="group">
-		<p class="text-13 text-bold title">Recent projects</p>
+		<p class="text-13 text-bold title">
+			{$i18nMessages.t("web:DashboardSidebarProjects.recentProjects")}
+		</p>
 		{#each latestRecentProjects as project}
 			<DashboardSidebarProject repositoryId={project.id} showOwner />
 		{/each}

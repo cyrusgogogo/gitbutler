@@ -1,3 +1,4 @@
+import { Message as I18nMessage, useTranslations } from "@gitbutler/i18n/react";
 import { Modal } from "#ui/components/Popup.tsx";
 import { Suspense, useState, type FC } from "react";
 import { classes } from "#ui/components/classes.ts";
@@ -50,6 +51,7 @@ type Props = {
 };
 
 export const Settings: FC<Props> = (p) => {
+	const i18nMessages = useTranslations();
 	// Seeded once, which is correct because the dialog is mounted only while open — every
 	// open is a fresh mount, and so re-reads the requested page.
 	const [selected, setSelected] = useState<SettingsPageKey>(p.page ?? defaultSettingsPageKey);
@@ -72,16 +74,20 @@ export const Settings: FC<Props> = (p) => {
 			aria-labelledby="settings-heading"
 			className={styles.popup}
 		>
-			<nav aria-label="Settings pages" className={styles.sidebar}>
+			<nav aria-label={i18nMessages.t("lite:Settings.settingsPages")} className={styles.sidebar}>
 				<h1 id="settings-heading" className={classes("text-14", "text-bold", styles.heading)}>
-					Settings
+					<I18nMessage value={{ key: "lite:Settings.settings" }} />
 				</h1>
 
 				{groups.map((group) => (
 					<div key={group.scope} className={styles.group}>
 						{showHeadings && (
 							<h2 className={classes("text-12", styles.groupHeading)}>
-								{group.scope === "global" ? "Application" : p.projectName}
+								{group.scope === "global" ? (
+									<I18nMessage value={{ key: "lite:Settings.application" }} />
+								) : (
+									p.projectName
+								)}
 							</h2>
 						)}
 
@@ -99,7 +105,7 @@ export const Settings: FC<Props> = (p) => {
 								onClick={() => setSelected(page.key)}
 							>
 								<Icon name={page.icon} className={styles.linkIcon} />
-								<span>{page.label}</span>
+								<span>{i18nMessages.text(page.label)}</span>
 							</button>
 						))}
 					</div>
@@ -108,13 +114,13 @@ export const Settings: FC<Props> = (p) => {
 				<div className={styles.social}>
 					{externalLinks.map((link) => (
 						<button
-							key={link.label}
+							key={link.url}
 							type="button"
 							className={classes("text-13", "text-semibold", styles.link)}
 							onClick={() => void window.lite.openInWebBrowser(link.url)}
 						>
 							<Icon name={link.icon} className={styles.linkIcon} />
-							<span>{link.label}</span>
+							<span>{i18nMessages.text(link.label)}</span>
 							<span aria-hidden className={styles.linkExternal}>
 								↗
 							</span>
@@ -125,7 +131,13 @@ export const Settings: FC<Props> = (p) => {
 
 			<div className={styles.content}>
 				<div className={styles.contentColumn}>
-					<Suspense fallback={<div className="text-13">Loading…</div>}>
+					<Suspense
+						fallback={
+							<div className="text-13">
+								<I18nMessage value={{ key: "lite:control.Loading" }} />
+							</div>
+						}
+					>
 						<Content projectId={p.projectId} />
 					</Suspense>
 				</div>

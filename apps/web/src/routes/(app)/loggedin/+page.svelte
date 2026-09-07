@@ -3,9 +3,12 @@
 	import { page } from "$app/state";
 	import FullscreenUtilityCard from "$lib/components/service/FullscreenUtilityCard.svelte";
 	import { inject } from "@gitbutler/core/context";
+	import { message as i18nMessage } from "@gitbutler/i18n";
+	import { useTranslations } from "@gitbutler/i18n/svelte";
 	import { LOGIN_SERVICE } from "@gitbutler/shared/login/loginService";
 	import { AsyncButton, Button, chipToasts } from "@gitbutler/ui";
 	import { copyToClipboard } from "@gitbutler/ui/utils/clipboard";
+	const i18nMessages = useTranslations();
 
 	const loginService = inject(LOGIN_SERVICE);
 	const BUILD_TYPE_PARAM = "bt";
@@ -18,7 +21,7 @@
 		if (response.type === "success" && response.data) {
 			copyToClipboard(response.data);
 		} else {
-			chipToasts.error("Failed to get token");
+			chipToasts.error(i18nMessage("web:page.failedToGetToken"));
 		}
 	}
 
@@ -35,13 +38,13 @@
 
 	async function followDeeplink() {
 		if (!buildType) {
-			chipToasts.error("Unknown built type");
+			chipToasts.error(i18nMessage("web:page.unknownBuiltType"));
 			return;
 		}
 
 		const response = await loginService.token();
 		if (response.type !== "success" || !response.data) {
-			chipToasts.error("Failed to get token");
+			chipToasts.error(i18nMessage("web:page.failedToGetToken"));
 		} else {
 			const accessToken = response.data;
 			const deeplink = `${buildType}://login?access_token=${accessToken}&t=${Date.now()}`;
@@ -51,34 +54,34 @@
 </script>
 
 <svelte:head>
-	<title>GitButler | Logged in</title>
+	<title>{$i18nMessages.t("web:page.gitButlerLoggedIn")}</title>
 </svelte:head>
 
 <FullscreenUtilityCard
-	title="Signed in successfully 🎯"
+	title={$i18nMessages.t("web:page.signedInSuccessfully")}
 	backlink={{
-		label: "Main",
+		label: $i18nMessages.t("web:page.inline62bce9422"),
 		href: "/",
 	}}
 >
 	<div class="loggedin__success-card-content">
 		{#if buildType !== null}
-			<p class="text-13">Click below to open your client and complete sign-in.</p>
+			<p class="text-13">{$i18nMessages.t("web:page.clickBelowToOpenYourClientAndComplete")}</p>
 		{:else}
-			<p class="text-13">Copy the access token and paste it in your client.</p>
+			<p class="text-13">{$i18nMessages.t("web:page.copyTheAccessTokenAndPasteItIn")}</p>
 		{/if}
 		<div class="flex gap-8 m-t-8">
 			{#if buildType !== null}
 				<AsyncButton style="gray" kind="outline" icon="open-in-ide" action={followDeeplink}
-					>Open client</AsyncButton
+					>{$i18nMessages.t("web:page.openClient")}</AsyncButton
 				>
 			{:else}
 				<AsyncButton style="gray" kind="outline" icon="copy" action={copyAccessToken}
-					>Copy Access Token</AsyncButton
+					>{$i18nMessages.t("web:page.copyAccessToken")}</AsyncButton
 				>
 			{/if}
 			<Button style="gray" kind="ghost" onclick={() => goto("/profile")} icon="user"
-				>Profile page</Button
+				>{$i18nMessages.t("web:page.profilePage")}</Button
 			>
 		</div>
 	</div>

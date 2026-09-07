@@ -10,9 +10,9 @@
 	import { SETTINGS_SERVICE } from "$lib/settings/appSettings";
 	import { OnboardingEvent, POSTHOG_WRAPPER } from "$lib/telemetry/posthog";
 	import { inject } from "@gitbutler/core/context";
+	import { message as i18nMessage } from "@gitbutler/i18n";
 	import { TestId } from "@gitbutler/ui";
 	import type { RemoteBranchInfo } from "$lib/baseBranch/baseBranch";
-
 	interface Props {
 		projectId: string;
 		remoteBranches: RemoteBranchInfo[];
@@ -60,7 +60,7 @@
 			await goto(destination, { invalidateAll: true });
 			return true;
 		} catch (error) {
-			showError("The target was set, but the project could not be opened", error);
+			showError(i18nMessage("desktop:ProjectSetup.theTargetWasSetButTheProjectCould"), error);
 			return false;
 		}
 	}

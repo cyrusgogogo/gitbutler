@@ -5,8 +5,11 @@
 		stagingBehaviorFeature,
 		type StagingBehavior,
 	} from "$lib/config/uiFeatureFlags";
+	import { useTranslations } from "@gitbutler/i18n/svelte";
 	import { persisted } from "@gitbutler/shared/persisted";
 	import { CardGroup, RadioButton, Toggle, Spacer } from "@gitbutler/ui";
+	import I18nRichMessage from "@gitbutler/ui/i18n/RichMessage.svelte";
+	const i18nMessages = useTranslations();
 
 	const addToLeftmost = persisted<boolean>(false, "branch-placement-leftmost");
 	function onStagingBehaviorFormChange(form: HTMLFormElement) {
@@ -19,11 +22,10 @@
 
 <CardGroup.Item standalone labelFor="add-leftmost">
 	{#snippet title()}
-		Place new lanes on the left side
+		{$i18nMessages.t("desktop:LanesAndBranchesSettings.placeNewLanesOnTheLeftSide")}
 	{/snippet}
 	{#snippet caption()}
-		By default, new lanes are added to the rightmost position. Enable this to add them to the
-		leftmost position instead.
+		{$i18nMessages.t("desktop:LanesAndBranchesSettings.byDefaultNewLanesAreAddedToThe")}
 	{/snippet}
 	{#snippet actions()}
 		<Toggle
@@ -37,11 +39,12 @@
 <CardGroup>
 	<CardGroup.Item labelFor="auto-select-creation">
 		{#snippet title()}
-			Auto-select text on branch creation
+			{$i18nMessages.t("desktop:LanesAndBranchesSettings.autoSelectTextOnBranchCreation")}
 		{/snippet}
 		{#snippet caption()}
-			Automatically select the pre-populated text in the branch name field when creating a new
-			branch, making it easier to type your own name.
+			{$i18nMessages.t(
+				"desktop:LanesAndBranchesSettings.automaticallySelectThePrePopulatedTextInThe",
+			)}
 		{/snippet}
 		{#snippet actions()}
 			<Toggle
@@ -53,11 +56,12 @@
 	</CardGroup.Item>
 	<CardGroup.Item labelFor="auto-select-rename">
 		{#snippet title()}
-			Auto-select text on branch rename
+			{$i18nMessages.t("desktop:LanesAndBranchesSettings.autoSelectTextOnBranchRename")}
 		{/snippet}
 		{#snippet caption()}
-			Automatically select the text when renaming a branch or lane, making it easier to replace the
-			entire name.
+			{$i18nMessages.t(
+				"desktop:LanesAndBranchesSettings.automaticallySelectTheTextWhenRenamingABranch",
+			)}
 		{/snippet}
 		{#snippet actions()}
 			<Toggle
@@ -72,11 +76,17 @@
 <Spacer />
 
 <div class="stack-v gap-8">
-	<h2 class="text-15 text-bold">Commit staging behavior</h2>
+	<h2 class="text-15 text-bold">
+		{$i18nMessages.t("desktop:LanesAndBranchesSettings.commitStagingBehavior")}
+	</h2>
 	<p class="text-12 text-body clr-text-2">
-		Controls which files are pre-selected when opening the staging view.
-		<br />
-		You can always change the selection manually.
+		{#snippet i18nSlot1()}<br />{/snippet}
+		<I18nRichMessage
+			value={{
+				key: "desktop:LanesAndBranchesSettings.controlsWhichFilesArePreSelectedWhenOpening",
+			}}
+			components={{ slot1: i18nSlot1 }}
+		/>
 	</p>
 </div>
 
@@ -84,11 +94,10 @@
 	<form class="stack-v" onchange={(e) => onStagingBehaviorFormChange(e.currentTarget)}>
 		<CardGroup.Item labelFor="stage-all">
 			{#snippet title()}
-				Auto-select all assigned files
+				{$i18nMessages.t("desktop:LanesAndBranchesSettings.autoSelectAllAssignedFiles")}
 			{/snippet}
 			{#snippet caption()}
-				Pre-selects all files assigned to this branch. Falls back to unassigned files if none are
-				assigned.
+				{$i18nMessages.t("desktop:LanesAndBranchesSettings.preSelectsAllFilesAssignedToThisBranch")}
 			{/snippet}
 			{#snippet actions()}
 				<RadioButton
@@ -102,11 +111,10 @@
 
 		<CardGroup.Item labelFor="stage-selection">
 			{#snippet title()}
-				Auto-select only your picked files
+				{$i18nMessages.t("desktop:LanesAndBranchesSettings.autoSelectOnlyYourPickedFiles")}
 			{/snippet}
 			{#snippet caption()}
-				Pre-selects only the files you have already picked. Falls back to assigned files, then
-				unassigned, if nothing is picked.
+				{$i18nMessages.t("desktop:LanesAndBranchesSettings.preSelectsOnlyTheFilesYouHaveAlready")}
 			{/snippet}
 			{#snippet actions()}
 				<RadioButton
@@ -120,10 +128,12 @@
 
 		<CardGroup.Item labelFor="stage-none">
 			{#snippet title()}
-				No auto-selection
+				{$i18nMessages.t("desktop:LanesAndBranchesSettings.noAutoSelection")}
 			{/snippet}
 			{#snippet caption()}
-				Nothing is pre-selected. You manually pick what to include in each commit.
+				{$i18nMessages.t(
+					"desktop:LanesAndBranchesSettings.nothingIsPreSelectedYouManuallyPickWhat",
+				)}
 			{/snippet}
 			{#snippet actions()}
 				<RadioButton

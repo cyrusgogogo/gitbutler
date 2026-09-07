@@ -7,8 +7,10 @@
 	import { FORGE_INFO_SERVICE } from "$lib/forge/forgeInfo.svelte";
 	import { useSettingsModal } from "$lib/settings/settingsModal.svelte";
 	import { inject } from "@gitbutler/core/context";
+	import { useTranslations } from "@gitbutler/i18n/svelte";
 	import { reactive } from "@gitbutler/shared/reactiveUtils.svelte";
 	import { Button, Link } from "@gitbutler/ui";
+	const i18nMessages = useTranslations();
 
 	type Props = {
 		projectId: string;
@@ -113,15 +115,28 @@
 		<div class="forge-prompt__logo">
 			{@html forgeLogoFor(forgeName)}
 		</div>
-		<h3 class="text-13 text-body text-bold">It looks like you have a {forgeLabel} remote!</h3>
+		<h3 class="text-13 text-body text-bold">
+			{$i18nMessages.t("desktop:ForgeIntegrationBanner.itLooksLikeYouHaveAValueRemote", {
+				forgeLabel: String(forgeLabel),
+			})}
+		</h3>
 		<p class="text-12 text-body m-b-8 clr-text-2">
-			GitButler can display, create and manage {forgeUnit} for you directly in the app.
-			<Link href={integrationDocs}>Read more</Link>
+			{$i18nMessages.t(
+				"desktop:ForgeIntegrationBanner.gitButlerCanDisplayCreateAndManageValueFor",
+				{ forgeUnit: String(forgeUnit) },
+			)}
+			<Link href={integrationDocs}
+				>{$i18nMessages.t("desktop:ForgeIntegrationBanner.readMore")}</Link
+			>
 		</p>
 
 		<div class="forge-prompt__footer">
-			<Button kind="outline" onclick={dismissPrompt}>Dismiss</Button>
-			<Button style="pop" onclick={configureIntegration}>Configure integration…</Button>
+			<Button kind="outline" onclick={dismissPrompt}
+				>{$i18nMessages.t("desktop:ForgeIntegrationBanner.dismiss")}</Button
+			>
+			<Button style="pop" onclick={configureIntegration}
+				>{$i18nMessages.t("desktop:ForgeIntegrationBanner.configureIntegration")}</Button
+			>
 		</div>
 	</div>
 {/if}

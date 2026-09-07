@@ -1,4 +1,5 @@
 import { getTimeAgo } from "@gitbutler/ui/utils/timeAgo";
+import type { Locale } from "@gitbutler/i18n";
 import type { UserMaybe } from "@gitbutler/shared/users/types";
 
 const UNKNOWN_AUTHOR = "Unknown author";
@@ -16,34 +17,38 @@ function isSameDay(date1: Date, date2: Date): boolean {
 	);
 }
 
-export function eventTimeStamp(event: TimestampedEvent): string {
+export function eventTimeStamp(event: TimestampedEvent, locale: Locale = "en"): string {
 	const creationDate = new Date(event.createdAt);
 
 	const createdToday = isSameDay(creationDate, new Date());
 
 	if (createdToday) {
 		return (
-			"Today at " +
-			creationDate.toLocaleTimeString("en-US", {
+			(locale === "zh-CN" ? "今天 " : "Today at ") +
+			creationDate.toLocaleTimeString(locale, {
 				hour: "numeric",
 				minute: "numeric",
 			})
 		);
 	}
 
-	return getTimeAgo(creationDate);
+	return getTimeAgo(creationDate, true, locale);
 }
 
-export function getMultipleContributorNames(contributors: UserMaybe[]): string {
+export function getMultipleContributorNames(
+	contributors: UserMaybe[],
+	locale: Locale = "en",
+): string {
+	const unknownAuthor = locale === "zh-CN" ? "未知作者" : UNKNOWN_AUTHOR;
 	if (contributors.length === 0) {
-		return UNKNOWN_AUTHOR;
+		return unknownAuthor;
 	}
 
 	return contributors
 		.map((contributor) => {
 			if (contributor.user) {
 				const user = contributor.user;
-				return user.login ?? user.name ?? user.email ?? UNKNOWN_AUTHOR;
+				return user.login ?? user.name ?? user.email ?? unknownAuthor;
 			} else {
 				return contributor.email;
 			}

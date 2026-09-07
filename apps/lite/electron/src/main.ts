@@ -33,6 +33,7 @@ import {
 	protocol,
 	session,
 	shell,
+	type MenuItem,
 	type MenuItemConstructorOptions,
 } from "electron";
 import {
@@ -48,6 +49,10 @@ import { initLogging } from "./logging.js";
 import { type GUISettings, readSettings, writeSettings } from "./settings.js";
 import { initMetrics, metricsOnLogin, shutdownMetrics, withApiCommandCapture } from "./metrics.js";
 import { apiParamNames } from "@gitbutler/but-sdk/api-param-names";
+import { createI18n, normalizePreference, resolveLocale, type MessageKey } from "@gitbutler/i18n";
+import { resources as nativeResources } from "@gitbutler/i18n/catalogs/native";
+
+const nativeI18n = createI18n(nativeResources);
 
 Object.assign(process.env, interactiveLoginShellEnvironment());
 
@@ -61,10 +66,67 @@ if (!app.isPackaged) app.setName("GitButler Lite Dev");
 const currentFilePath = fileURLToPath(import.meta.url);
 const currentDirPath = path.dirname(currentFilePath);
 
+const applicationMenuKeys: Partial<Record<string, MessageKey>> = {
+	filemenu: "native:file",
+	editmenu: "native:edit",
+	viewmenu: "native:view",
+	windowmenu: "native:window",
+	window: "native:window",
+	help: "native:help",
+	quit: "native:quit",
+	undo: "native:undo",
+	redo: "native:redo",
+	cut: "native:cut",
+	copy: "native:copy",
+	paste: "native:paste",
+	pasteandmatchstyle: "native:pasteAndMatchStyle",
+	delete: "native:delete",
+	selectall: "native:selectAll",
+	reload: "native:reload",
+	forcereload: "native:forceReload",
+	toggledevtools: "native:devtools",
+	resetzoom: "native:zoomReset",
+	zoomin: "native:zoomIn",
+	zoomout: "native:zoomOut",
+	togglefullscreen: "native:toggleFullScreen",
+	minimize: "native:minimize",
+	zoom: "native:maximize",
+	close: "native:close",
+	about: "native:aboutApp",
+	services: "native:services",
+	hide: "native:hideApp",
+	hideothers: "native:hideOthers",
+	unhide: "native:showAll",
+	speech: "native:speech",
+	startspeaking: "native:startSpeaking",
+	stopspeaking: "native:stopSpeaking",
+	front: "native:bringAllToFront",
+};
+const originalMenuLabels = new WeakMap<MenuItem, string>();
+
+const localizeApplicationMenu = (menu = Menu.getApplicationMenu()): void => {
+	for (const item of menu?.items ?? []) {
+		const originalLabel = originalMenuLabels.get(item) ?? item.label;
+		const role = item.role?.toLowerCase() ?? (originalLabel === "Speech" ? "speech" : "");
+		const key = applicationMenuKeys[role];
+		if (key !== undefined) {
+			originalMenuLabels.set(item, originalLabel);
+			// Keep Electron's platform-specific commands and restore its exact English labels.
+			item.label =
+				nativeI18n.locale === "en" ? originalLabel : nativeI18n.t(key, { appName: app.getName() });
+		}
+		if (item.submenu) localizeApplicationMenu(item.submenu);
+	}
+};
+
 // [ref:lite_default_settings]
 const applyGUISettings = (settings: GUISettings): void => {
 	nativeTheme.themeSource = settings.theme ?? "system";
 	setAutoUpdateEnabled(settings.autoUpdate ?? true);
+	nativeI18n.setLocale(
+		resolveLocale(normalizePreference(settings.language), app.getSystemLocale()),
+	);
+	localizeApplicationMenu();
 };
 
 // Permissions in this array are allowed by default for trusted origins, without prompting the user for input.
@@ -256,16 +318,20 @@ const registerEditingContextMenu = (window: BrowserWindow): void => {
 
 		const template: Array<Electron.MenuItemConstructorOptions> = isEditable
 			? [
-					{ role: "undo", enabled: editFlags.canUndo },
-					{ role: "redo", enabled: editFlags.canRedo },
+					{ role: "undo", label: nativeI18n.t("native:undo"), enabled: editFlags.canUndo },
+					{ role: "redo", label: nativeI18n.t("native:redo"), enabled: editFlags.canRedo },
 					{ type: "separator" },
-					{ role: "cut", enabled: editFlags.canCut },
-					{ role: "copy", enabled: editFlags.canCopy },
-					{ role: "paste", enabled: editFlags.canPaste },
+					{ role: "cut", label: nativeI18n.t("native:cut"), enabled: editFlags.canCut },
+					{ role: "copy", label: nativeI18n.t("native:copy"), enabled: editFlags.canCopy },
+					{ role: "paste", label: nativeI18n.t("native:paste"), enabled: editFlags.canPaste },
 					{ type: "separator" },
-					{ role: "selectAll", enabled: editFlags.canSelectAll },
+					{
+						role: "selectAll",
+						label: nativeI18n.t("native:selectAll"),
+						enabled: editFlags.canSelectAll,
+					},
 				]
-			: [{ role: "copy", enabled: editFlags.canCopy }];
+			: [{ role: "copy", label: nativeI18n.t("native:copy"), enabled: editFlags.canCopy }];
 		const menu = Menu.buildFromTemplate(template);
 
 		menu.popup({
@@ -301,6 +367,7 @@ const electronHandlerOverrides = {
 	askpassSubmitPromptResponse: ({ id, response }) => askpassSubmitPromptResponse(id, response),
 	clipboardWriteText: (text) => clipboard.writeText(text),
 	getVersion: () => app.getVersion(),
+	getSystemLocale: () => app.getSystemLocale(),
 	openInWebBrowser: (url) => {
 		// shell.openExternal() is powerful and dangerous. For example, on macOS you can launch a
 		// program with shell.openExternal("file:///Applications/Numbers.app"). Similarly bad
@@ -329,8 +396,10 @@ const electronHandlerOverrides = {
 	watcherStopAll: () => WatcherManager.getInstance().stopAllWatchersForShutdown(),
 	readGUISettings: () => readSettings(),
 	writeGUISettings: async (settings) => {
-		applyGUISettings(settings);
 		await writeSettings(settings);
+		applyGUISettings(settings);
+		for (const window of BrowserWindow.getAllWindows())
+			window.webContents.send("guiSettingsChange", settings);
 	},
 } satisfies HandlerOverrides & { [K in HostOnlyKey]: Handler<K> };
 
@@ -531,6 +600,7 @@ const createMainWindow = async (initialUrl?: string): Promise<void> => {
 		},
 	});
 	registerEditingContextMenu(mainWindow);
+	localizeApplicationMenu();
 
 	const notifyFullScreenChange = () => {
 		mainWindow.webContents.send("fullScreenChange", mainWindow.isFullScreen());

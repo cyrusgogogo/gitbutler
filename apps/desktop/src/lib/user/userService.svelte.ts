@@ -2,6 +2,7 @@ import { resetSentry, setSentryUser } from "$lib/analytics/sentry";
 import { showWarning } from "$lib/notifications/toasts";
 import { type UiState } from "$lib/state/uiState.svelte";
 import { InjectionToken } from "@gitbutler/core/context";
+import { message as i18nMessage } from "@gitbutler/i18n";
 import { chipToasts } from "@gitbutler/ui";
 import type { IBackend } from "$lib/backend";
 import type { BackendApi } from "$lib/state/backendApi";
@@ -67,8 +68,8 @@ export class UserService {
 		});
 		if (currentUser) {
 			showWarning(
-				"Already logged in",
-				"There's already an account logged in, please log out before attempting to log in to another account.",
+				i18nMessage("desktop:userService.alreadyLoggedIn"),
+				i18nMessage("desktop:userService.thereSAlreadyAnAccountLoggedInPlease"),
 			);
 			return;
 		}
@@ -134,7 +135,7 @@ export class UserService {
 	async copyLoginPageLink(): Promise<void> {
 		const url = await this.getLoginUrl();
 		await this.backend.writeTextToClipboard(url);
-		chipToasts.success("Login URL copied to clipboard");
+		chipToasts.success(i18nMessage("desktop:userService.loginURLCopiedToClipboard"));
 	}
 
 	async getUser(): Promise<ApiUser> {

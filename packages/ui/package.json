@@ -119,6 +119,7 @@
 		"emojibase-data": "^16.0.3",
 		"install": "^0.13.0",
 		"lexical": "0.27.2",
-		"svelte-lexical": "0.5.3"
+		"svelte-lexical": "0.5.3",
+		"@gitbutler/i18n": "workspace:*"
 	}
 }

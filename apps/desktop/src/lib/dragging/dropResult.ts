@@ -2,6 +2,7 @@ import { showError } from "$lib/error/showError";
 import { showWarning } from "$lib/notifications/toasts";
 import type { UiState } from "$lib/state/uiState.svelte";
 import type { RejectionReason } from "@gitbutler/but-sdk";
+import type { LocalizedText } from "@gitbutler/i18n";
 
 /**
  * Structured result from a drop handler operation.
@@ -9,8 +10,8 @@ import type { RejectionReason } from "@gitbutler/but-sdk";
  */
 export type DropResult =
 	| { type: "ok" }
-	| { type: "warning"; title: string; message: string; testId?: string }
-	| { type: "error"; title: string; error: unknown }
+	| { type: "warning"; title: LocalizedText; message: LocalizedText; testId?: string }
+	| { type: "error"; title: LocalizedText; error: unknown }
 	| {
 			type: "rejectedChanges";
 			projectId: string;

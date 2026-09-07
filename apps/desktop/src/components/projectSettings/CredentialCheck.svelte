@@ -3,10 +3,15 @@
 	import { GIT_CONFIG_SERVICE } from "$lib/config/gitConfigService";
 	import { classify } from "$lib/error/errorClassification";
 	import { parseError } from "$lib/error/parser";
+	import { canonicalMessages } from "$lib/notifications/toasts";
 	import { OnboardingEvent, POSTHOG_WRAPPER } from "$lib/telemetry/posthog";
 	import { inject } from "@gitbutler/core/context";
+	import { message, type LocalizedText } from "@gitbutler/i18n";
+	import { useTranslations } from "@gitbutler/i18n/svelte";
 	import { Button, Icon, InfoMessage, Link } from "@gitbutler/ui";
+	import I18nRichMessage from "@gitbutler/ui/i18n/RichMessage.svelte";
 	import { slide } from "svelte/transition";
+	const i18nMessages = useTranslations();
 
 	interface Props {
 		projectId: string;
@@ -20,7 +25,7 @@
 	const gitConfig = inject(GIT_CONFIG_SERVICE);
 	const posthog = inject(POSTHOG_WRAPPER);
 
-	type Check = { name: string; promise: Promise<any> };
+	type Check = { name: LocalizedText; promise: Promise<any> };
 	let checks = $state<Check[]>();
 
 	let errors = $state(0);
@@ -37,11 +42,14 @@
 
 		try {
 			const fetchCheck = gitConfig.checkGitFetch(projectId, remoteName);
-			checks = [{ name: "Fetch", promise: fetchCheck }];
+			checks = [{ name: message("desktop:CredentialCheck.detaild48aafe68"), promise: fetchCheck }];
 			await fetchCheck;
 			stage = "push";
 			const pushCheck = gitConfig.checkGitPush(projectId, remoteName, branchName);
-			checks = [...checks, { name: "Push", promise: pushCheck }];
+			checks = [
+				...checks,
+				{ name: message("desktop:CredentialCheck.detail8f7f57b51"), promise: pushCheck },
+			];
 			await pushCheck;
 		} catch (error) {
 			const { code, userMessage } = classify(error);
@@ -49,7 +57,9 @@
 				OnboardingEvent.GitCheckCredentialsFailed,
 				{
 					name: "Git credential check failed",
-					message: userMessage ?? "Git credential check failed.",
+					message: canonicalMessages.text(
+						userMessage ?? message("desktop:CredentialCheck.detail41b08996e"),
+					),
 					code,
 				},
 				{ stage },
@@ -75,11 +85,11 @@
 			>
 				{#snippet title()}
 					{#if loading}
-						Checking git credentials …
+						{$i18nMessages.t("desktop:CredentialCheck.checkingGitCredentials")}
 					{:else if errors > 0}
-						There was a problem with your credentials
+						{$i18nMessages.t("desktop:CredentialCheck.thereWasAProblemWithYourCredentials")}
 					{:else}
-						All checks passed successfully
+						{$i18nMessages.t("desktop:CredentialCheck.allChecksPassedSuccessfully")}
 					{/if}
 				{/snippet}
 
@@ -96,7 +106,7 @@
 										{:catch}
 											<Icon name="danger" size={14} />
 										{/await}
-									</i>{check.name}
+									</i>{$i18nMessages.text(check.name)}
 
 									{#await check.promise catch err}
 										- {parseError(err).message}
@@ -109,13 +119,15 @@
 					{#if errors > 0}
 						<div class="text-12 text-body help-text" transition:slide>
 							<span>
-								Try another setting and test again?
-								<br />
-								Consult our
+								{#snippet i18nSlot1()}<br />{/snippet}
+								<I18nRichMessage
+									value={{ key: "desktop:CredentialCheck.tryAnotherSettingAndTestAgainConsultOur" }}
+									components={{ slot1: i18nSlot1 }}
+								/>
 								<Link href="https://docs.gitbutler.com/troubleshooting/fetch-push">
-									fetch / push guide
+									{$i18nMessages.t("desktop:CredentialCheck.fetchPushGuide")}
 								</Link>
-								for help fixing this problem.
+								{$i18nMessages.t("desktop:CredentialCheck.forHelpFixingThisProblem")}
 							</span>
 						</div>
 					{/if}
@@ -125,15 +137,17 @@
 	{/if}
 	<Button style="pop" wide icon="tick" {loading} {disabled} onclick={checkCredentials}>
 		{#if loading || checks?.length === 0}
-			Test credentials
+			{$i18nMessages.t("desktop:CredentialCheck.testCredentials")}
 		{:else}
-			Re-test credentials
+			{$i18nMessages.t("desktop:CredentialCheck.reTestCredentials")}
 		{/if}
 	</Button>
 	<SectionCardDisclaimer>
-		To test the push command, we create an empty branch and promptly remove it after the check. <Link
-			href="https://docs.gitbutler.com/troubleshooting/fetch-push">Read more</Link
-		> about authentication methods.
+		{$i18nMessages.t("desktop:CredentialCheck.toTestThePushCommandWeCreateAn")}
+		<Link href="https://docs.gitbutler.com/troubleshooting/fetch-push"
+			>{$i18nMessages.t("desktop:CredentialCheck.readMore")}</Link
+		>
+		{$i18nMessages.t("desktop:CredentialCheck.aboutAuthenticationMethods")}
 	</SectionCardDisclaimer>
 </div>
 

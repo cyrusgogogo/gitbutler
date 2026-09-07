@@ -5,9 +5,11 @@
 	import { BITBUCKET_USER_SERVICE } from "$lib/forge/bitbucket/bitbucketUserService.svelte";
 	import { OnboardingEvent, POSTHOG_WRAPPER } from "$lib/telemetry/posthog";
 	import { inject } from "@gitbutler/core/context";
-
+	import { useTranslations } from "@gitbutler/i18n/svelte";
 	import { AddForgeAccountButton, Button, CardGroup, Link, Textbox } from "@gitbutler/ui";
+	import I18nRichMessage from "@gitbutler/ui/i18n/RichMessage.svelte";
 	import { fade } from "svelte/transition";
+	const i18nMessages = useTranslations();
 
 	const bitbucketUserService = inject(BITBUCKET_USER_SERVICE);
 	const posthog = inject(POSTHOG_WRAPPER);
@@ -67,12 +69,13 @@
 			{#snippet error()}
 				<CardGroup.Item>
 					{#snippet title()}
-						Failed to load Bitbucket accounts
+						{$i18nMessages.t("desktop:BitbucketIntegration.failedToLoadBitbucketAccounts")}
 					{/snippet}
 					<Button
 						style="pop"
 						onclick={deleteAllBitbucketAccounts}
-						loading={clearingAllResult.current.isLoading}>Try again</Button
+						loading={clearingAllResult.current.isLoading}
+						>{$i18nMessages.t("desktop:BitbucketIntegration.tryAgain")}</Button
 					>
 				</CardGroup.Item>
 			{/snippet}
@@ -96,7 +99,7 @@
 					{/snippet}
 
 					{#snippet caption()}
-						Allows you to create Pull Requests
+						{$i18nMessages.t("desktop:BitbucketIntegration.allowsYouToCreatePullRequests")}
 					{/snippet}
 
 					{#snippet actions()}
@@ -113,46 +116,52 @@
 			<CardGroup>
 				<CardGroup.Item>
 					{#snippet title()}
-						Add Atlassian API Token
+						{$i18nMessages.t("desktop:BitbucketIntegration.addAtlassianAPIToken")}
 					{/snippet}
 
 					{#snippet caption()}
-						Requires read:user:bitbucket, read:repository:bitbucket, read:pullrequest:bitbucket, and
-						write:pullrequest:bitbucket.
-						<br />
+						{#snippet i18nSlot1()}<br />{/snippet}
+						<I18nRichMessage
+							value={{
+								key: "desktop:BitbucketIntegration.requiresReadUserBitbucketReadRepositoryBitbucketRead",
+							}}
+							components={{ slot1: i18nSlot1 }}
+						/>
 						<Link href="https://id.atlassian.com/manage-profile/security/api-tokens"
-							>Create one on id.atlassian.com</Link
+							>{$i18nMessages.t("desktop:BitbucketIntegration.createOneOnIdAtlassianCom")}</Link
 						>
 					{/snippet}
 
 					<Textbox
-						label="Atlassian account email"
+						label={$i18nMessages.t("desktop:BitbucketIntegration.atlassianAccountEmail")}
 						size="large"
 						value={emailInput}
-						placeholder="you@example.com"
+						placeholder={$i18nMessages.t("desktop:BitbucketIntegration.youExampleCom")}
 						oninput={(value) => (emailInput = value)}
 						error={emailError}
 					/>
 					<Textbox
-						label="API token"
+						label={$i18nMessages.t("desktop:BitbucketIntegration.aPIToken")}
 						size="large"
 						type="password"
 						value={tokenInput}
-						placeholder="ATATT************************"
+						placeholder={$i18nMessages.t("desktop:BitbucketIntegration.aTATT")}
 						oninput={(value) => (tokenInput = value)}
 						error={tokenError}
 					/>
 				</CardGroup.Item>
 				<CardGroup.Item>
 					<div class="flex justify-end gap-6">
-						<Button style="gray" kind="outline" onclick={cleanupApiTokenFlow}>Cancel</Button>
+						<Button style="gray" kind="outline" onclick={cleanupApiTokenFlow}
+							>{$i18nMessages.t("desktop:BitbucketIntegration.cancel")}</Button
+						>
 						<Button
 							style="pop"
 							disabled={!emailInput || !tokenInput}
 							loading={storeApiTokenResult.current.isLoading}
 							onclick={storeBitbucketApiToken}
 						>
-							Add account
+							{$i18nMessages.t("desktop:BitbucketIntegration.addAccount")}
 						</Button>
 					</div>
 				</CardGroup.Item>
@@ -162,7 +171,7 @@
 </div>
 
 <p class="text-12 text-body bitbucket-integration-settings__text">
-	🔒 Credentials are persisted locally in your OS Keychain / Credential Manager.
+	{$i18nMessages.t("desktop:BitbucketIntegration.credentialsArePersistedLocallyInYourOSKeychain")}
 </p>
 
 {#snippet addProfileButton(noAccounts: boolean)}
@@ -171,7 +180,11 @@
 		disabled={showingFlow !== undefined}
 		loading={storeApiTokenResult.current.isLoading}
 		menuItems={[
-			{ label: "Add Atlassian API Token", icon: "lock-auth", onclick: startApiTokenFlow },
+			{
+				label: $i18nMessages.t("desktop:BitbucketIntegration.inlinec34fdb060"),
+				icon: "lock-auth",
+				onclick: startApiTokenFlow,
+			},
 		]}
 	/>
 {/snippet}

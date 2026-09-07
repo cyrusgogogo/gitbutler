@@ -1,3 +1,4 @@
+import { Message as I18nMessage, useTranslations } from "@gitbutler/i18n/react";
 import { Toggle, ToggleGroup } from "@base-ui/react";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import type { FC } from "react";
@@ -26,6 +27,7 @@ const clamp = (value: number, min: number, max: number): number =>
 	Math.min(Math.max(value, min), max);
 
 export const Appearance: FC = () => {
+	const i18nMessages = useTranslations();
 	const { data: settings } = useSuspenseQuery(guiSettingsQueryOptions);
 	const { mutate: saveGUISettings } = useSaveGUISettings();
 
@@ -44,7 +46,7 @@ export const Appearance: FC = () => {
 	return (
 		<>
 			<Section>
-				<Row label="Theme" labelId="theme">
+				<Row label={i18nMessages.t("lite:Appearance.theme")} labelId="theme">
 					<ToggleGroup
 						aria-labelledby="theme"
 						value={[settings.theme ?? defaultSettings.theme]}
@@ -54,18 +56,21 @@ export const Appearance: FC = () => {
 						render={<ToggleGroupStyles />}
 					>
 						<Toggle render={<ToggleStyles />} value="system">
-							System
+							<I18nMessage value={{ key: "lite:Appearance.system" }} />{" "}
 						</Toggle>
 						<Toggle render={<ToggleStyles />} value="light">
-							Light
+							<I18nMessage value={{ key: "lite:Appearance.light" }} />{" "}
 						</Toggle>
 						<Toggle render={<ToggleStyles />} value="dark">
-							Dark
+							<I18nMessage value={{ key: "lite:Appearance.dark" }} />{" "}
 						</Toggle>
 					</ToggleGroup>
 				</Row>
 
-				<Row label="Syntax theme (light)" htmlFor="syntax-theme-light">
+				<Row
+					label={i18nMessages.t("lite:Appearance.syntaxThemeLight")}
+					htmlFor="syntax-theme-light"
+				>
 					<select
 						id="syntax-theme-light"
 						value={settings.syntaxHighlighting?.light ?? defaultSettings.syntaxHighlighting.light}
@@ -79,7 +84,7 @@ export const Appearance: FC = () => {
 					</select>
 				</Row>
 
-				<Row label="Syntax theme (dark)" htmlFor="syntax-theme-dark">
+				<Row label={i18nMessages.t("lite:Appearance.syntaxThemeDark")} htmlFor="syntax-theme-dark">
 					<select
 						id="syntax-theme-dark"
 						value={settings.syntaxHighlighting?.dark ?? defaultSettings.syntaxHighlighting.dark}
@@ -94,11 +99,11 @@ export const Appearance: FC = () => {
 				</Row>
 			</Section>
 
-			<Section heading="Files">
+			<Section heading={i18nMessages.t("lite:Appearance.files")}>
 				<Row
-					label="File path first"
+					label={i18nMessages.t("lite:Appearance.filePathFirst")}
 					labelId="path-first"
-					hint="Lead each row with the directory rather than the file name. The tree gives the directory a row of its own, so this is for the list."
+					hint={i18nMessages.t("lite:Appearance.leadEachRowWithTheDirectoryRatherThan")}
 				>
 					<Switch
 						aria-labelledby="path-first"
@@ -108,8 +113,8 @@ export const Appearance: FC = () => {
 				</Row>
 			</Section>
 
-			<Section heading="Diff">
-				<Row label="Diff files" labelId="unidiff">
+			<Section heading={i18nMessages.t("lite:Appearance.diff")}>
+				<Row label={i18nMessages.t("lite:Appearance.diffFiles")} labelId="unidiff">
 					<ToggleGroup
 						aria-labelledby="unidiff"
 						value={[String(settings.unidiff ?? defaultSettings.unidiff)]}
@@ -119,17 +124,21 @@ export const Appearance: FC = () => {
 						render={<ToggleGroupStyles />}
 					>
 						<Toggle render={<ToggleStyles />} value="true">
-							All-in-one diff
+							<I18nMessage value={{ key: "lite:Appearance.allInOneDiff" }} />{" "}
 						</Toggle>
 						<Toggle render={<ToggleStyles />} value="false">
-							Selected file only
+							<I18nMessage value={{ key: "lite:Appearance.selectedFileOnly" }} />{" "}
 						</Toggle>
 					</ToggleGroup>
 				</Row>
 
 				{/* These three are the diff toolbar's own controls: one stored value each, so
 				    changing either surface moves the other. */}
-				<Row label="Layout" labelId="diff-style" hint="Also on the diff toolbar.">
+				<Row
+					label={i18nMessages.t("lite:Appearance.layout")}
+					labelId="diff-style"
+					hint={i18nMessages.t("lite:Appearance.alsoOnTheDiffToolbar")}
+				>
 					<ToggleGroup
 						aria-labelledby="diff-style"
 						value={[settings.diffStyle ?? defaultSettings.diffStyle]}
@@ -140,18 +149,18 @@ export const Appearance: FC = () => {
 						render={<ToggleGroupStyles />}
 					>
 						<Toggle render={<ToggleStyles />} value="split">
-							Split
+							<I18nMessage value={{ key: "lite:Appearance.split" }} />{" "}
 						</Toggle>
 						<Toggle render={<ToggleStyles />} value="unified">
-							Unified
+							<I18nMessage value={{ key: "lite:Appearance.unified" }} />{" "}
 						</Toggle>
 					</ToggleGroup>
 				</Row>
 
 				<Row
-					label="Soft wrap"
+					label={i18nMessages.t("lite:Appearance.softWrap")}
 					labelId="soft-wrap"
-					hint="Wrap long lines instead of scrolling them sideways."
+					hint={i18nMessages.t("lite:Appearance.wrapLongLinesInsteadOfScrollingThemSideways")}
 				>
 					<Switch
 						aria-labelledby="soft-wrap"
@@ -161,9 +170,9 @@ export const Appearance: FC = () => {
 				</Row>
 
 				<Row
-					label="Diff backgrounds"
+					label={i18nMessages.t("lite:Appearance.diffBackgrounds")}
 					labelId="diff-backgrounds"
-					hint="Tint added and removed lines, rather than marking them by symbol alone."
+					hint={i18nMessages.t("lite:Appearance.tintAddedAndRemovedLinesRatherThanMarking")}
 				>
 					<Switch
 						aria-labelledby="diff-backgrounds"
@@ -172,7 +181,7 @@ export const Appearance: FC = () => {
 					/>
 				</Row>
 
-				<Row label="Font family" htmlFor="font-family">
+				<Row label={i18nMessages.t("lite:Appearance.fontFamily")} htmlFor="font-family">
 					<input
 						id="font-family"
 						type="text"
@@ -185,7 +194,7 @@ export const Appearance: FC = () => {
 					/>
 				</Row>
 
-				<Row label="Font size" htmlFor="font-size">
+				<Row label={i18nMessages.t("lite:Appearance.fontSize")} htmlFor="font-size">
 					<input
 						id="font-size"
 						type="number"
@@ -203,9 +212,9 @@ export const Appearance: FC = () => {
 				</Row>
 
 				<Row
-					label="Font ligatures"
+					label={i18nMessages.t("lite:Appearance.fontLigatures")}
 					labelId="ligatures"
-					hint="Render combining glyphs such as → and !== if the font provides them."
+					hint={i18nMessages.t("lite:Appearance.renderCombiningGlyphsSuchAsAndIfThe")}
 				>
 					<Switch
 						aria-labelledby="ligatures"
@@ -215,9 +224,9 @@ export const Appearance: FC = () => {
 				</Row>
 
 				<Row
-					label="Highlight changes within a line"
+					label={i18nMessages.t("lite:Appearance.highlightChangesWithinALine")}
 					htmlFor="line-diff-type"
-					hint="How finely a changed line is compared against its counterpart."
+					hint={i18nMessages.t("lite:Appearance.howFinelyAChangedLineIsComparedAgainst")}
 				>
 					<select
 						id="line-diff-type"
@@ -228,14 +237,22 @@ export const Appearance: FC = () => {
 							})
 						}
 					>
-						<option value="word-alt">Words</option>
-						<option value="word">Words (whitespace-aware)</option>
-						<option value="char">Characters</option>
-						<option value="none">Off</option>
+						<option value="word-alt">
+							<I18nMessage value={{ key: "lite:Appearance.words" }} />
+						</option>
+						<option value="word">
+							<I18nMessage value={{ key: "lite:Appearance.wordsWhitespaceAware" }} />
+						</option>
+						<option value="char">
+							<I18nMessage value={{ key: "lite:Appearance.characters" }} />
+						</option>
+						<option value="none">
+							<I18nMessage value={{ key: "lite:Appearance.off" }} />
+						</option>
 					</select>
 				</Row>
 
-				<Row label="Tab size" htmlFor="tab-size">
+				<Row label={i18nMessages.t("lite:Appearance.tabSize")} htmlFor="tab-size">
 					<input
 						id="tab-size"
 						type="number"

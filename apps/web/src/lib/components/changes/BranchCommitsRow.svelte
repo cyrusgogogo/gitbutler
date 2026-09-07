@@ -1,6 +1,7 @@
 <script lang="ts">
 	import TableRow from "$lib/components/table/TableRow.svelte";
 	import { inject } from "@gitbutler/core/context";
+	import { useTranslations } from "@gitbutler/i18n/svelte";
 	import { getBranchReview } from "@gitbutler/shared/branches/branchesPreview.svelte";
 	import {
 		getPatchContributorsWithAvatars,
@@ -17,6 +18,7 @@
 	} from "@gitbutler/shared/routing/webRoutes.svelte";
 	import dayjs from "dayjs";
 	import relativeTime from "dayjs/plugin/relativeTime";
+	const i18nMessages = useTranslations();
 
 	dayjs.extend(relativeTime);
 
@@ -69,7 +71,11 @@
 			columns={[
 				{ key: "position", value: `${currentPosition}/${branch.patches?.length ?? 1}` },
 				{ key: "status", value: getPatchStatus(patch) },
-				{ key: "version", value: `v${patch.version}`, tooltip: "Patch Version" },
+				{
+					key: "version",
+					value: `v${patch.version}`,
+					tooltip: $i18nMessages.t("web:BranchCommitsRow.inline6bf3315db"),
+				},
 				{ key: "title", value: patch.title, tooltip: patch.title },
 				{
 					key: "changes",
@@ -81,7 +87,11 @@
 				{ key: "date", value: patch.updatedAt, tooltip: patch.updatedAt },
 				{ key: "avatars", value: contributors },
 				{ key: "reviewers", value: { approvers, rejectors } },
-				{ key: "comments", value: patch.commentCount, tooltip: "Comments" },
+				{
+					key: "comments",
+					value: patch.commentCount,
+					tooltip: $i18nMessages.t("web:BranchCommitsRow.comments"),
+				},
 			]}
 			isTopEntry={currentPosition === branch.patches?.length}
 			separatedBottom={currentPosition === 1}

@@ -1,3 +1,4 @@
+import { useTranslations } from "@gitbutler/i18n/react";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import type { FC } from "react";
 import { guiSettingsQueryOptions } from "#ui/api/queries.ts";
@@ -7,15 +8,16 @@ import { defaultSettings } from "#ui/settings.ts";
 import { Row, Section } from "./Section.tsx";
 
 export const Experimental: FC = () => {
+	const i18nMessages = useTranslations();
 	const { data: settings } = useSuspenseQuery(guiSettingsQueryOptions);
 	const { mutate: saveGUISettings } = useSaveGUISettings();
 
 	return (
 		<Section>
 			<Row
-				label="Comment annotations"
+				label={i18nMessages.t("lite:Experimental.commentAnnotations")}
 				labelId="comment-annotations"
-				hint="Add comments to diff lines and copy them as feedback for an agent."
+				hint={i18nMessages.t("lite:Experimental.addCommentsToDiffLinesAndCopyThem")}
 			>
 				<Switch
 					aria-labelledby="comment-annotations"
@@ -25,9 +27,9 @@ export const Experimental: FC = () => {
 			</Row>
 
 			<Row
-				label="Preview operations while dragging"
+				label={i18nMessages.t("lite:Experimental.previewOperationsWhileDragging")}
 				labelId="dry-run-operations"
-				hint="Dry-runs a drag-and-drop before it lands to show the outcome, such as conflicts. Slows dragging down."
+				hint={i18nMessages.t("lite:Experimental.dryRunsADragAndDropBeforeIt")}
 			>
 				<Switch
 					aria-labelledby="dry-run-operations"
@@ -37,9 +39,9 @@ export const Experimental: FC = () => {
 			</Row>
 
 			<Row
-				label="Minimap"
+				label={i18nMessages.t("lite:Experimental.minimap")}
 				labelId="minimap"
-				hint="A map of the diff down the right-hand edge, standing in for the scrollbar."
+				hint={i18nMessages.t("lite:Experimental.aMapOfTheDiffDownTheRight")}
 			>
 				<Switch
 					aria-labelledby="minimap"

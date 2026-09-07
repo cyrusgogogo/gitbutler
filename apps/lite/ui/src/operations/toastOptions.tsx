@@ -1,42 +1,43 @@
+import { message, type LocalizedText } from "@gitbutler/i18n";
+import { Message, useTranslations } from "@gitbutler/i18n/react";
+import { formatList } from "@gitbutler/i18n/format";
 import { decodeBytes } from "#ui/api/bytes.ts";
 import type { DiffSpec, RejectionReason, RejectedChange } from "@gitbutler/but-sdk";
 import type { ToastManagerAddOptions } from "@base-ui/react";
 import type { FC } from "react";
 
-const listFormatter = new Intl.ListFormat(undefined, {
-	style: "long",
-	type: "conjunction",
-});
-
-const formatPaths = (paths: Array<string>): string => {
-	if (paths.length === 0) return "";
-	if (paths.length <= 3) return listFormatter.format(paths);
-
-	return listFormatter.format([...paths.slice(0, 3), `${paths.length - 3} more`]);
+// oxlint-disable-next-line react/only-export-components -- This private renderer keeps queued toast lists in the current locale.
+const Paths: FC<{ paths: Array<string> }> = ({ paths }) => {
+	const translations = useTranslations();
+	const visible =
+		paths.length <= 3
+			? paths
+			: [...paths.slice(0, 3), translations.t("lite:paths.more", { count: paths.length - 3 })];
+	return formatList(translations.locale, visible);
 };
 
-const readableRejectionReason = (reason: RejectionReason): string => {
+const readableRejectionReason = (reason: RejectionReason): LocalizedText => {
 	switch (reason) {
 		case "cherryPickMergeConflict":
-			return "Cherry-pick merge conflict";
+			return message("lite:rejection.Cherrypickmergeconflict");
 		case "noEffectiveChanges":
-			return "No effective changes";
+			return message("lite:rejection.Noeffectivechanges");
 		case "workspaceMergeConflict":
-			return "Workspace merge conflict";
+			return message("lite:rejection.Workspacemergeconflict");
 		case "workspaceMergeConflictOfUnrelatedFile":
-			return "Workspace merge conflict in another file";
+			return message("lite:rejection.Workspacemergeconflictinanotherfile");
 		case "worktreeFileMissingForObjectConversion":
-			return "Worktree file missing for object conversion";
+			return message("lite:rejection.Worktreefilemissingforobjectconversion");
 		case "fileToLargeOrBinary":
-			return "File too large or binary";
+			return message("lite:rejection.Filetoolargeorbinary");
 		case "pathNotFoundInBaseTree":
-			return "Path not found in base tree";
+			return message("lite:rejection.Pathnotfoundinbasetree");
 		case "unsupportedDirectoryEntry":
-			return "Unsupported directory entry";
+			return message("lite:rejection.Unsupporteddirectoryentry");
 		case "unsupportedTreeEntry":
-			return "Unsupported tree entry";
+			return message("lite:rejection.Unsupportedtreeentry");
 		case "missingDiffSpecAssociation":
-			return "Missing diff spec association";
+			return message("lite:rejection.Missingdiffspecassociation");
 	}
 };
 
@@ -59,7 +60,10 @@ const RejectedChanges: FC<{
 				.toArray()
 				.map(([reason, paths]) => (
 					<li key={reason}>
-						<strong>{readableRejectionReason(reason)}:</strong> {formatPaths(paths)}
+						<strong>
+							<Message value={readableRejectionReason(reason)} />:
+						</strong>{" "}
+						<Paths paths={paths} />
 					</li>
 				))}
 		</ul>
@@ -73,7 +77,13 @@ export const rejectedChangesToastOptions = ({
 	newCommit?: string | null;
 	rejectedChanges: Array<RejectedChange>;
 }): ToastManagerAddOptions<never> => ({
-	title: newCommit != null ? "Some changes were not committed" : "Failed to create commit",
+	title: (
+		<Message
+			value={message(
+				newCommit != null ? "lite:rejection.someNotCommitted" : "lite:rejection.commitFailed",
+			)}
+		/>
+	),
 	description: <RejectedChanges rejectedChanges={rejectedChanges} />,
 	priority: "high",
 });
@@ -83,7 +93,7 @@ export const discardChangesToastOptions = ({
 }: {
 	rejectedChanges: Array<DiffSpec>;
 }): ToastManagerAddOptions<never> => ({
-	title: "Some changes were not discarded",
-	description: formatPaths(rejectedChanges.map((diffSpec) => decodeBytes(diffSpec.pathBytes))),
+	title: <Message value={message("lite:rejection.discardFailed")} />,
+	description: <Paths paths={rejectedChanges.map((diffSpec) => decodeBytes(diffSpec.pathBytes))} />,
 	priority: "high",
 });

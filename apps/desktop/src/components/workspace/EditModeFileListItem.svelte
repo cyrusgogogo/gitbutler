@@ -2,13 +2,13 @@
 	import { FileListItem } from "@gitbutler/ui";
 	import type { ConflictState } from "$lib/files/conflictEntryPresence";
 	import type { ConflictEntryPresence } from "@gitbutler/but-sdk";
+	import type { LocalizedText } from "@gitbutler/i18n";
 	import type { FileStatus } from "@gitbutler/ui/components/file/types";
-
 	type Props = {
 		filePath: string;
 		pathFirst: boolean;
 		fileStatus?: FileStatus;
-		conflictHint?: string;
+		conflictHint?: LocalizedText;
 		conflictEntryPresence?: ConflictEntryPresence;
 		conflictState: ConflictState;
 		manuallyResolved: boolean;

@@ -13,6 +13,8 @@ import type { UnlistenFn } from "@tauri-apps/api/event";
 
 export default class Web implements IBackend {
 	platformName = "web";
+	getSystemLocale = async () => navigator.language;
+	setMenuLocale = async () => {};
 	systemTheme = readable<string | null>(null);
 	invoke = webInvoke;
 	listen = webListen;

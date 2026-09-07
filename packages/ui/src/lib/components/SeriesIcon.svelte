@@ -2,6 +2,8 @@
 	import Icon from "$components/Icon.svelte";
 	import Tooltip from "$components/Tooltip.svelte";
 	import { type IconName } from "$lib/icons/names";
+	import { useTranslations } from "@gitbutler/i18n/svelte";
+	const i18nMessages = useTranslations();
 
 	interface Props {
 		single: boolean;
@@ -24,7 +26,11 @@
 	}
 </script>
 
-<Tooltip text={single ? "Single branch" : "Multiple branches"}>
+<Tooltip
+	text={single
+		? $i18nMessages.t("ui:SeriesIcon.inlinecc93f058a")
+		: $i18nMessages.t("ui:SeriesIcon.inline7947f9442")}
+>
 	<div class="stack-icon">
 		<Icon name={getIcon()} {size} />
 	</div>

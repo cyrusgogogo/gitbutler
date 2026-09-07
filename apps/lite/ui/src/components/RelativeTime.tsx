@@ -1,3 +1,4 @@
+import { useTranslations } from "@gitbutler/i18n/react";
 import { TooltipPopup } from "#ui/components/Tooltip.tsx";
 import { useNow } from "#ui/components/useNow.ts";
 import { formatAbsoluteTime, formatCompactRelativeTime, formatRelativeTime } from "#ui/time.ts";
@@ -20,6 +21,7 @@ export const RelativeTime: FC<{
 	compact?: boolean;
 	className?: string;
 }> = ({ timestamp, now, compact = false, className }) => {
+	const i18nMessages = useTranslations();
 	// Left unpinned, the text ages in place: nothing re-renders a settled
 	// conversation, so "2 minutes ago" would still say that an hour later.
 	const ticking = useNow(now === undefined ? TICK_MS : null);
@@ -28,12 +30,14 @@ export const RelativeTime: FC<{
 		<Tooltip.Root>
 			<Tooltip.Trigger render={<span className={className} />}>
 				{compact
-					? formatCompactRelativeTime(timestamp, now ?? ticking)
-					: formatRelativeTime(timestamp, now ?? ticking)}
+					? formatCompactRelativeTime(timestamp, now ?? ticking, i18nMessages.locale)
+					: formatRelativeTime(timestamp, now ?? ticking, i18nMessages.locale)}
 			</Tooltip.Trigger>
 			<Tooltip.Portal>
 				<Tooltip.Positioner sideOffset={4}>
-					<Tooltip.Popup render={<TooltipPopup />}>{formatAbsoluteTime(timestamp)}</Tooltip.Popup>
+					<Tooltip.Popup render={<TooltipPopup />}>
+						{formatAbsoluteTime(timestamp, i18nMessages.locale)}
+					</Tooltip.Popup>
 				</Tooltip.Positioner>
 			</Tooltip.Portal>
 		</Tooltip.Root>

@@ -1,7 +1,27 @@
 <script lang="ts">
 	import { dismissToast, toastStore } from "$lib/notifications/toasts";
+	import { useTranslations } from "@gitbutler/i18n/svelte";
 	import { InfoMessage, Markdown, TestId } from "@gitbutler/ui";
 	import { slide } from "svelte/transition";
+	import type { LocalizedText, MessageValues } from "@gitbutler/i18n";
+	const translations = useTranslations();
+	function escapeValues(values?: MessageValues): MessageValues {
+		return Object.fromEntries(
+			Object.entries(values ?? {}).map(([key, value]) => [
+				key,
+				typeof value === "string"
+					? value.replace(/([\\`*_{}[\]<>()#!|])/g, "\\$1")
+					: typeof value === "object"
+						? { key: value.key, values: escapeValues(value.values) }
+						: value,
+			]),
+		);
+	}
+	function markdown(value: LocalizedText, text: typeof $translations.text) {
+		return typeof value === "string"
+			? value
+			: text({ key: value.key, values: escapeValues(value.values) });
+	}
 </script>
 
 <div class="toast-controller hide-native-scrollbar">
@@ -13,20 +33,22 @@
 				testId={toast.testId ?? TestId.ToastInfoMessage}
 				style={toast.style ?? "info"}
 				error={toast.error}
-				secondaryLabel={toast.extraAction ? toast.extraAction.label : "Dismiss"}
+				secondaryLabel={toast.extraAction
+					? $translations.text(toast.extraAction.label)
+					: $translations.t("common:dismiss")}
 				secondaryTestId={toast.extraAction ? toast.extraAction.testId : undefined}
 				secondaryAction={toast.extraAction ? () => toast.extraAction?.onClick(dismiss) : dismiss}
-				tertiaryLabel={toast.extraAction ? "Dismiss" : undefined}
+				tertiaryLabel={toast.extraAction ? $translations.t("common:dismiss") : undefined}
 				tertiaryAction={toast.extraAction ? dismiss : undefined}
 				shadow
 			>
 				{#snippet title()}
-					{toast.title}
+					{toast.title ? $translations.text(toast.title) : ""}
 				{/snippet}
 
 				{#snippet content()}
 					{#if toast.message}
-						<Markdown content={toast.message} />
+						<Markdown content={markdown(toast.message, $translations.text)} />
 					{/if}
 				{/snippet}
 			</InfoMessage>

@@ -2,6 +2,9 @@
 	import Features from "$home/components/Features.svelte";
 	import SectionHeader from "$home/components/SectionHeader.svelte";
 	import contentJSON from "$home/data/content.json";
+	import { useTranslations } from "@gitbutler/i18n/svelte";
+	import I18nRichMessage from "@gitbutler/ui/i18n/RichMessage.svelte";
+	const i18nMessages = useTranslations();
 
 	const aiFetures = contentJSON["ai-features"];
 
@@ -20,8 +23,12 @@
 </script>
 
 <section class="ai-features">
+	{#snippet i18nHeadingSlot(content: import("svelte").Snippet)}<i>{@render content()}</i>{/snippet}
 	<SectionHeader>
-		<i>Orchestrate</i> your AI Tools ✨
+		<I18nRichMessage
+			value={{ key: "web:AiFeatures.orchestrateYourAITools" }}
+			components={{ slot1: i18nHeadingSlot }}
+		/>
 	</SectionHeader>
 	<div class="ai-features__video">
 		{#if isPlaying}
@@ -29,7 +36,7 @@
 				width="100%"
 				height="100%"
 				src={`${contentJSON["ai-fetures-demo"]}&autoplay=1`}
-				title="YouTube video player"
+				title={$i18nMessages.t("web:AiFeatures.youTubeVideoPlayer")}
 				frameborder="0"
 				allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
 				referrerpolicy="strict-origin-when-cross-origin"
@@ -43,7 +50,11 @@
 				onclick={playVideo}
 				onkeydown={handleKeydown}
 			>
-				<img src="images/ai-demo.png" alt="AI Features Demo" loading="lazy" />
+				<img
+					src="images/ai-demo.png"
+					alt={$i18nMessages.t("web:AiFeatures.aIFeaturesDemo")}
+					loading="lazy"
+				/>
 				<div class="play-button">
 					<svg
 						width="70"

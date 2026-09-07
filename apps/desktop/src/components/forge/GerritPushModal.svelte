@@ -11,9 +11,11 @@
 </script>
 
 <script lang="ts">
+	import { useTranslations } from "@gitbutler/i18n/svelte";
 	import { Button, Modal, Select, SelectItem, Textbox, TagInput, Toggle } from "@gitbutler/ui";
 	import { untrack } from "svelte";
 	import type { GerritPushFlag } from "$lib/stacks/stack";
+	const i18nMessages = useTranslations();
 
 	const {
 		projectId: _projectId,
@@ -96,15 +98,20 @@
 	}
 </script>
 
-<Modal bind:this={modal} title="Gerrit push options" width={400} onSubmit={() => handlePush()}>
+<Modal
+	bind:this={modal}
+	title={$i18nMessages.t("desktop:GerritPushModal.gerritPushOptions")}
+	width={400}
+	onSubmit={() => handlePush()}
+>
 	<div class="push-options">
 		<!-- Status Section -->
 		<Select
-			label="Status"
+			label={$i18nMessages.t("desktop:GerritPushModal.status")}
 			value={status}
 			options={[
-				{ label: "Ready for review", value: "ready" },
-				{ label: "Work in progress", value: "wip" },
+				{ label: $i18nMessages.t("desktop:GerritPushModal.inline8c2d9db10"), value: "ready" },
+				{ label: $i18nMessages.t("desktop:GerritPushModal.inlinee47daa7a6"), value: "wip" },
 			]}
 			onselect={(value) => {
 				status = value as "ready" | "wip";
@@ -119,16 +126,16 @@
 
 		<!-- Topic Section -->
 		<Textbox
-			label="Topic"
+			label={$i18nMessages.t("desktop:GerritPushModal.topic")}
 			bind:value={topicValue}
 			oninput={handleTopicInput}
-			placeholder="Enter topic name"
+			placeholder={$i18nMessages.t("desktop:GerritPushModal.enterTopicName")}
 			wide
 		/>
 
 		<!-- Tags Section -->
 		<TagInput
-			label="Tags"
+			label={$i18nMessages.t("desktop:GerritPushModal.tags")}
 			bind:tags
 			bind:value={tagInputValue}
 			helperText="Add tags separated by spaces or commas"
@@ -139,11 +146,17 @@
 	{#snippet controls(close)}
 		<label class="toggle-wrapper">
 			<Toggle id="private-toggle" bind:checked={isPrivate} />
-			<span class="text-13 text-body clr-text-2">Mark as private 🔒</span>
+			<span class="text-13 text-body clr-text-2"
+				>{$i18nMessages.t("desktop:GerritPushModal.markAsPrivate")}</span
+			>
 		</label>
 		<div class="flex-1 flex justify-end gap-8">
-			<Button kind="outline" onclick={close}>Cancel</Button>
-			<Button style="pop" type="submit" disabled={!canPush}>Push</Button>
+			<Button kind="outline" onclick={close}
+				>{$i18nMessages.t("desktop:GerritPushModal.cancel")}</Button
+			>
+			<Button style="pop" type="submit" disabled={!canPush}
+				>{$i18nMessages.t("desktop:GerritPushModal.push")}</Button
+			>
 		</div>
 	{/snippet}
 </Modal>

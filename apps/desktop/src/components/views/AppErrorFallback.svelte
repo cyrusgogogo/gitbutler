@@ -4,7 +4,9 @@
 	import IllustrationSplitLayout from "$components/shared/IllustrationSplitLayout.svelte";
 	import loadErrorSvg from "$lib/assets/illustrations/load-error.svg?raw";
 	import { parseQueryError } from "$lib/error/error";
+	import { useTranslations } from "@gitbutler/i18n/svelte";
 	import { Button, InfoMessage } from "@gitbutler/ui";
+	const i18nMessages = useTranslations();
 
 	type Props = {
 		projectId: string;
@@ -22,9 +24,9 @@
 
 	function apologiy(): string {
 		if (isMonday()) {
-			return "Sorry about that. Mondays can be tough!";
+			return $i18nMessages.t("desktop:AppErrorFallback.detaila7a599712");
 		}
-		return "We apologize for the inconvenience.";
+		return $i18nMessages.t("desktop:AppErrorFallback.detail44331ca18");
 	}
 </script>
 
@@ -34,7 +36,9 @@
 	<IllustrationSplitLayout img={loadErrorSvg}>
 		<div class="container">
 			<div class="text-content">
-				<h2 class="title-text text-18 text-body text-bold">Something went wrong</h2>
+				<h2 class="title-text text-18 text-body text-bold">
+					{$i18nMessages.t("desktop:AppErrorFallback.somethingWentWrong")}
+				</h2>
 
 				<p class="description-text text-13 text-body">
 					{apologiy()}
@@ -46,12 +50,14 @@
 					{parsedError.name}
 				{/snippet}
 				{#snippet content()}
-					An asynchronous operation failed.
+					{$i18nMessages.t("desktop:AppErrorFallback.anAsynchronousOperationFailed")}
 				{/snippet}
 			</InfoMessage>
 
 			<div class="button-container">
-				<Button type="button" style="pop" onclick={async () => await goto("/")}>Go back</Button>
+				<Button type="button" style="pop" onclick={async () => await goto("/")}
+					>{$i18nMessages.t("desktop:AppErrorFallback.goBack")}</Button
+				>
 			</div>
 		</div>
 	</IllustrationSplitLayout>

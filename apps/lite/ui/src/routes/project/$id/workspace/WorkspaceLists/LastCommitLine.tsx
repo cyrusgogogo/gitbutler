@@ -1,3 +1,5 @@
+import { useTranslations } from "@gitbutler/i18n/react";
+import { Message as I18nMessage } from "@gitbutler/i18n/react";
 import { headInfoQueryOptions } from "#ui/api/queries.ts";
 import { classes } from "#ui/components/classes.ts";
 import { Icon } from "#ui/components/Icon.tsx";
@@ -56,6 +58,7 @@ const selectLastCommit = (headInfo: RefInfo): LastCommit | null => {
  * derivation rides the query's `select` rather than running here.
  */
 export const LastCommitLine: FC<{ projectId: string }> = ({ projectId }) => {
+	const i18nMessages = useTranslations();
 	const { data: lastCommit } = useQuery({
 		...headInfoQueryOptions(projectId),
 		select: selectLastCommit,
@@ -73,18 +76,32 @@ export const LastCommitLine: FC<{ projectId: string }> = ({ projectId }) => {
 	// rather than the repository's: a clone with years of history lands here
 	// too, and "No commits yet" on its own would be saying something false
 	// about it.
-	if (lastCommit === null)
-		return <p className={classes("text-13", styles.line)}>No commits in this workspace yet</p>;
+	if (lastCommit === null) {
+		return (
+			<p className={classes("text-13", styles.line)}>
+				<I18nMessage value={{ key: "lite:LastCommitLine.noCommitsInThisWorkspaceYet" }} />
+			</p>
+		);
+	}
 
-	const age = `${formatCompactRelativeTime(lastCommit.committedAt, now)} ago`;
+	const age = i18nMessages.t("lite:time.ago", {
+		duration: formatCompactRelativeTime(lastCommit.committedAt, now, i18nMessages.locale),
+	});
 	const spoken =
 		lastCommit.branch === null
-			? `Last commit ${age}`
-			: `Last commit ${age} on ${lastCommit.branch}`;
+			? i18nMessages.t("lite:LastCommitLine.lastCommitValue", { age })
+			: i18nMessages.t("lite:LastCommitLine.lastCommitOnBranch", {
+					age,
+					branch: lastCommit.branch,
+				});
 
 	return (
 		<p aria-label={spoken} className={classes("text-13", styles.line)}>
-			<span className={styles.age}>Last commit {age}</span>
+			<span className={styles.age}>
+				<I18nMessage
+					value={{ key: "lite:LastCommitLine.lastCommitValue", values: { age: String(age) } }}
+				/>
+			</span>
 
 			{lastCommit.branch !== null && (
 				<>

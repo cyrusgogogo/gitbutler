@@ -10,7 +10,9 @@
 	import BranchNameTextbox from "$components/branch/BranchNameTextbox.svelte";
 	import { STACK_SERVICE } from "$lib/stacks/stackService.svelte";
 	import { inject } from "@gitbutler/core/context";
+	import { useTranslations } from "@gitbutler/i18n/svelte";
 	import { Button, Modal, TestId } from "@gitbutler/ui";
+	const i18nMessages = useTranslations();
 
 	const { projectId, branchReference }: AddDependentBranchModalProps = $props();
 
@@ -50,12 +52,12 @@
 	testId={TestId.BranchHeaderAddDependanttBranchModal}
 	bind:this={modal}
 	width="small"
-	title="Add dependent branch"
+	title={$i18nMessages.t("desktop:AddDependentBranchModal.addDependentBranch")}
 	onSubmit={handleAddDependentBranch}
 >
 	<div class="content-wrap">
 		<BranchNameTextbox
-			placeholder="Branch name"
+			placeholder={$i18nMessages.t("desktop:AddDependentBranchModal.branchName")}
 			bind:value={branchName}
 			autofocus
 			onnormalizedvalue={(value) => (normalizedRefName = value)}
@@ -63,13 +65,16 @@
 		/>
 	</div>
 	{#snippet controls(close)}
-		<Button kind="outline" type="reset" onclick={close}>Cancel</Button>
+		<Button kind="outline" type="reset" onclick={close}
+			>{$i18nMessages.t("desktop:AddDependentBranchModal.cancel")}</Button
+		>
 		<Button
 			testId={TestId.BranchHeaderAddDependanttBranchModal_ActionButton}
 			style="pop"
 			type="submit"
 			disabled={!isBranchNameValid}
-			loading={branchCreation.current.isLoading}>Add branch</Button
+			loading={branchCreation.current.isLoading}
+			>{$i18nMessages.t("desktop:AddDependentBranchModal.addBranch")}</Button
 		>
 	{/snippet}
 </Modal>

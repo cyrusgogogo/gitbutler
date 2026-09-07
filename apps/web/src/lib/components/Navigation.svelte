@@ -1,7 +1,7 @@
 <script lang="ts">
 	import GitbutlerLogoLink from "$lib/components/GitbutlerLogoLink.svelte";
 	import HeaderAuthSection from "$lib/components/HeaderAuthSection.svelte";
-
+	import LanguageSetting from "$lib/components/LanguageSetting.svelte";
 	interface NavigationProps {
 		markOnly?: boolean;
 		breadcrumbs?: { label: string; href: string }[];
@@ -43,6 +43,7 @@
 
 		<HeaderAuthSection />
 	{/if}
+	<LanguageSetting />
 </nav>
 
 <style lang="postcss">

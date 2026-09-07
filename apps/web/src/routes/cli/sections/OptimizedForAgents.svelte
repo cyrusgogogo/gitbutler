@@ -3,8 +3,8 @@
 	import AiFeaturesJson from "../ai-features.json";
 	import Features from "$home/components/Features.svelte";
 	import SectionHeader from "$home/components/SectionHeader.svelte";
+	import I18nRichMessage from "@gitbutler/ui/i18n/RichMessage.svelte";
 	import type { ScriptStep } from "./terminal-types";
-
 	const script: ScriptStep[] = [
 		{
 			type: "input",
@@ -46,13 +46,19 @@
 </script>
 
 <section class="for-agents">
+	{#snippet i18nHeadingSlot(content: import("svelte").Snippet)}<i>{@render content()}</i>{/snippet}
 	<SectionHeader>
-		Built <i>for</i> Coding Agents
+		<I18nRichMessage
+			value={{ key: "web:OptimizedForAgents.builtForCodingAgents" }}
+			components={{ slot1: i18nHeadingSlot }}
+		/>
 	</SectionHeader>
 	<p class="text-16 text-body for-agents__description">
-		GitButler was designed from the ground up to work seamlessly with AI coding agents.
-		<br />
-		Predictable commands, structured output, and automation-friendly workflows.
+		{#snippet i18nSlot2()}<br />{/snippet}
+		<I18nRichMessage
+			value={{ key: "web:OptimizedForAgents.gitButlerWasDesignedFromTheGroundUpTo" }}
+			components={{ slot2: i18nSlot2 }}
+		/>
 	</p>
 	<Features items={AiFeaturesJson} noMargin />
 	<div class="for-agents__terminal">

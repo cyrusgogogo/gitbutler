@@ -2,10 +2,14 @@
 	import Footer from "$lib/components/marketing/Footer.svelte";
 	import Header from "$lib/components/marketing/Header.svelte";
 	import ReleaseCard from "$lib/components/marketing/ReleaseCard.svelte";
+	import { formatDate as formatLocaleDate } from "@gitbutler/i18n/format";
+	import { useTranslations } from "@gitbutler/i18n/svelte";
+	import I18nRichMessage from "@gitbutler/ui/i18n/RichMessage.svelte";
 	import { untrack } from "svelte";
 	import Markdown from "svelte-exmarkdown";
 	import type { Release } from "$lib/types/releases";
 	import type { LatestReleaseBuilds } from "$lib/utils/releaseUtils";
+	const i18nMessages = useTranslations();
 
 	interface Props {
 		data: {
@@ -24,7 +28,7 @@
 </script>
 
 <svelte:head>
-	<title>GitButler | Downloads</title>
+	<title>{$i18nMessages.t("web:page.gitButlerDownloads")}</title>
 </svelte:head>
 
 <section class="latest-release-wrapper">
@@ -37,18 +41,36 @@
 			<div class="latest-release__header-labels">
 				<h1>
 					<!-- {latestRelease.version} -->
-					DOWNLOAD <i>the</i> app
+					{#snippet i18nSlot1(content: import("svelte").Snippet)}<i>{@render content()}</i
+						>{/snippet}
+					<I18nRichMessage
+						value={{ key: "web:page.dOWNLOADTheApp" }}
+						components={{ slot1: i18nSlot1 }}
+					/>
 				</h1>
 				<div class="latest-release__header-subtitle">
-					<span>{latestRelease.version} Latest release</span>
-					<span> • </span>
-					<span
-						>{new Date(latestRelease.released_at).toLocaleDateString("en-GB", {
-							day: "numeric",
-							month: "long",
-							year: "numeric",
-						})}</span
-					>
+					{#snippet i18nSlot2(content: import("svelte").Snippet)}<span>{@render content()}</span
+						>{/snippet}
+					{#snippet i18nSlot3(content: import("svelte").Snippet)}<span>{@render content()}</span
+						>{/snippet}
+					{#snippet i18nSlot4(content: import("svelte").Snippet)}<span>{@render content()}</span
+						>{/snippet}
+					<I18nRichMessage
+						value={{
+							key: "web:page.valueLatestReleaseValue",
+							values: {
+								version: String(latestRelease.version),
+								value: String(
+									formatLocaleDate($i18nMessages.locale, new Date(latestRelease.released_at), {
+										day: "numeric",
+										month: "long",
+										year: "numeric",
+									}),
+								),
+							},
+						}}
+						components={{ slot2: i18nSlot2, slot3: i18nSlot3, slot4: i18nSlot4 }}
+					/>
 				</div>
 			</div>
 		</div>
@@ -72,15 +94,21 @@
 				</svg>
 
 				<div class="stack-v gap-6">
-					<a
-						class="download-card-title download-card-link"
-						href={latestReleaseBuilds.darwin_aarch64?.url ?? ""}>Apple Silicon</a
-					>
-					<span class="download-card-subtile"
-						>or <a class="download-card-link" href={latestReleaseBuilds.darwin_x86_64?.url ?? ""}
-							>intel-based</a
-						></span
-					>
+					{#snippet i18nSlot5(content: import("svelte").Snippet)}<a
+							class="download-card-title download-card-link"
+							href={latestReleaseBuilds.darwin_aarch64?.url ?? ""}>{@render content()}</a
+						>{/snippet}
+					{#snippet i18nSlot6(content: import("svelte").Snippet)}<span class="download-card-subtile"
+							>{@render content()}</span
+						>{/snippet}
+					{#snippet i18nSlot7(content: import("svelte").Snippet)}<a
+							class="download-card-link"
+							href={latestReleaseBuilds.darwin_x86_64?.url ?? ""}>{@render content()}</a
+						>{/snippet}
+					<I18nRichMessage
+						value={{ key: "web:page.appleSiliconOrIntelBased" }}
+						components={{ slot5: i18nSlot5, slot6: i18nSlot6, slot7: i18nSlot7 }}
+					/>
 				</div>
 			</div>
 
@@ -100,33 +128,44 @@
 
 					<select class="linux-arch-select" bind:value={linuxArch}>
 						<option value="x86-64">x86-64</option>
-						<option value="ARM64">ARM64</option>
+						<option value="ARM64">{$i18nMessages.t("web:page.aRM64")}</option>
 					</select>
 				</div>
 
 				<div class="stack-v gap-6">
 					<div class="flex gap-16">
-						<a
-							class="download-card-title download-card-link"
-							href={linuxArch === "x86-64"
-								? (latestReleaseBuilds.linux_deb_x86_64?.url ?? "")
-								: (latestReleaseBuilds.linux_deb_aarch64?.url ?? "")}>.DEB</a
-						>
-						<a
-							class="download-card-title download-card-link"
-							href={linuxArch === "x86-64"
-								? (latestReleaseBuilds.linux_rpm_x86_64?.url ?? "")
-								: (latestReleaseBuilds.linux_rpm_aarch64?.url ?? "")}>.RPM</a
-						>
+						{#snippet i18nSlot11(content: import("svelte").Snippet)}<a
+								class="download-card-title download-card-link"
+								href={linuxArch === "x86-64"
+									? (latestReleaseBuilds.linux_deb_x86_64?.url ?? "")
+									: (latestReleaseBuilds.linux_deb_aarch64?.url ?? "")}>{@render content()}</a
+							>{/snippet}
+						{#snippet i18nSlot12(content: import("svelte").Snippet)}<a
+								class="download-card-title download-card-link"
+								href={linuxArch === "x86-64"
+									? (latestReleaseBuilds.linux_rpm_x86_64?.url ?? "")
+									: (latestReleaseBuilds.linux_rpm_aarch64?.url ?? "")}>{@render content()}</a
+							>{/snippet}
+						<I18nRichMessage
+							value={{ key: "web:page.dEBRPM" }}
+							components={{ slot11: i18nSlot11, slot12: i18nSlot12 }}
+						/>
 					</div>
 
-					<span class="download-card-small-subtile"
-						>Not working? Have a look at <a
+					{#snippet i18nSlot8(content: import("svelte").Snippet)}<span
+							class="download-card-small-subtile">{@render content()}</span
+						>{/snippet}
+					{#snippet i18nSlot9(content: import("svelte").Snippet)}<a
 							class="download-card-link"
 							href="https://github.com/gitbutlerapp/gitbutler/blob/master/LINUX.md"
-							target="_blank"><i>our docs</i></a
-						></span
-					>
+							target="_blank">{@render content()}</a
+						>{/snippet}
+					{#snippet i18nSlot10(content: import("svelte").Snippet)}<i>{@render content()}</i
+						>{/snippet}
+					<I18nRichMessage
+						value={{ key: "web:page.notWorkingHaveALookAtOurDocs" }}
+						components={{ slot8: i18nSlot8, slot9: i18nSlot9, slot10: i18nSlot10 }}
+					/>
 
 					{#if linuxArch === "x86-64" ? latestReleaseBuilds.linux_cli_x86_64?.url : latestReleaseBuilds.linux_cli_aarch64?.url}
 						<div class="download-card-cli-link">
@@ -140,7 +179,8 @@
 							<a
 								href={linuxArch === "x86-64"
 									? (latestReleaseBuilds.linux_cli_x86_64?.url ?? "")
-									: (latestReleaseBuilds.linux_cli_aarch64?.url ?? "")}>Download CLI binary</a
+									: (latestReleaseBuilds.linux_cli_aarch64?.url ?? "")}
+								>{$i18nMessages.t("web:page.downloadCLIBinary")}</a
 							>
 						</div>
 					{/if}
@@ -164,7 +204,8 @@
 				<div class="stack-v gap-8">
 					<a
 						class="download-card-title download-card-link"
-						href={latestReleaseBuilds.windows_x86_64?.url ?? ""}>Windows (MSI)</a
+						href={latestReleaseBuilds.windows_x86_64?.url ?? ""}
+						>{$i18nMessages.t("web:page.windowsMSI")}</a
 					>
 				</div>
 			</div>
@@ -178,9 +219,14 @@
 
 		<div class="nightly-info">
 			<p class="text-14 text-body clr-text-2">
-				Experience GitButler’s newest features before anyone else. ⋆˚₊
-				<a href="/nightly" class="nightly-info__download-link"> Get Nightly </a>
-				☽˚.⋆
+				{#snippet i18nSlot15(content: import("svelte").Snippet)}<a
+						href="/nightly"
+						class="nightly-info__download-link">{@render content()}</a
+					>{/snippet}
+				<I18nRichMessage
+					value={{ key: "web:page.experienceGitButlerSNewestFeaturesBeforeAnyoneElse" }}
+					components={{ slot15: i18nSlot15 }}
+				/>
 			</p>
 		</div>
 	</div>
@@ -188,7 +234,11 @@
 
 <section class="releases">
 	<h2>
-		Other <i>releases:</i>
+		{#snippet i18nSlot16(content: import("svelte").Snippet)}<i>{@render content()}</i>{/snippet}
+		<I18nRichMessage
+			value={{ key: "web:page.otherReleases" }}
+			components={{ slot16: i18nSlot16 }}
+		/>
 	</h2>
 
 	{#each data.releases.filter((release) => release.version !== latestRelease.version) as release (release.version)}

@@ -17,6 +17,7 @@
 	import { UNCOMMITTED_SERVICE } from "$lib/selection/uncommittedService.svelte";
 	import { UI_STATE } from "$lib/state/uiState.svelte";
 	import { inject } from "@gitbutler/core/context";
+	import { useTranslations } from "@gitbutler/i18n/svelte";
 	import { isImageFile } from "@gitbutler/shared/utils/file";
 	import { EmptyStatePlaceholder, generateHunkId, HunkDiff, TestId } from "@gitbutler/ui";
 	import { DRAG_STATE_SERVICE } from "@gitbutler/ui/drag/dragStateService.svelte";
@@ -27,6 +28,7 @@
 	import type { DiffHunk } from "@gitbutler/but-sdk";
 	import type { TreeChange } from "@gitbutler/but-sdk";
 	import type { LineId } from "@gitbutler/ui/utils/diffParsing";
+	const i18nMessages = useTranslations();
 
 	const LARGE_DIFF_THRESHOLD = 1000;
 	const INITIAL_HUNKS = 5;
@@ -203,7 +205,7 @@
 			<div class="hunk-placehoder">
 				<EmptyStatePlaceholder image={binarySvg} gap={12} topBottomPadding={34}>
 					{#snippet caption()}
-						Was not able to load the diff
+						{$i18nMessages.t("desktop:UnifiedDiffView.wasNotAbleToLoadTheDiff")}
 					{/snippet}
 				</EmptyStatePlaceholder>
 			</div>
@@ -323,7 +325,7 @@
 						<div class="hunk-placehoder">
 							<EmptyStatePlaceholder image={emptyFileSvg} gap={12} topBottomPadding={34}>
 								{#snippet caption()}
-									It’s empty ¯\_(ツ゚)_/¯
+									{$i18nMessages.t("desktop:UnifiedDiffView.itSEmpty")}
 								{/snippet}
 							</EmptyStatePlaceholder>
 						</div>
@@ -331,7 +333,7 @@
 						<div class="hunk-placehoder">
 							<EmptyStatePlaceholder gap={12} topBottomPadding={34}>
 								{#snippet caption()}
-									Loading diff…
+									{$i18nMessages.t("desktop:UnifiedDiffView.loadingDiff")}
 								{/snippet}
 							</EmptyStatePlaceholder>
 						</div>
@@ -342,7 +344,7 @@
 			<div class="hunk-placehoder">
 				<EmptyStatePlaceholder image={tooLargeSvg} gap={12} topBottomPadding={34}>
 					{#snippet caption()}
-						Too large to display
+						{$i18nMessages.t("desktop:UnifiedDiffView.tooLargeToDisplay")}
 					{/snippet}
 				</EmptyStatePlaceholder>
 			</div>
@@ -353,7 +355,7 @@
 				<div class="hunk-placehoder">
 					<EmptyStatePlaceholder image={binarySvg} gap={12} topBottomPadding={34}>
 						{#snippet caption()}
-							Binary! Not for human eyes
+							{$i18nMessages.t("desktop:UnifiedDiffView.binaryNotForHumanEyes")}
 						{/snippet}
 					</EmptyStatePlaceholder>
 				</div>

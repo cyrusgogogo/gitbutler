@@ -1,4 +1,10 @@
-import { ApiError, toSerializable, type Loadable, type LoadableData } from "$lib/network/types";
+import {
+	ApiError,
+	toSerializable,
+	type Loadable,
+	type LoadableData,
+	type SerializableError,
+} from "$lib/network/types";
 import type { EntityId, EntityAdapter, EntityState } from "@reduxjs/toolkit";
 
 export function isFound<T>(loadable?: Loadable<T>): loadable is {
@@ -8,7 +14,9 @@ export function isFound<T>(loadable?: Loadable<T>): loadable is {
 	return loadable?.status === "found";
 }
 
-export function isError<T>(loadable?: Loadable<T>): loadable is { status: "error"; error: Error } {
+export function isError<T>(
+	loadable?: Loadable<T>,
+): loadable is { status: "error"; error: SerializableError } {
 	return loadable?.status === "error";
 }
 

@@ -1,6 +1,7 @@
 import { getUserErrorCode } from "$lib/backend/ipc";
 import { invalidatesList, providesItem, providesList, ReduxTag } from "$lib/state/tags";
 import { InjectionToken } from "@gitbutler/core/context";
+import { message as i18nMessage } from "@gitbutler/i18n";
 import type { SecretsService } from "$lib/secrets/secretsService";
 import type { BackendApi } from "$lib/state/backendApi";
 import type { ReactiveQuery } from "$lib/state/butlerModule";
@@ -9,17 +10,18 @@ import type {
 	GitlabAuthStatusResponse,
 	GitlabAuthenticatedUserSensitive,
 } from "@gitbutler/but-sdk";
+import type { LocalizedText } from "@gitbutler/i18n";
 
 export const GITLAB_USER_SERVICE = new InjectionToken<GitLabUserService>("GitLabUserService");
 
-export function gitLabEnterprisePatError(error: unknown): string {
+export function gitLabEnterprisePatError(error: unknown): LocalizedText {
 	switch (getUserErrorCode(error)) {
 		case "GitLabUnauthorized":
-			return "The token was not accepted. Check that it is correct, active, and issued by this GitLab host.";
+			return i18nMessage("desktop:detail.65c9725935");
 		case "GitLabForbidden":
-			return "GitLab refused access. Check the token scopes and account permissions, or ask your administrator about instance policies.";
+			return i18nMessage("desktop:detail.b15f52a145");
 		default:
-			return "Invalid token or host";
+			return i18nMessage("desktop:detail.a9fa8428e8");
 	}
 }
 

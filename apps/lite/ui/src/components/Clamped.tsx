@@ -1,3 +1,4 @@
+import { Message as I18nMessage } from "@gitbutler/i18n/react";
 import { classes } from "#ui/components/classes.ts";
 import type { CSSProperties, FC, ReactNode } from "react";
 import { useLayoutEffect, useRef, useState } from "react";
@@ -68,7 +69,7 @@ export const Clamped: FC<{
 						onClick={() => setExpanded(true)}
 						type="button"
 					>
-						Show more
+						<I18nMessage value={{ key: "lite:Clamped.showMore" }} />
 					</button>
 				)}
 			</div>
@@ -78,7 +79,7 @@ export const Clamped: FC<{
 					onClick={() => setExpanded(false)}
 					type="button"
 				>
-					Show less
+					<I18nMessage value={{ key: "lite:Clamped.showLess" }} />
 				</button>
 			)}
 		</>

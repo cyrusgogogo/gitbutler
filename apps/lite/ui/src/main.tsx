@@ -1,3 +1,6 @@
+import { message as i18nMessage } from "@gitbutler/i18n";
+import { createElement as createI18nElement } from "react";
+import { Message as I18nMessage } from "@gitbutler/i18n/react";
 import { MutationCache, QueryCache, QueryClient, focusManager } from "@tanstack/react-query";
 import { App } from "#ui/App.tsx";
 import { invalidateDeclared } from "#ui/api/tags.ts";
@@ -8,6 +11,9 @@ import { createRoot } from "react-dom/client";
 import "./global.css";
 import { Toast } from "@base-ui/react";
 import { errorMessageForToast } from "#ui/errors.ts";
+import { initializeLanguage } from "#ui/i18n.ts";
+import { guiSettingsQueryOptions } from "#ui/api/queries.ts";
+import { Message } from "@gitbutler/i18n/react";
 
 const toastManager = Toast.createToastManager();
 
@@ -46,8 +52,8 @@ const queryClient: QueryClient = new QueryClient({
 			if (title === undefined) return;
 			toastManager.add({
 				type: "error",
-				title,
-				description: errorMessageForToast(error),
+				title: <Message value={title} />,
+				description: createI18nElement(I18nMessage, { value: errorMessageForToast(error) }),
 				priority: "high",
 			});
 		},
@@ -87,10 +93,13 @@ const root = createRoot(rootElement, {
 	onUncaughtError: (error: unknown) => {
 		toastManager.add({
 			type: "error",
-			title: "Error",
-			description: errorMessageForToast(error),
+			title: createI18nElement(I18nMessage, { value: i18nMessage("lite:main.error") }),
+			description: createI18nElement(I18nMessage, { value: errorMessageForToast(error) }),
 			priority: "high",
 		});
 	},
 });
-root.render(<App queryClient={queryClient} toastManager={toastManager} router={router} />);
+void queryClient.ensureQueryData(guiSettingsQueryOptions).then(async (settings) => {
+	await initializeLanguage(settings);
+	root.render(<App queryClient={queryClient} toastManager={toastManager} router={router} />);
+});

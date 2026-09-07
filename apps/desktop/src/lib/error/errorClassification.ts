@@ -4,12 +4,14 @@ import {
 } from "$lib/config/config";
 import { SilentError } from "$lib/error/error";
 import { parseError } from "$lib/error/parser";
+import { LocalizedError, message as i18nMessage } from "@gitbutler/i18n";
 import type { Code } from "@gitbutler/but-sdk";
+import type { LocalizedText } from "@gitbutler/i18n";
 
 export type Severity = "error" | "warning" | "silent";
 
 export type ActionHint = {
-	label: string;
+	label: LocalizedText;
 	/** `dismiss` closes the toast the action was clicked on. */
 	onClick: (dismiss: () => void) => void;
 };
@@ -32,28 +34,28 @@ export type Classification = {
 	 * all arrive named `API error: (<command>)`, so a code that identifies
 	 * a specific condition needs this to surface under a stable title.
 	 */
-	title?: string;
+	title?: LocalizedText;
 	/**
 	 * A persistent environment state rather than a one-off defect —
 	 * repeated occurrences carry no new information, so telemetry
 	 * captures it once per session instead of once per occurrence.
 	 */
 	terminal?: boolean;
-	userMessage?: string;
+	userMessage?: LocalizedText;
 	actionHint?: ActionHint;
 };
 
 export type ClassifiedError = {
-	title: string;
+	title: LocalizedText;
 	message: string;
 	code?: Code;
 	severity: Severity;
 	terminal?: boolean;
-	userMessage?: string;
+	userMessage?: LocalizedText;
 	actionHint?: ActionHint;
 };
 
-const GH_ORG_AUTH_ERROR = "GitHub Organizations OAuth Error";
+const GH_ORG_AUTH_ERROR = i18nMessage("desktop:errorClassification.gitHubOrganizationsOAuthError");
 
 /**
  * A GitHub organization has blocked the GitButler OAuth app. Terminal
@@ -70,15 +72,15 @@ const GH_ORG_AUTH_CLASSIFICATION: Classification = {
 	terminal: true,
 	title: GH_ORG_AUTH_ERROR,
 	actionHint: {
-		label: "Don't show this again",
+		label: i18nMessage("desktop:errorClassification.donTShowThisAgain"),
 		onClick: (dismiss) => {
 			persistSwallowGitHubOrgAuthErrors(true);
 			dismiss();
 		},
 	},
-	userMessage: `
-A GitHub organization has restricted access for the GitButler OAuth app. Ask an organization owner to approve the app, or connect GitHub with a personal access token instead — see the [GitHub integration docs](https://docs.gitbutler.com/features/forge-integration/github-integration?utm_source=gitbutler-app&utm_medium=error-toast&utm_campaign=org-oauth-restriction#connect-a-github-account).
-	`,
+	userMessage: i18nMessage(
+		"desktop:errorClassification.aGitHubOrganizationHasRestrictedAccessForThe",
+	),
 };
 
 /**
@@ -90,22 +92,23 @@ A GitHub organization has restricted access for the GitButler OAuth app. Ask an 
 const GITHUB_DEVICE_OAUTH_CLASSIFICATIONS = {
 	GitHubDeviceCodeExpired: {
 		severity: "warning",
-		userMessage:
-			"The GitHub device code has expired. Start the authorization again to get a new code.",
+		userMessage: i18nMessage("desktop:errorClassification.theGitHubDeviceCodeHasExpiredStartThe"),
 	},
 	GitHubDeviceAccessDenied: {
 		severity: "warning",
-		userMessage:
-			"The authorization request was denied on GitHub. Start again and approve GitButler on the device activation page.",
+		userMessage: i18nMessage(
+			"desktop:errorClassification.theAuthorizationRequestWasDeniedOnGitHubStart",
+		),
 	},
 	GitHubDeviceFlowRejected: {
 		severity: "error",
-		userMessage:
-			"GitHub rejected the device authorization request. Start again, or connect with a personal access token instead.",
+		userMessage: i18nMessage(
+			"desktop:errorClassification.gitHubRejectedTheDeviceAuthorizationRequestStartAgain",
+		),
 	},
-} satisfies Partial<Record<Code, Classification & { userMessage: string }>>;
+} satisfies Partial<Record<Code, Classification & { userMessage: LocalizedText }>>;
 
-export type GitHubDeviceOAuthFailure = { message: string; code?: Code; severity: Severity };
+export type GitHubDeviceOAuthFailure = { message: LocalizedText; code?: Code; severity: Severity };
 
 /**
  * A fixed, safe description of a failed device-OAuth step: the static guidance
@@ -126,7 +129,10 @@ export function classifyGitHubDeviceOAuthFailure(error: unknown): GitHubDeviceOA
 	} catch {
 		// Fall through to the generic label.
 	}
-	return { message: "GitHub authentication failed", severity: "error" };
+	return {
+		message: i18nMessage("desktop:errorClassification.gitHubAuthenticationFailed"),
+		severity: "error",
+	};
 }
 
 /**
@@ -156,7 +162,9 @@ const CLASSIFICATIONS: Partial<Record<Code, Classification>> = {
 	 */
 	ProjectGitAuth: {
 		severity: "warning",
-		userMessage: "Authentication failed. Check that your git credentials are configured correctly.",
+		userMessage: i18nMessage(
+			"desktop:errorClassification.authenticationFailedCheckThatYourGitCredentialsAre",
+		),
 	},
 	/**
 	 * Surfaced when there's no default target — the workspace router
@@ -168,51 +176,42 @@ const CLASSIFICATIONS: Partial<Record<Code, Classification>> = {
 	},
 	CommitSigningFailed: {
 		severity: "error",
-		userMessage: `
-Commit signing failed and has now been disabled. You can configure commit signing in the project settings.
-
-Please check our [documentation](https://docs.gitbutler.com/features/virtual-branches/signing-commits) on setting up commit signing and verification.
-		`,
+		userMessage: i18nMessage(
+			"desktop:errorClassification.commitSigningFailedAndHasNowBeenDisabled",
+		),
 	},
 	RepoOwnership: {
 		severity: "error",
-		userMessage: `
-The repository ownership couldn't be determined. Consider allowing it using:
-
-    git config --global --add safe.directory copy/of/path/shown/below
-	`,
+		userMessage: i18nMessage(
+			"desktop:errorClassification.theRepositoryOwnershipCouldnTBeDeterminedConsider",
+		),
 	},
 	SecretKeychainNotFound: {
 		severity: "error",
-		userMessage: `
-Please install a keychain service to store and retrieve secrets with.
-
-This can be done using \`sudo apt install gnome-keyring\` for instance.
-	`,
+		userMessage: i18nMessage("desktop:errorClassification.pleaseInstallAKeychainServiceToStoreAnd"),
 	},
 	MissingLoginKeychain: {
 		severity: "error",
-		userMessage: `
-Missing default keychain.
-
-With \`seahorse\` or equivalent, create a \`Login\` password store, right click it and choose \`Set Default\`.
-	`,
+		userMessage: i18nMessage(
+			"desktop:errorClassification.missingDefaultKeychainWithSeahorseOrEquivalentCreate",
+		),
 	},
 	GitHubTokenExpired: {
 		severity: "error",
 		terminal: true,
-		userMessage: `
-Your GitHub token appears expired. Please log out and back in to refresh it. (Settings -> Integrations -> Forget)
-	`,
+		userMessage: i18nMessage(
+			"desktop:errorClassification.yourGitHubTokenAppearsExpiredPleaseLogOut",
+		),
 	},
 	...GITHUB_DEVICE_OAUTH_CLASSIFICATIONS,
 	GitHubOrgOAuthRestricted: GH_ORG_AUTH_CLASSIFICATION,
 	GitHubOrgSamlRestricted: {
 		severity: "error",
 		terminal: true,
-		title: "GitHub SAML SSO Authorization Required",
-		userMessage:
-			"This GitHub organization requires SAML SSO. Authorize the GitButler OAuth app on the organization's SSO page, or authorize your personal access token in GitHub's token SSO settings, then try again.",
+		title: i18nMessage("desktop:errorClassification.gitHubSAMLSSOAuthorizationRequired"),
+		userMessage: i18nMessage(
+			"desktop:errorClassification.thisGitHubOrganizationRequiresSAMLSSOAuthorizeThe",
+		),
 	},
 	/**
 	 * GitHub denied or hid the requested repository resource. Terminal until
@@ -221,10 +220,10 @@ Your GitHub token appears expired. Please log out and back in to refresh it. (Se
 	GitHubInsufficientPermissions: {
 		severity: "error",
 		terminal: true,
-		title: "GitHub Permissions Error",
-		userMessage: `
-GitHub could not access this repository or part of it (for example CI checks). Check that the repository still exists, grant the missing read permission, or reconnect GitHub under Settings → Integrations.
-		`,
+		title: i18nMessage("desktop:errorClassification.gitHubPermissionsError"),
+		userMessage: i18nMessage(
+			"desktop:errorClassification.gitHubCouldNotAccessThisRepositoryOrPart",
+		),
 	},
 	/**
 	 * No forge credentials are stored — the user never authenticated or
@@ -235,8 +234,7 @@ GitHub could not access this repository or part of it (for example CI checks). C
 	ForgeNotAuthenticated: {
 		severity: "warning",
 		terminal: true,
-		userMessage:
-			"You are not logged in to your forge. Connect your account under Settings → Integrations to work with pull requests.",
+		userMessage: i18nMessage("desktop:errorClassification.youAreNotLoggedInToYourForge"),
 	},
 	/**
 	 * The target remote maps to no supported forge, so `list_reviews` has
@@ -246,20 +244,17 @@ GitHub could not access this repository or part of it (for example CI checks). C
 	ForgeUnrecognized: {
 		severity: "warning",
 		terminal: true,
-		userMessage:
-			"The target branch's remote isn't a GitHub, GitLab, or Bitbucket repository GitButler recognizes, so pull requests can't be listed. Pick a target branch on a supported remote in the project settings.",
+		userMessage: i18nMessage("desktop:errorClassification.theTargetBranchSRemoteIsnTA"),
 	},
 	ProjectDatabaseIncompatible: {
 		severity: "error",
-		userMessage: `
-The database was changed by a more recent version of GitButler - cannot safely open it anymore.
-	`,
+		userMessage: i18nMessage("desktop:errorClassification.theDatabaseWasChangedByAMoreRecent"),
 	},
 	DefaultTerminalNotFound: {
 		severity: "error",
-		userMessage: `
-Your default terminal was not found. Please select your preferred terminal in Settings > General.
-	`,
+		userMessage: i18nMessage(
+			"desktop:errorClassification.yourDefaultTerminalWasNotFoundPleaseSelect",
+		),
 	},
 };
 
@@ -290,8 +285,9 @@ const MESSAGE_PATTERNS: ReadonlyArray<{
 			code === "Unknown" && message.includes("cargo build -p gitbutler-git"),
 		classification: {
 			severity: "error",
-			userMessage:
-				"The `gitbutler-git` binary is missing. Run `cargo build -p gitbutler-git` to build it.",
+			userMessage: i18nMessage(
+				"desktop:errorClassification.theGitbutlerGitBinaryIsMissingRunCargo",
+			),
 		},
 	},
 	{
@@ -309,7 +305,7 @@ const MESSAGE_PATTERNS: ReadonlyArray<{
  * (bundling noise, `SilentError`, the parser's "Load failed" ignore,
  * or a previously-opted-out GitHub-org-auth error).
  */
-export function classify(error: unknown, callerTitle?: string): ClassifiedError {
+export function classify(error: unknown, callerTitle?: LocalizedText): ClassifiedError {
 	if (error instanceof SilentError) {
 		return {
 			title: callerTitle ?? error.name,
@@ -345,7 +341,7 @@ export function classify(error: unknown, callerTitle?: string): ClassifiedError 
 		code,
 		severity: effective?.severity ?? "error",
 		terminal: effective?.terminal,
-		userMessage: effective?.userMessage,
+		userMessage: error instanceof LocalizedError ? error.localized : effective?.userMessage,
 		actionHint: effective?.actionHint,
 	};
 }

@@ -12,6 +12,9 @@ import { createMemoryHistory, RouterProvider } from "@tanstack/react-router";
 import { type FC, StrictMode, useEffect } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { Provider } from "react-redux";
+import { I18nProvider, Message } from "@gitbutler/i18n/react";
+import { i18n } from "#ui/i18n.ts";
+import { LanguageSync } from "#ui/LanguageSync.tsx";
 import { createLiteApi, type LiteApiTransport } from "#electron/lite-api.ts";
 import { invalidateDeclared } from "#ui/api/tags.ts";
 import type { UrlQueryParams } from "#ui/cursor-url.ts";
@@ -95,8 +98,8 @@ export default function createPanel({
 				if (title === undefined) return;
 				toastManager.add({
 					type: "error",
-					title,
-					description: errorMessageForToast(error),
+					title: <Message value={title} />,
+					description: <Message value={errorMessageForToast(error)} />,
 					priority: "high",
 				});
 			},
@@ -125,22 +128,25 @@ export default function createPanel({
 	const render = () => {
 		root?.render(
 			<StrictMode>
-				<Provider store={store}>
-					<QueryClientProvider client={queryClient}>
-						<Toast.Provider toastManager={toastManager}>
-							<Tooltip.Provider>
-								<WorkerPoolContextProvider
-									poolOptions={{ workerFactory }}
-									highlighterOptions={{ preferredHighlighter: "shiki-wasm" }}
-								>
-									<SyntaxTheme />
-									<RouterProvider router={router} />
-									<Toasts />
-								</WorkerPoolContextProvider>
-							</Tooltip.Provider>
-						</Toast.Provider>
-					</QueryClientProvider>
-				</Provider>
+				<I18nProvider i18n={i18n}>
+					<Provider store={store}>
+						<QueryClientProvider client={queryClient}>
+							<LanguageSync />
+							<Toast.Provider toastManager={toastManager}>
+								<Tooltip.Provider>
+									<WorkerPoolContextProvider
+										poolOptions={{ workerFactory }}
+										highlighterOptions={{ preferredHighlighter: "shiki-wasm" }}
+									>
+										<SyntaxTheme />
+										<RouterProvider router={router} />
+										<Toasts />
+									</WorkerPoolContextProvider>
+								</Tooltip.Provider>
+							</Toast.Provider>
+						</QueryClientProvider>
+					</Provider>
+				</I18nProvider>
 			</StrictMode>,
 		);
 	};

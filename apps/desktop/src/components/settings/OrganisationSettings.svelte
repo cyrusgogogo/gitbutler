@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { inject } from "@gitbutler/core/context";
+	import { useTranslations } from "@gitbutler/i18n/svelte";
 	import RegisterInterest from "@gitbutler/shared/interest/RegisterInterest.svelte";
 	import Loading from "@gitbutler/shared/network/Loading.svelte";
 	import { HTTP_CLIENT } from "@gitbutler/shared/network/httpClient";
@@ -10,6 +11,7 @@
 	import { organizationTable } from "@gitbutler/shared/organizations/organizationsSlice";
 	import { APP_STATE } from "@gitbutler/shared/redux/store.svelte";
 	import { Button, CardGroup } from "@gitbutler/ui";
+	const i18nMessages = useTranslations();
 
 	const organizationService = inject(ORGANIZATION_SERVICE);
 	const appState = inject(APP_STATE);
@@ -29,7 +31,9 @@
 <CreateOrganizationModal bind:this={createOrganizationModal} />
 
 <JoinOrganizationModal />
-<Button onclick={() => createOrganizationModal?.show()}>Create an Organizaton</Button>
+<Button onclick={() => createOrganizationModal?.show()}
+	>{$i18nMessages.t("desktop:OrganisationSettings.createAnOrganizaton")}</Button
+>
 
 <CardGroup>
 	{#each organizations as loadableOrganization}

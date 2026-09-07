@@ -1,6 +1,5 @@
 <script lang="ts" module>
 	import type { Snippet } from "svelte";
-
 	type BranchStatus = "integrated" | "conflicted" | "clear" | undefined;
 
 	type Branch = {
@@ -27,6 +26,9 @@
 	import Icon from "$components/Icon.svelte";
 	import SeriesIcon from "$components/SeriesIcon.svelte";
 	import { TestId } from "$lib/utils/testIds";
+	import { useTranslations } from "@gitbutler/i18n/svelte";
+	const i18nMessages = useTranslations();
+
 	const {
 		testId,
 		series,
@@ -51,9 +53,9 @@
 					data-testid={TestId.IntegrateUpstreamSeriesRowStatusBadge}
 				>
 					{#if status === "conflicted"}
-						Conflicted
+						{$i18nMessages.t("ui:IntegrationSeriesRow.conflicted")}
 					{:else if status === "integrated"}
-						Integrated
+						{$i18nMessages.t("ui:IntegrationSeriesRow.integrated")}
 					{/if}
 				</span>
 			{/if}
@@ -62,7 +64,9 @@
 		{#if status === "integrated"}
 			<div class="integrated-label-wrap">
 				<Icon name="tick" />
-				<span class="integrated-label text-12"> Part of the new base </span>
+				<span class="integrated-label text-12"
+					>{$i18nMessages.t("ui:IntegrationSeriesRow.partOfTheNewBase")}</span
+				>
 			</div>
 		{/if}
 	</div>
@@ -77,7 +81,9 @@
 						<SeriesIcon single={false} />
 					</div>
 
-					<span class="series-label text-12 text-semibold truncate"> Stack branches </span>
+					<span class="series-label text-12 text-semibold truncate"
+						>{$i18nMessages.t("ui:IntegrationSeriesRow.stackBranches")}</span
+					>
 				</div>
 
 				{#if allSeriesAreIntegrated && showDeleteControls}
@@ -85,7 +91,9 @@
 						(branch) => branchShouldBeDeletedMap[branch.name],
 					)}
 					<div class="integrated-label-wrap">
-						<span class="integrated-label text-12">Delete all local branches</span>
+						<span class="integrated-label text-12"
+							>{$i18nMessages.t("ui:IntegrationSeriesRow.deleteAllLocalBranches")}</span
+						>
 						<Checkbox
 							checked={atLeastSomeWillBeDeleted}
 							onchange={(e) => {
@@ -126,15 +134,17 @@
 					<div class="branch-status-info">
 						<span class="status-badge text-10 text-semibold">
 							{#if branch.status === "conflicted"}
-								Conflicted
+								{$i18nMessages.t("ui:IntegrationSeriesRow.conflicted")}
 							{:else if branch.status === "integrated"}
-								Integrated
+								{$i18nMessages.t("ui:IntegrationSeriesRow.integrated")}
 							{/if}
 						</span>
 
 						{#if branch.status === "integrated" && showDeleteControls}
 							<div class="integrated-label-wrap">
-								<span class="integrated-label text-12">Delete local branch</span>
+								<span class="integrated-label text-12"
+									>{$i18nMessages.t("ui:IntegrationSeriesRow.deleteLocalBranch")}</span
+								>
 								<Checkbox
 									checked={branchShouldBeDeletedMap[branch.name]}
 									onchange={(e) => {

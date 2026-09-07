@@ -10,11 +10,13 @@
 	import { projectPath } from "$lib/routes/routes.svelte";
 	import { OnboardingEvent, POSTHOG_WRAPPER } from "$lib/telemetry/posthog";
 	import { inject } from "@gitbutler/core/context";
+	import { useTranslations } from "@gitbutler/i18n/svelte";
 	import { persisted } from "@gitbutler/shared/persisted";
 	import { Button, InfoMessage, type MessageStyle, Spacer, Textbox } from "@gitbutler/ui";
-
+	import I18nRichMessage from "@gitbutler/ui/i18n/RichMessage.svelte";
 	import * as Sentry from "@sentry/sveltekit";
 	import { onMount } from "svelte";
+	const i18nMessages = useTranslations();
 
 	const projectsService = inject(PROJECTS_SERVICE);
 	const gitService = inject(GIT_SERVICE);
@@ -40,7 +42,7 @@
 		const selectedPath = await backend.filePicker({
 			directory: true,
 			recursive: true,
-			title: "Target Clone Directory",
+			title: $i18nMessages.t("desktop:CloneForm.targetCloneDirectory"),
 		});
 		if (!selectedPath || !selectedPath[0]) return;
 
@@ -64,7 +66,7 @@
 
 		if (!repositoryUrl || !targetDirPath) {
 			errors.push({
-				label: "You must add both a repository URL and target directory.",
+				label: $i18nMessages.t("desktop:CloneForm.youMustAddBothARepositoryURLAnd"),
 			});
 			loading = false;
 			return;
@@ -112,31 +114,45 @@
 	}
 </script>
 
-<h1 class="clone-title text-serif-42">Clone a <i>repository</i></h1>
+<h1 class="clone-title text-serif-42">
+	{#snippet i18nSlot1(content: import("svelte").Snippet)}<i>{@render content()}</i>{/snippet}
+	<I18nRichMessage
+		value={{ key: "desktop:CloneForm.cloneARepository" }}
+		components={{ slot1: i18nSlot1 }}
+	/>
+</h1>
 <SettingsSection>
-	<Textbox label="Clone URL" bind:value={repositoryUrl} />
+	<Textbox label={$i18nMessages.t("desktop:CloneForm.cloneURL")} bind:value={repositoryUrl} />
 
 	<div class="clone__field repositoryTargetPath">
 		<Textbox
-			label="Where to clone"
+			label={$i18nMessages.t("desktop:CloneForm.whereToClone")}
 			bind:value={targetDirPath}
-			placeholder="/Users/tipsy/Documents"
+			placeholder={$i18nMessages.t("desktop:CloneForm.usersTipsyDocuments")}
 		/>
-		<Button kind="outline" disabled={loading} onclick={handleCloneTargetSelect}>Choose..</Button>
+		<Button kind="outline" disabled={loading} onclick={handleCloneTargetSelect}
+			>{$i18nMessages.t("desktop:CloneForm.choose")}</Button
+		>
 	</div>
 </SettingsSection>
 
 <Spacer dotted margin={24} />
 
 {#if completed}
-	{@render Notification({ title: "Success", style: "success" })}
+	{@render Notification({ title: $i18nMessages.t("desktop:CloneForm.success"), style: "success" })}
 {/if}
 {#if errors.length}
-	{@render Notification({ title: "Error", items: errors, style: "danger" })}
+	{@render Notification({
+		title: $i18nMessages.t("desktop:CloneForm.error"),
+		items: errors,
+		style: "danger",
+	})}
 {/if}
 
 <div class="clone__actions">
-	<Button kind="outline" disabled={loading} onclick={handleCancel}>Cancel</Button>
+	<Button kind="outline" disabled={loading} onclick={handleCancel}
+		>{$i18nMessages.t("desktop:CloneForm.cancel")}</Button
+	>
 	<Button
 		style="pop"
 		icon={errors.length > 0 ? "refresh" : "chevron-right"}
@@ -145,11 +161,11 @@
 		onclick={cloneRepository}
 	>
 		{#if loading}
-			Cloning..
+			{$i18nMessages.t("desktop:CloneForm.cloning")}
 		{:else if errors.length > 0}
-			Retry clone
+			{$i18nMessages.t("desktop:CloneForm.retryClone")}
 		{:else}
-			Clone
+			{$i18nMessages.t("desktop:CloneForm.clone")}
 		{/if}
 	</Button>
 </div>

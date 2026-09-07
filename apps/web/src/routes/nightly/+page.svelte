@@ -2,10 +2,14 @@
 	import Footer from "$lib/components/marketing/Footer.svelte";
 	import Header from "$lib/components/marketing/Header.svelte";
 	import ReleaseDownloadLinks from "$lib/components/marketing/ReleaseDownloadLinks.svelte";
+	import { formatDate as formatLocaleDate } from "@gitbutler/i18n/format";
+	import { useTranslations } from "@gitbutler/i18n/svelte";
 	import { Icon } from "@gitbutler/ui";
+	import I18nRichMessage from "@gitbutler/ui/i18n/RichMessage.svelte";
 	import { untrack } from "svelte";
 	import type { Release } from "$lib/types/releases";
 	import type { LatestReleaseBuilds } from "$lib/utils/releaseUtils";
+	const i18nMessages = useTranslations();
 
 	interface Props {
 		data: {
@@ -28,7 +32,7 @@
 </script>
 
 <svelte:head>
-	<title>GitButler | Nightly Builds</title>
+	<title>{$i18nMessages.t("web:page.gitButlerNightlyBuilds")}</title>
 </svelte:head>
 
 <section class="latest-nightly-wrapper">
@@ -41,33 +45,52 @@
 				<div class="nightly-hero__header-labels">
 					<h1>{latestNightly.version}</h1>
 					<div class="nightly-hero__header-details">
-						<span>Latest release</span>
-						<span> • </span>
-						<span
-							>{new Date(latestNightly.released_at).toLocaleDateString("en-GB", {
-								day: "numeric",
-								month: "long",
-								year: "numeric",
-							})} at {new Date(latestNightly.released_at).toLocaleTimeString("en-GB", {
-								hour: "2-digit",
-								minute: "2-digit",
-								hour12: false,
-							})}
-						</span>
-						<span> • </span>
-						<a
-							href="https://github.com/gitbutlerapp/gitbutler/commit/{latestNightly.sha}"
-							target="_blank"
-							rel="noopener noreferrer"
-							class="sha-link"
-						>
-							{latestNightly.sha.substring(0, 7)}
-						</a>
+						{#snippet i18nSlot1(content: import("svelte").Snippet)}<span>{@render content()}</span
+							>{/snippet}
+						{#snippet i18nSlot2(content: import("svelte").Snippet)}<span>{@render content()}</span
+							>{/snippet}
+						{#snippet i18nSlot3(content: import("svelte").Snippet)}<span>{@render content()}</span
+							>{/snippet}
+						{#snippet i18nSlot4(content: import("svelte").Snippet)}<span>{@render content()}</span
+							>{/snippet}
+						{#snippet i18nSlot5(content: import("svelte").Snippet)}<a
+								href="https://github.com/gitbutlerapp/gitbutler/commit/{latestNightly.sha}"
+								target="_blank"
+								rel="noopener noreferrer"
+								class="sha-link">{@render content()}</a
+							>{/snippet}
+						<I18nRichMessage
+							value={{
+								key: "web:page.latestReleaseValueAtValueValue",
+								values: {
+									value: String(
+										formatLocaleDate($i18nMessages.locale, new Date(latestNightly.released_at), {
+											day: "numeric",
+											month: "long",
+											year: "numeric",
+										}),
+									),
+									value2: String(
+										formatLocaleDate($i18nMessages.locale, new Date(latestNightly.released_at), {
+											hour: "2-digit",
+											minute: "2-digit",
+											hour12: false,
+										}),
+									),
+									value3: String(latestNightly.sha.substring(0, 7)),
+								},
+							}}
+							components={{
+								slot1: i18nSlot1,
+								slot2: i18nSlot2,
+								slot3: i18nSlot3,
+								slot4: i18nSlot4,
+								slot5: i18nSlot5,
+							}}
+						/>
 					</div>
 					<p class="nightly-hero__description">
-						Experience GitButler's newest features before anyone else. Nightly builds are
-						automatically generated from the latest development code and may contain experimental
-						features and bugs.
+						{$i18nMessages.t("web:page.experienceGitButlerSNewestFeaturesBeforeAnyoneElse_5ac824a")}
 					</p>
 				</div>
 			</div>
@@ -91,15 +114,21 @@
 					</svg>
 
 					<div class="stack-v gap-6">
-						<a
-							class="download-card-title download-card-link"
-							href={latestNightlyBuilds.darwin_aarch64?.url ?? ""}>Apple Silicon</a
-						>
-						<span class="download-card-subtile"
-							>or <a class="download-card-link" href={latestNightlyBuilds.darwin_x86_64?.url ?? ""}
-								>intel-based</a
-							></span
-						>
+						{#snippet i18nSlot6(content: import("svelte").Snippet)}<a
+								class="download-card-title download-card-link"
+								href={latestNightlyBuilds.darwin_aarch64?.url ?? ""}>{@render content()}</a
+							>{/snippet}
+						{#snippet i18nSlot7(content: import("svelte").Snippet)}<span
+								class="download-card-subtile">{@render content()}</span
+							>{/snippet}
+						{#snippet i18nSlot8(content: import("svelte").Snippet)}<a
+								class="download-card-link"
+								href={latestNightlyBuilds.darwin_x86_64?.url ?? ""}>{@render content()}</a
+							>{/snippet}
+						<I18nRichMessage
+							value={{ key: "web:page.appleSiliconOrIntelBased_f8ea4fd" }}
+							components={{ slot6: i18nSlot6, slot7: i18nSlot7, slot8: i18nSlot8 }}
+						/>
 					</div>
 				</div>
 
@@ -119,33 +148,44 @@
 
 						<select class="linux-arch-select" bind:value={linuxArch}>
 							<option value="x86-64">x86-64</option>
-							<option value="ARM64">ARM64</option>
+							<option value="ARM64">{$i18nMessages.t("web:page.aRM64")}</option>
 						</select>
 					</div>
 
 					<div class="stack-v gap-6">
 						<div class="flex gap-16">
-							<a
-								class="download-card-title download-card-link"
-								href={linuxArch === "x86-64"
-									? (latestNightlyBuilds.linux_deb_x86_64?.url ?? "")
-									: (latestNightlyBuilds.linux_deb_aarch64?.url ?? "")}>.DEB</a
-							>
-							<a
-								class="download-card-title download-card-link"
-								href={linuxArch === "x86-64"
-									? (latestNightlyBuilds.linux_rpm_x86_64?.url ?? "")
-									: (latestNightlyBuilds.linux_rpm_aarch64?.url ?? "")}>.RPM</a
-							>
+							{#snippet i18nSlot12(content: import("svelte").Snippet)}<a
+									class="download-card-title download-card-link"
+									href={linuxArch === "x86-64"
+										? (latestNightlyBuilds.linux_deb_x86_64?.url ?? "")
+										: (latestNightlyBuilds.linux_deb_aarch64?.url ?? "")}>{@render content()}</a
+								>{/snippet}
+							{#snippet i18nSlot13(content: import("svelte").Snippet)}<a
+									class="download-card-title download-card-link"
+									href={linuxArch === "x86-64"
+										? (latestNightlyBuilds.linux_rpm_x86_64?.url ?? "")
+										: (latestNightlyBuilds.linux_rpm_aarch64?.url ?? "")}>{@render content()}</a
+								>{/snippet}
+							<I18nRichMessage
+								value={{ key: "web:page.dEBRPM_097cacc" }}
+								components={{ slot12: i18nSlot12, slot13: i18nSlot13 }}
+							/>
 						</div>
 
-						<span class="download-card-small-subtile"
-							>Not working? Have a look at <a
+						{#snippet i18nSlot9(content: import("svelte").Snippet)}<span
+								class="download-card-small-subtile">{@render content()}</span
+							>{/snippet}
+						{#snippet i18nSlot10(content: import("svelte").Snippet)}<a
 								class="download-card-link"
 								href="https://github.com/gitbutlerapp/gitbutler/blob/master/LINUX.md"
-								target="_blank"><i>our docs</i></a
-							></span
-						>
+								target="_blank">{@render content()}</a
+							>{/snippet}
+						{#snippet i18nSlot11(content: import("svelte").Snippet)}<i>{@render content()}</i
+							>{/snippet}
+						<I18nRichMessage
+							value={{ key: "web:page.notWorkingHaveALookAtOurDocs_3eceb8f" }}
+							components={{ slot9: i18nSlot9, slot10: i18nSlot10, slot11: i18nSlot11 }}
+						/>
 
 						{#if linuxArch === "x86-64" ? latestNightlyBuilds.linux_cli_x86_64?.url : latestNightlyBuilds.linux_cli_aarch64?.url}
 							<div class="download-card-cli-link">
@@ -159,7 +199,8 @@
 								<a
 									href={linuxArch === "x86-64"
 										? (latestNightlyBuilds.linux_cli_x86_64?.url ?? "")
-										: (latestNightlyBuilds.linux_cli_aarch64?.url ?? "")}>Download CLI binary</a
+										: (latestNightlyBuilds.linux_cli_aarch64?.url ?? "")}
+									>{$i18nMessages.t("web:page.downloadCLIBinary_69ffb2a")}</a
 								>
 							</div>
 						{/if}
@@ -183,22 +224,29 @@
 					<div class="stack-v gap-8">
 						<a
 							class="download-card-title download-card-link"
-							href={latestNightlyBuilds.windows_x86_64?.url ?? ""}>Windows (MSI)</a
+							href={latestNightlyBuilds.windows_x86_64?.url ?? ""}
+							>{$i18nMessages.t("web:page.windowsMSI_82710b8")}</a
 						>
 					</div>
 				</div>
 			</div>
 
 			<p class="nightly-warning">
-				⚠️ Nightly builds are experimental and may be unstable. Use at your own risk.
-				<br />
-				For production use, please use the
-				<a href="/downloads">stable release</a>.
+				{#snippet i18nSlot16()}<br />{/snippet}
+				{#snippet i18nSlot17(content: import("svelte").Snippet)}<a href="/downloads"
+						>{@render content()}</a
+					>{/snippet}
+				<I18nRichMessage
+					value={{ key: "web:page.nightlyBuildsAreExperimentalAndMayBeUnstable" }}
+					components={{ slot16: i18nSlot16, slot17: i18nSlot17 }}
+				/>
 			</p>
 		</div>
 	{:else}
 		<div class="no-nightly">
-			<p class="text-16 clr-text-2">No nightly builds are currently available.</p>
+			<p class="text-16 clr-text-2">
+				{$i18nMessages.t("web:page.noNightlyBuildsAreCurrentlyAvailable")}
+			</p>
 		</div>
 	{/if}
 </section>
@@ -206,7 +254,11 @@
 {#if otherNightlies.length > 0}
 	<section class="releases">
 		<h2>
-			Other <i>nightly</i> builds:
+			{#snippet i18nSlot18(content: import("svelte").Snippet)}<i>{@render content()}</i>{/snippet}
+			<I18nRichMessage
+				value={{ key: "web:page.otherNightlyBuilds" }}
+				components={{ slot18: i18nSlot18 }}
+			/>
 		</h2>
 
 		{#each otherNightlies as release, index (`${release.version}-${release.sha}-${index}`)}
@@ -224,12 +276,12 @@
 						<span class="release-row__version">{release.version}</span>
 						<div class="release-row__info">
 							<span class="release-row__date">
-								{new Date(release.released_at).toLocaleDateString("en-GB", {
+								{formatLocaleDate($i18nMessages.locale, new Date(release.released_at), {
 									day: "numeric",
 									month: "short",
 									year: "numeric",
 								})},
-								{new Date(release.released_at).toLocaleTimeString("en-GB", {
+								{formatLocaleDate($i18nMessages.locale, new Date(release.released_at), {
 									hour: "2-digit",
 									minute: "2-digit",
 									hour12: false,
@@ -241,7 +293,7 @@
 									href="https://github.com/gitbutlerapp/gitbutler/commit/{release.sha}"
 									target="_blank"
 									rel="noopener noreferrer"
-									title="View Commit on GitHub"
+									title={$i18nMessages.t("web:page.viewCommitOnGitHub")}
 									class="sha-link"
 									onclick={(e) => e.stopPropagation()}
 								>

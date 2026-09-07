@@ -1,5 +1,7 @@
 <script lang="ts">
+	import { useTranslations } from "@gitbutler/i18n/svelte";
 	import { Tooltip } from "@gitbutler/ui";
+	const i18nMessages = useTranslations();
 
 	interface Props {
 		disabled?: boolean;
@@ -9,7 +11,11 @@
 
 	let { disabled, isFolded, onClick }: Props = $props();
 
-	const label = $derived(isFolded ? "Expand stack" : "Collapse stack");
+	const label = $derived(
+		isFolded
+			? $i18nMessages.t("desktop:CollapseStackButton.detailfdefa593c")
+			: $i18nMessages.t("desktop:CollapseStackButton.detail0360e9c5d"),
+	);
 </script>
 
 <Tooltip text={label}>

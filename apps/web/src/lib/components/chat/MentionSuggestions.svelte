@@ -1,6 +1,5 @@
 <script lang="ts" module>
 	import type { MentionSuggestion } from "@gitbutler/ui";
-
 	export interface Props {
 		isLoading: boolean;
 		suggestions: MentionSuggestion[] | undefined;
@@ -10,8 +9,10 @@
 
 <script lang="ts">
 	import MentionSuggestionItem from "$lib/components/chat/MentionSuggestionItem.svelte";
+	import { useTranslations } from "@gitbutler/i18n/svelte";
 	import { tooltip } from "@gitbutler/ui/utils/tooltipPosition";
 	import { flyScale } from "@gitbutler/ui/utils/transitions";
+	const i18nMessages = useTranslations();
 
 	const { suggestions, selectSuggestion, isLoading }: Props = $props();
 
@@ -84,7 +85,7 @@
 						<li>
 							<div class="suggestion-item">
 								<p class="suggestion-item__no-match text-13 text-tertiary name truncate">
-									No matches found ¯\_(ツ)_/¯
+									{$i18nMessages.t("web:MentionSuggestions.noMatchesFound")}
 								</p>
 							</div>
 						</li>
@@ -92,7 +93,7 @@
 						<li>
 							<div class="suggestion-item">
 								<p class="suggestion-item__no-match text-13 text-tertiary name truncate">
-									Loading...
+									{$i18nMessages.t("web:MentionSuggestions.loading")}
 								</p>
 							</div>
 						</li>

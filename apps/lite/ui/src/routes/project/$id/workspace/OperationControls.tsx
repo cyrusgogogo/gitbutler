@@ -1,3 +1,9 @@
+import { message as i18nMessage } from "@gitbutler/i18n";
+import {
+	Message as I18nMessage,
+	RichMessage as I18nRichMessage,
+	useTranslations,
+} from "@gitbutler/i18n/react";
 import { useAbsorb } from "#ui/api/mutations.ts";
 import {
 	cancelPendingOperation,
@@ -148,28 +154,34 @@ const useControlHotkeys = ({
  * The way out of a toolbox that has nothing pending to abandon: a close affordance rather than a
  * peer of the acts beside it, with its chord stated in the strip above.
  */
-const CloseButton: FC<{ onCancel: () => void; size?: ButtonSize }> = ({ onCancel, size }) => (
-	<Button
-		className={getButtonClassName({ variant: "ghost", iconOnly: true, size })}
-		aria-label="Cancel"
-		onMouseDown={(event) => {
-			// Prevent stealing focus from the tree.
-			if (!event.defaultPrevented) event.preventDefault();
-		}}
-		onClick={onCancel}
-	>
-		<Icon name="cross" />
-	</Button>
-);
+const CloseButton: FC<{ onCancel: () => void; size?: ButtonSize }> = ({ onCancel, size }) => {
+	const i18nMessages = useTranslations();
+	return (
+		<Button
+			className={getButtonClassName({ variant: "ghost", iconOnly: true, size })}
+			aria-label={i18nMessages.t("lite:OperationControls.cancel")}
+			onMouseDown={(event) => {
+				// Prevent stealing focus from the tree.
+				if (!event.defaultPrevented) event.preventDefault();
+			}}
+			onClick={onCancel}
+		>
+			<Icon name="cross" />
+		</Button>
+	);
+};
 
-const CancelButton: FC<{ onCancel: () => void; size?: ButtonSize }> = ({ onCancel, size }) => (
-	<ToolboxButton
-		label="Cancel"
-		hotkey={operationHotkeys.cancel.hotkey}
-		size={size}
-		onClick={onCancel}
-	/>
-);
+const CancelButton: FC<{ onCancel: () => void; size?: ButtonSize }> = ({ onCancel, size }) => {
+	const i18nMessages = useTranslations();
+	return (
+		<ToolboxButton
+			label={i18nMessages.t("lite:OperationControls.cancel")}
+			hotkey={operationHotkeys.cancel.hotkey}
+			size={size}
+			onClick={onCancel}
+		/>
+	);
+};
 
 /** What ends an operation, gathered where a dialog would put it. */
 const ConfirmSection: FC<{ confirm: Confirm; onCancel: () => void }> = ({ confirm, onCancel }) => (
@@ -214,7 +226,7 @@ const CheckedAddressOperationControls: FC<{
 	if (checkedContext === null) return;
 
 	const { noun, icon } = Match.value(checkedContext).pipe(
-		Match.withReturnType<{ noun: string; icon: IconName }>(),
+		Match.withReturnType<{ noun: "commit" | "file" | "line"; icon: IconName }>(),
 		Match.when("Commit", () => ({ noun: "commit", icon: "commit" as const })),
 		Match.when("File", () => ({ noun: "file", icon: "file-diff" as const })),
 		Match.when("Hunk", () => ({ noun: "line", icon: "diff" as const })),
@@ -225,11 +237,17 @@ const CheckedAddressOperationControls: FC<{
 		<Toolbox>
 			<ToolboxMeta icon={icon}>
 				<span>
-					{new Intl.NumberFormat().format(checkedAddressCount)} {noun}
-					{new Intl.PluralRules().select(checkedAddressCount) !== "one" && "s"} selected
+					<I18nMessage
+						value={{ key: `lite:selection.${noun}`, values: { count: checkedAddressCount } }}
+					/>{" "}
 				</span>
 				<ToolboxMetaHint>
-					{formatForDisplaySorted(operationHotkeys.cancel.hotkey)} to close
+					<I18nMessage
+						value={{
+							key: "lite:OperationControls.valueToClose",
+							values: { value: String(formatForDisplaySorted(operationHotkeys.cancel.hotkey)) },
+						}}
+					/>{" "}
 				</ToolboxMetaHint>
 			</ToolboxMeta>
 			<ToolboxSection>
@@ -255,6 +273,7 @@ const AbsorbOperationControls: FC<{
 	projectId: string;
 	pending: PendingAbsorb;
 }> = ({ headInfoIndex, projectId, pending }) => {
+	const i18nMessages = useTranslations();
 	const dispatch = useAppDispatch();
 	const {
 		data: absorptionPlan,
@@ -274,7 +293,11 @@ const AbsorbOperationControls: FC<{
 		cancelPendingOperation();
 	};
 
-	const confirm: Confirm = { label: "Absorb", canRun: canAbsorb, onRun: run };
+	const confirm: Confirm = {
+		label: i18nMessages.t("lite:OperationControls.absorb"),
+		canRun: canAbsorb,
+		onRun: run,
+	};
 	useControlHotkeys({ onCancel: cancel, confirm });
 
 	const sourcesLabel = addressesLabel({ headInfoIndex, addresses: pending.sources });
@@ -285,10 +308,10 @@ const AbsorbOperationControls: FC<{
 	const refusal = isAbsorptionPlanPending
 		? null
 		: isAbsorptionPlanError
-			? `Couldn’t work out where to absorb ${sourcesLabel}`
+			? i18nMessage("lite:absorb.planFailed", { source: sourcesLabel })
 			: canAbsorb
 				? null
-				: `Nothing to absorb ${sourcesLabel} into`;
+				: i18nMessage("lite:absorb.noTarget", { source: sourcesLabel });
 
 	useEffect(() => {
 		if (refusal === null) return;
@@ -303,12 +326,25 @@ const AbsorbOperationControls: FC<{
 			<Toolbox>
 				<ToolboxMeta icon={isAbsorptionPlanPending ? "spinner" : "absorb"}>
 					{isAbsorptionPlanPending ? (
-						<span>Loading absorb plan</span>
+						<span>
+							<I18nMessage value={{ key: "lite:OperationControls.loadingAbsorbPlan" }} />
+						</span>
 					) : (
 						<>
-							<strong>Absorb</strong>
-							<ToolboxMetaText>{sourcesLabel}</ToolboxMetaText>
-							<strong>into {absorptionPlan?.length ?? 0} commits</strong>
+							<strong>
+								<I18nMessage value={{ key: "lite:OperationControls.absorb" }} />
+							</strong>
+							<ToolboxMetaText>
+								<I18nMessage value={sourcesLabel} />
+							</ToolboxMetaText>
+							<strong>
+								<I18nMessage
+									value={{
+										key: "lite:absorb.targetCommits",
+										values: { count: absorptionPlan?.length ?? 0 },
+									}}
+								/>
+							</strong>
 						</>
 					)}
 				</ToolboxMeta>
@@ -323,6 +359,7 @@ const TransferTypeToggleGroup: FC<{
 	operations: OperationsByPlacement;
 	placement: Placement;
 }> = ({ projectId, operations, placement }) => {
+	const i18nMessages = useTranslations();
 	const dispatch = useAppDispatch();
 
 	const setPlacement = (placement: Placement) =>
@@ -364,7 +401,7 @@ const TransferTypeToggleGroup: FC<{
 
 	return (
 		<ToggleGroup
-			aria-label="Placement"
+			aria-label={i18nMessages.t("lite:OperationControls.placement")}
 			value={[placement]}
 			onValueChange={onValueChange}
 			render={<ToggleGroupStyles />}
@@ -378,7 +415,8 @@ const TransferTypeToggleGroup: FC<{
 				value={"above" satisfies Placement}
 				disabled={!operations.above}
 			>
-				Above <Kbd hotkey={operationHotkeys.selectAbove.hotkey} variant="button" />
+				<I18nMessage value={{ key: "lite:OperationControls.above" }} />{" "}
+				<Kbd hotkey={operationHotkeys.selectAbove.hotkey} variant="button" />
 			</Toggle>
 
 			<Toggle
@@ -386,7 +424,8 @@ const TransferTypeToggleGroup: FC<{
 				value={"into" satisfies Placement}
 				disabled={!operations.into}
 			>
-				Into <Kbd hotkey={operationHotkeys.selectInto.hotkey} variant="button" />
+				<I18nMessage value={{ key: "lite:OperationControls.into" }} />{" "}
+				<Kbd hotkey={operationHotkeys.selectInto.hotkey} variant="button" />
 			</Toggle>
 
 			<Toggle
@@ -394,7 +433,8 @@ const TransferTypeToggleGroup: FC<{
 				value={"below" satisfies Placement}
 				disabled={!operations.below}
 			>
-				Below <Kbd hotkey={operationHotkeys.selectBelow.hotkey} variant="button" />
+				<I18nMessage value={{ key: "lite:OperationControls.below" }} />{" "}
+				<Kbd hotkey={operationHotkeys.selectBelow.hotkey} variant="button" />
 			</Toggle>
 		</ToggleGroup>
 	);
@@ -404,6 +444,7 @@ const TransferKindToggleGroup: FC<{
 	kind: TransferKind;
 	projectId: string;
 }> = ({ kind, projectId }) => {
+	const i18nMessages = useTranslations();
 	const dispatch = useAppDispatch();
 
 	const setKind = (kind: TransferKind) =>
@@ -429,7 +470,7 @@ const TransferKindToggleGroup: FC<{
 
 	return (
 		<ToggleGroup
-			aria-label="Transfer kind"
+			aria-label={i18nMessages.t("lite:OperationControls.transferKind")}
 			value={[kind]}
 			onValueChange={onValueChange}
 			render={<ToggleGroupStyles />}
@@ -439,11 +480,13 @@ const TransferKindToggleGroup: FC<{
 			}}
 		>
 			<Toggle render={<ToggleStyles />} value={"move" satisfies TransferKind}>
-				Move <Kbd hotkey={operationHotkeys.selectMove.hotkey} variant="button" />
+				<I18nMessage value={{ key: "lite:OperationControls.move" }} />{" "}
+				<Kbd hotkey={operationHotkeys.selectMove.hotkey} variant="button" />
 			</Toggle>
 
 			<Toggle render={<ToggleStyles />} value={"copy" satisfies TransferKind}>
-				Copy <Kbd hotkey={operationHotkeys.selectCopy.hotkey} variant="button" />
+				<I18nMessage value={{ key: "lite:OperationControls.copy" }} />{" "}
+				<Kbd hotkey={operationHotkeys.selectCopy.hotkey} variant="button" />
 			</Toggle>
 		</ToggleGroup>
 	);
@@ -466,43 +509,45 @@ const transferRefusal = ({
 	kind: TransferKind;
 }): ReactNode => {
 	const sourcesLabel = (
-		<ToolboxMetaText>{addressesLabel({ headInfoIndex, addresses: sources })}</ToolboxMetaText>
+		<ToolboxMetaText>
+			<I18nMessage value={addressesLabel({ headInfoIndex, addresses: sources })} />
+		</ToolboxMetaText>
 	);
-
-	// Uncommitted changes are one bucket with no order and no lanes, so a change already in it has
-	// nowhere within it to go.
 	if (
 		target._tag === "UncommittedChanges" &&
 		sources.length > 0 &&
 		sources.every((source) => addressFileParent(source)?._tag === "UncommittedChanges")
 	) {
 		return (
-			<>
-				<strong>Already uncommitted:</strong>
-				{sourcesLabel}
-			</>
+			<I18nRichMessage
+				value={{ key: "lite:transfer.alreadyUncommitted" }}
+				components={{ source: sourcesLabel, strong: <strong /> }}
+			/>
 		);
 	}
 
-	const verb = kind === "copy" ? "copy" : "move";
-
 	if (sources.some((source) => addressEquals(source, target))) {
 		return (
-			<>
-				<strong>Can’t {verb}</strong>
-				{sourcesLabel}
-				<strong>onto {sources.length === 1 ? "itself" : "themselves"}</strong>
-			</>
+			<I18nRichMessage
+				value={{ key: `lite:transfer.${kind}.self`, values: { count: sources.length } }}
+				components={{ source: sourcesLabel, strong: <strong /> }}
+			/>
 		);
 	}
 
 	return (
-		<>
-			<strong>Can’t {verb}</strong>
-			{sourcesLabel}
-			<strong>to</strong>
-			<ToolboxMetaText>{addressLabel({ headInfoIndex, address: target })}</ToolboxMetaText>
-		</>
+		<I18nRichMessage
+			value={{ key: `lite:transfer.${kind}.unavailable` }}
+			components={{
+				source: sourcesLabel,
+				target: (
+					<ToolboxMetaText>
+						<I18nMessage value={addressLabel({ headInfoIndex, address: target })} />
+					</ToolboxMetaText>
+				),
+				strong: <strong />,
+			}}
+		/>
 	);
 };
 
@@ -513,6 +558,7 @@ const TransferKeyboardOperationControls: FC<{
 	appliedAddressSpace: AddressSpace<Address>;
 	onFocusRestore: (scope: FocusScope) => void;
 }> = ({ headInfoIndex, projectId, transfer, appliedAddressSpace, onFocusRestore }) => {
+	const i18nMessages = useTranslations();
 	const activeList = useActiveList();
 	const selection = useSelection("applied", appliedAddressSpace);
 
@@ -547,7 +593,9 @@ const TransferKeyboardOperationControls: FC<{
 	const confirm: Confirm = {
 		// The placement toggles say where; the operation they resolve to says what, so the
 		// confirm button is where it belongs.
-		label: operation?.label ?? "Confirm",
+		label:
+			(operation ? i18nMessages.text(operation.label) : undefined) ??
+			i18nMessages.t("lite:OperationControls.confirm"),
 		canRun: !!operation,
 		onRun: run,
 		extraHotkeys: [{ hotkey: operationHotkeys.confirmTransfer.hotkey }],
@@ -578,12 +626,22 @@ const TransferKeyboardOperationControls: FC<{
 				) : (
 					<>
 						<ToolboxMeta icon={iconForAddress(transfer.sources[0])}>
-							<strong>{transfer.kind === "copy" ? "Copy" : "Move"}</strong>
+							<strong>
+								{transfer.kind === "copy" ? (
+									<I18nMessage value={{ key: "lite:OperationControls.copy" }} />
+								) : (
+									<I18nMessage value={{ key: "lite:OperationControls.move" }} />
+								)}
+							</strong>
 							<ToolboxMetaText>
-								{addressesLabel({ headInfoIndex, addresses: transfer.sources })}
+								<I18nMessage
+									value={addressesLabel({ headInfoIndex, addresses: transfer.sources })}
+								/>
 							</ToolboxMetaText>
 							<strong>{transfer.placement}</strong>
-							<ToolboxMetaText>{addressLabel({ headInfoIndex, address: target })}</ToolboxMetaText>
+							<ToolboxMetaText>
+								<I18nMessage value={addressLabel({ headInfoIndex, address: target })} />
+							</ToolboxMetaText>
 						</ToolboxMeta>
 						<ToolboxSection variant="stretch">
 							<TransferTypeToggleGroup
@@ -640,7 +698,7 @@ export const OperationControls: FC<{
 						<ToolboxStack>
 							{notice !== null && (
 								<Snackbar variant="danger" className={styles.notice} onClick={clearNotice}>
-									{notice}
+									<I18nMessage value={notice} />
 								</Snackbar>
 							)}
 							{checkedAddressCount > 0 && (

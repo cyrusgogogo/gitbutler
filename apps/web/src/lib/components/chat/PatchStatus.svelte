@@ -1,10 +1,11 @@
 <script lang="ts">
+	import { useTranslations } from "@gitbutler/i18n/svelte";
 	import { eventTimeStamp } from "@gitbutler/shared/branches/utils";
-
 	import { Icon } from "@gitbutler/ui";
 	import type { PatchStatusEvent } from "@gitbutler/shared/patchEvents/types";
+	const i18nMessages = useTranslations();
 
-	const UNKNOWN_USER = "Unknown User";
+	const UNKNOWN_USER = $derived($i18nMessages.t("web:detail.3511814cd4"));
 
 	interface Props {
 		event: PatchStatusEvent;
@@ -15,8 +16,12 @@
 	const userName = $derived(
 		event.user?.login ?? event.user?.name ?? event.user?.email ?? UNKNOWN_USER,
 	);
-	const statusAction = $derived(event.data.status ? "approved" : "requested changes on");
-	const timestamp = $derived(eventTimeStamp(event));
+	const statusAction = $derived(
+		$i18nMessages.t(
+			event.data.status ? "web:review.approvedCommit" : "web:review.requestedChangesOnCommit",
+		),
+	);
+	const timestamp = $derived(eventTimeStamp(event, $i18nMessages.locale));
 </script>
 
 <div class="patch-status" class:request-changes={!event.data.status}>
@@ -30,7 +35,7 @@
 				<img class="patch-status__avatar" src={event.user.avatarUrl} alt={userName} />
 			{/if}
 			<p class="text-13 text-bold patch-status__name">{userName}</p>
-			<p class="text-12 patch-status__message">{statusAction} this commit</p>
+			<p class="text-12 patch-status__message">{statusAction}</p>
 			<div class="text-12 patch-status__timestamp" title={event.createdAt}>{timestamp}</div>
 		</div>
 

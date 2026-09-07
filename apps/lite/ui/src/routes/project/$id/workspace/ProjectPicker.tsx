@@ -1,3 +1,5 @@
+import { message, type LocalizedText } from "@gitbutler/i18n";
+import { Message as I18nMessage, useTranslations } from "@gitbutler/i18n/react";
 import { getButtonClassName } from "#ui/components/Button.tsx";
 import { classes } from "#ui/components/classes.ts";
 import { FolderIcon } from "#ui/components/FolderIcon.tsx";
@@ -39,7 +41,7 @@ import {
 import headerStyles from "./SidebarHeader.module.css";
 import styles from "./ProjectPicker.module.css";
 
-type ProjectGroup = { value: string; items: Array<ProjectForFrontend> };
+type ProjectGroup = { value: string; label: LocalizedText; items: Array<ProjectForFrontend> };
 
 type VirtualProject = {
 	groupIndex: number;
@@ -74,15 +76,25 @@ const groupProjects = (
 		.filter((project) => openedAt[project.id] !== undefined)
 		.toSorted((a, b) => (openedAt[b.id] ?? 0) - (openedAt[a.id] ?? 0));
 
-	if (opened.length === 0) return [{ value: "Projects", items: projects.toSorted(byName) }];
+	if (opened.length === 0) {
+		return [
+			{
+				value: "Projects",
+				label: message("lite:picker.Projects"),
+				items: projects.toSorted(byName),
+			},
+		];
+	}
 
 	const recent = opened.slice(0, recentCount);
 	const recentIds = new Set(recent.map((project) => project.id));
 	const older = projects.filter((project) => !recentIds.has(project.id)).toSorted(byName);
 
 	return [
-		{ value: "Recent projects", items: recent },
-		...(older.length > 0 ? [{ value: "Older", items: older }] : []),
+		{ value: "Recent projects", label: message("lite:picker.Recentprojects"), items: recent },
+		...(older.length > 0
+			? [{ value: "Older", label: message("lite:picker.Older"), items: older }]
+			: []),
 	];
 };
 
@@ -98,6 +110,7 @@ const VirtualizedProjectList: FC<{
 	marksById: Record<string, ProjectRepoMarks>;
 	virtualizerRef: RefObject<ProjectVirtualizer | null>;
 }> = ({ currentProjectId, highlightedProjectIndex, marksById, virtualizerRef }) => {
+	const i18nMessages = useTranslations();
 	const scrollElementRef = useRef<HTMLDivElement | null>(null);
 	const groupDescriptionId = useId();
 	const filteredGroups = Combobox.useFilteredItems<ProjectGroup>();
@@ -190,7 +203,7 @@ const VirtualizedProjectList: FC<{
 											row.groupIndex > 0 && styles.groupLabelDivided,
 										)}
 									>
-										{group.value}
+										{i18nMessages.text(group.label)}
 									</div>
 								)}
 
@@ -220,6 +233,7 @@ const VirtualizedProjectList: FC<{
 };
 
 export const ProjectPicker: FC<{ project: ProjectForFrontend }> = (p) => {
+	const i18nMessages = useTranslations();
 	const navigate = useNavigate();
 	const dispatch = useAppDispatch();
 	const dialog = useAppSelector(interfaceSlice.selectors.selectDialogState);
@@ -310,7 +324,10 @@ export const ProjectPicker: FC<{ project: ProjectForFrontend }> = (p) => {
 						"text-bold",
 						headerStyles.workspaceName,
 					)}
-					aria-label={`${globalHotkeys.selectProject.meta.name} (current: ${p.project.title})`}
+					aria-label={i18nMessages.t("lite:ProjectPicker.valueCurrentValue", {
+						value: i18nMessages.t(globalHotkeys.selectProject.meta.i18nKey),
+						value1: p.project.title,
+					})}
 					render={<Button render={<Tooltip.Trigger />} />}
 				>
 					<FolderIcon className={headerStyles.workspaceNameFolder} />
@@ -319,7 +336,7 @@ export const ProjectPicker: FC<{ project: ProjectForFrontend }> = (p) => {
 				<Tooltip.Portal>
 					<Tooltip.Positioner sideOffset={4}>
 						<Tooltip.Popup render={<TooltipPopup kbd={globalHotkeys.selectProject.hotkey} />}>
-							{globalHotkeys.selectProject.meta.name}
+							{i18nMessages.t(globalHotkeys.selectProject.meta.i18nKey)}
 						</Tooltip.Popup>
 					</Tooltip.Positioner>
 				</Tooltip.Portal>
@@ -329,13 +346,15 @@ export const ProjectPicker: FC<{ project: ProjectForFrontend }> = (p) => {
 				<Combobox.Positioner align="start" sideOffset={4}>
 					<Popup anchored className={styles.popup} render={<Combobox.Popup />}>
 						<PopupSearch
-							placeholder="Search projects…"
-							aria-label="Search projects"
+							placeholder={i18nMessages.t("lite:ProjectPicker.searchProjects")}
+							aria-label={i18nMessages.t("lite:ProjectPicker.searchProjects_30c3c36")}
 							onClear={query === "" ? undefined : () => setQuery("")}
 							render={<Combobox.Input value={query} />}
 						/>
 						<Combobox.Empty>
-							<div className={classes("text-13", styles.empty)}>No projects found.</div>
+							<div className={classes("text-13", styles.empty)}>
+								<I18nMessage value={{ key: "lite:ProjectPicker.noProjectsFound" }} />
+							</div>
 						</Combobox.Empty>
 
 						<VirtualizedProjectList
@@ -354,7 +373,11 @@ export const ProjectPicker: FC<{ project: ProjectForFrontend }> = (p) => {
 									void addLocalRepository();
 								}}
 							>
-								{isAddingProject ? "Adding repository…" : "Add local repository"}
+								{isAddingProject ? (
+									<I18nMessage value={{ key: "lite:ProjectPicker.addingRepository" }} />
+								) : (
+									<I18nMessage value={{ key: "lite:ProjectPicker.addLocalRepository" }} />
+								)}
 							</PopupItem>
 						</PopupSection>
 					</Popup>
