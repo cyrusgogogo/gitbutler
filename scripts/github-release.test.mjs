@@ -57,8 +57,14 @@ function fakeGithub({ release, branchSha = sha, lookupError, failUpload = false 
 		},
 		async getReleaseByTag() {
 			if (lookupError) throw lookupError;
-			if (!release) throw Object.assign(new Error("Not found"), { status: 404 });
+			// GitHub's tag endpoint only returns published releases, not drafts.
+			if (!release || release.draft) {
+				throw Object.assign(new Error("Not found"), { status: 404 });
+			}
 			return { data: release };
+		},
+		async listReleases() {
+			return { data: release ? [{ tag_name: `v${version}`, ...release }] : [] };
 		},
 		async createRelease(data) {
 			record("create", data);
@@ -194,6 +200,38 @@ test("retries leave an already published version unchanged", async (t) => {
 	});
 	const result = await publish(github, collectWindowsPackages(root, version));
 	assert.equal(result.alreadyPublished, true);
+	assert.deepEqual(github.calls, []);
+});
+
+test("finds an interrupted draft beyond the first page of releases", async (t) => {
+	const { root } = fixture(t);
+	const github = fakeGithub();
+	const pages = [];
+	github.rest.repos.listReleases = async ({ page }) => {
+		pages.push(page);
+		return {
+			data:
+				page === 1
+					? Array.from({ length: 100 }, (_, index) => ({ tag_name: `other-${index}` }))
+					: [{ id: 7, tag_name: `v${version}`, draft: true, target_commitish: sha, assets: [] }],
+		};
+	};
+	const result = await publish(github, collectWindowsPackages(root, version));
+	assert.equal(result.published, true);
+	assert.deepEqual(pages, [1, 2]);
+	assert.deepEqual(
+		github.calls.map((call) => call.name),
+		["upload", "upload", "upload", "publish"],
+	);
+});
+
+test("a draft lookup error never creates a replacement release", async (t) => {
+	const { root } = fixture(t);
+	const github = fakeGithub();
+	github.rest.repos.listReleases = async () => {
+		throw Object.assign(new Error("Forbidden"), { status: 403 });
+	};
+	await assert.rejects(publish(github, collectWindowsPackages(root, version)), /Forbidden/);
 	assert.deepEqual(github.calls, []);
 });
 

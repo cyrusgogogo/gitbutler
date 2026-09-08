@@ -110,6 +110,16 @@ export async function publishWindowsRelease(
 		({ data: release } = await github.rest.repos.getReleaseByTag({ ...repository, tag }));
 	} catch (error) {
 		if (error.status !== 404) throw error;
+		// The tag endpoint excludes drafts. Find an interrupted publication in the release list.
+		for (let page = 1; ; page++) {
+			const { data } = await github.rest.repos.listReleases({
+				...repository,
+				per_page: 100,
+				page,
+			});
+			release = data.find((candidate) => candidate.tag_name === tag);
+			if (release || data.length < 100) break;
+		}
 	}
 	if (release) {
 		if (release.target_commitish !== sha) {
