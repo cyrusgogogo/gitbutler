@@ -6,7 +6,7 @@
 		gitLabEnterprisePatError,
 		GITLAB_USER_SERVICE,
 	} from "$lib/forge/gitlab/gitlabUserService.svelte";
-	import { OnboardingEvent, POSTHOG_WRAPPER } from "$lib/telemetry/posthog";
+
 	import { inject } from "@gitbutler/core/context";
 	import { message as i18nMessage } from "@gitbutler/i18n";
 	import { useTranslations } from "@gitbutler/i18n/svelte";
@@ -17,7 +17,6 @@
 	const i18nMessages = useTranslations();
 
 	const gitlabUserService = inject(GITLAB_USER_SERVICE);
-	const posthog = inject(POSTHOG_WRAPPER);
 
 	const [clearAll, clearingAllResult] = gitlabUserService.deleteAllGitLabAccounts();
 	const [storePat, storePatResult] = gitlabUserService.storeGitLabPat;
@@ -64,12 +63,11 @@
 		patError = undefined;
 		try {
 			await storePat({ accessToken: patInput });
-			posthog.captureOnboarding(OnboardingEvent.GitLabStorePat);
+
 			cleanupPatFlow();
 		} catch (err: any) {
 			console.error("Failed to store GitLab PAT:", err);
 			patError = i18nMessage("desktop:detail.717e974744");
-			posthog.captureOnboarding(OnboardingEvent.GitLabStorePatFailed);
 		}
 	}
 
@@ -83,12 +81,11 @@
 		selfHostedHostError = undefined;
 		try {
 			await storeSelfHostedPat({ accessToken: selfHostedPatInput, host: selfHostedHostInput });
-			posthog.captureOnboarding(OnboardingEvent.GitLabStoreSelfHostedPat);
+
 			cleanupSelfHostedFlow();
 		} catch (err: unknown) {
 			console.error("Failed to store self-hosted GitLab PAT:", err);
 			selfHostedPatError = gitLabEnterprisePatError(err);
-			posthog.captureOnboarding(OnboardingEvent.GitLabStoreSelfHostedPatFailed);
 		}
 	}
 </script>

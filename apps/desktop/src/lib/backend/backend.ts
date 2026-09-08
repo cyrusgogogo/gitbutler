@@ -4,7 +4,6 @@ import type { Readable } from "svelte/store";
 
 export type DeepLinkHandlers = {
 	open: (path: string, newWindow: boolean) => void;
-	login: (accesToken: string) => void;
 };
 export interface IBackend {
 	/**
@@ -28,11 +27,9 @@ export interface IBackend {
 	/**
 	 * Checks for updates in the backend.
 	 */
-	checkUpdate: () => Promise<Update | null>;
 	/**
 	 * Returns the current version of the application.
 	 */
-	currentVersion: () => Promise<string>;
 	/**
 	 * Reads a file from the disk.
 	 */
@@ -110,36 +107,6 @@ type Event<T> = {
 	id: number;
 	/** Event payload */
 	payload: T;
-};
-
-export type DownloadEvent =
-	| {
-			event: "Started";
-			data: {
-				contentLength?: number;
-			};
-	  }
-	| {
-			event: "Progress";
-			data: {
-				chunkLength: number;
-			};
-	  }
-	| {
-			event: "Finished";
-	  };
-
-export type DownloadEventName = DownloadEvent["event"];
-
-export type DownloadUpdate = (onEvent?: (progress: DownloadEvent) => void) => Promise<void>;
-export type InstallUpdate = () => Promise<void>;
-
-export type Update = {
-	version: string;
-	currentVersion: string;
-	body?: string;
-	download: DownloadUpdate;
-	install: InstallUpdate;
 };
 
 type DialogFilter = {

@@ -320,14 +320,12 @@ pub enum AiSubcommand {
 #[derive(Debug, Clone, Copy, clap::ValueEnum)]
 pub enum AiKeyOption {
     BringYourOwn,
-    ButlerApi,
 }
 
 impl From<AiKeyOption> for but_llm::CredentialsKeyOption {
     fn from(value: AiKeyOption) -> Self {
         match value {
             AiKeyOption::BringYourOwn => Self::BringYourOwn,
-            AiKeyOption::ButlerApi => Self::ButlerApi,
         }
     }
 }

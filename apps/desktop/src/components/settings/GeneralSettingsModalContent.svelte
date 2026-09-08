@@ -6,12 +6,9 @@
 	import GitSettings from "$components/settings/GitSettings.svelte";
 	import IntegrationsSettings from "$components/settings/IntegrationsSettings.svelte";
 	import LanesAndBranchesSettings from "$components/settings/LanesAndBranchesSettings.svelte";
-	import OrganisationSettings from "$components/settings/OrganisationSettings.svelte";
 	import SettingsModalLayout from "$components/settings/SettingsModalLayout.svelte";
-	import TelemetrySettings from "$components/settings/TelemetrySettings.svelte";
 	import { URL_SERVICE } from "$lib/backend/url";
 	import { generalSettingsPages } from "$lib/settings/generalSettingsPages";
-	import { USER_SERVICE } from "$lib/user/userService.svelte";
 	import { inject } from "@gitbutler/core/context";
 	import { useTranslations } from "@gitbutler/i18n/svelte";
 	import { Icon } from "@gitbutler/ui";
@@ -24,7 +21,6 @@
 
 	const { data }: Props = $props();
 
-	const userService = inject(USER_SERVICE);
 	const urlService = inject(URL_SERVICE);
 
 	let currentSelectedId = $derived(data.selectedId || generalSettingsPages[0]!.id);
@@ -38,7 +34,6 @@
 	title={$i18nMessages.t("desktop:GeneralSettingsModalContent.globalSettings")}
 	pages={generalSettingsPages}
 	selectedId={currentSelectedId}
-	isAdmin={userService.user?.role === "admin"}
 	onSelectPage={selectPage}
 >
 	{#snippet content({ currentPage })}
@@ -55,12 +50,8 @@
 				<IntegrationsSettings />
 			{:else if currentPage.id === "ai"}
 				<AiSettings />
-			{:else if currentPage.id === "telemetry"}
-				<TelemetrySettings />
 			{:else if currentPage.id === "experimental"}
 				<ExperimentalSettings />
-			{:else if currentPage.id === "organizations"}
-				<OrganisationSettings />
 			{:else}
 				{$i18nMessages.t("desktop:GeneralSettingsModalContent.settingsPageValueNotFound", {
 					id: String(currentPage.id),
@@ -83,17 +74,6 @@
 				<Icon name="docs" />
 				<span class="text-13 text-bold"
 					>{$i18nMessages.t("desktop:GeneralSettingsModalContent.docs")}</span
-				>
-				<div class="text-13 open-link-icon">↗</div>
-			</button>
-			<button
-				type="button"
-				class="social-btn"
-				onclick={async () => await urlService.openExternalUrl("https://discord.gg/MmFkmaJ42D")}
-			>
-				<Icon name="discord" />
-				<span class="text-13 text-bold"
-					>{$i18nMessages.t("desktop:GeneralSettingsModalContent.ourDiscord")}</span
 				>
 				<div class="text-13 open-link-icon">↗</div>
 			</button>

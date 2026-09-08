@@ -1,5 +1,4 @@
-import { emitQueryError, parseQueryError, SilentError } from "$lib/error/error";
-import { classify } from "$lib/error/errorClassification";
+import { SilentError } from "$lib/error/error";
 import { isNormalizedError, type NormalizedError } from "$lib/error/normalizedError";
 import { reactive } from "@gitbutler/shared/reactiveUtils.svelte";
 import { type Reactive } from "@gitbutler/shared/storeUtils";
@@ -29,15 +28,7 @@ import type {
 import type { HookContext } from "$lib/state/context";
 import type { Prettify } from "@gitbutler/shared/utils/typeUtils";
 
-/** Extra properties included for event tracking. */
-export type EventProperties = { [key: string]: string | number | boolean | undefined };
-
-/** A callback function for getting extra properties for event tracking. */
-export type PropertiesFn = () => EventProperties;
-
 type TransformerFn = (data: any, args: any) => any;
-
-const EVENT_NAME = "tauri_command";
 
 /**
  * Returns implementations for custom endpoint methods defined in `ButlerModule`.
@@ -45,35 +36,15 @@ const EVENT_NAME = "tauri_command";
 export function buildQueryHooks<Definitions extends ExtensionDefinitions>({
 	api,
 	endpointName,
-	command,
-	actionName,
-	ctx: { getState, getDispatch, posthog },
+	ctx: { getState, getDispatch },
 }: {
 	api: Api<any, Definitions, any, any, CoreModule>;
 	endpointName: string;
-	command: string | undefined;
-	actionName: string | undefined;
 	ctx: HookContext;
 }) {
 	const endpoint = api.endpoints[endpointName]!;
 
 	const { initiate, select } = endpoint as ApiEndpointQuery<CustomQuery<any>, Definitions>;
-
-	function _track(args: { failure: boolean; startTime: number; error?: unknown }) {
-		const durationMs = Date.now() - args.startTime;
-		const parsedError = args.error !== undefined ? parseQueryError(args.error) : undefined;
-
-		posthog?.capture(EVENT_NAME, {
-			command,
-			actionName,
-			durationMs,
-			failure: args.failure,
-			error: args.error,
-			error_title: parsedError?.name,
-			error_message: parsedError?.message,
-			error_code: parsedError?.code,
-		});
-	}
 
 	async function fetch<T extends TransformerFn>(
 		queryArg: unknown,
@@ -97,7 +68,6 @@ export function buildQueryHooks<Definitions extends ExtensionDefinitions>({
 		queryArg: unknown,
 		options?: { transform?: T } & StartQueryActionCreatorOptions,
 	): ReactiveQuery<T extends Transformer<ReturnType<T>> ? ReturnType<T> : T, QueryExtensions> {
-		// const startTime = Date.now();
 		const dispatch = getDispatch();
 		let query: QueryActionCreatorResult<any> | undefined;
 		const subscribe = createSubscriber(() => {
@@ -122,20 +92,6 @@ export function buildQueryHooks<Definitions extends ExtensionDefinitions>({
 
 		const output = $derived.by(() => {
 			let data = result.data;
-			if (result.data) {
-				// track({ failure: false, startTime });
-			}
-			if (result.error) {
-				const error = result.error;
-				// track({ failure: true, startTime, error });
-				const classified = classify(error);
-				emitQueryError(posthog, error, {
-					command,
-					actionName,
-					severity: classified.severity,
-					terminal: classified.terminal,
-				});
-			}
 			if (options?.transform && data) {
 				data = options.transform(data, queryArg);
 			}
@@ -272,10 +228,6 @@ export type UseMutationHookParams<Definition extends MutationDefinition<any, any
 	 * will not be wrapped in a `SilentError`.
 	 */
 	throwSilentError?: boolean;
-	/**
-	 * Optional function that fetches additional metadata for logging purposes.
-	 */
-	propertiesFn?: PropertiesFn;
 };
 
 export type CustomMutationResult<Definition extends MutationDefinition<any, any, string, any>> =
@@ -287,13 +239,7 @@ type UseMutationResult<Definition extends MutationDefinition<any, any, string, a
 	 *
 	 * If awaited, the result will contain the mutation result.
 	 */
-	(
-		args: QueryArgFrom<Definition>,
-		options?: {
-			/** Properties for event tracking. */
-			properties?: EventProperties;
-		},
-	) => Promise<ResultTypeFrom<Definition>>,
+	(args: QueryArgFrom<Definition>) => Promise<ResultTypeFrom<Definition>>,
 	/**
 	 * The reactive state of the mutation.
 	 *
@@ -345,53 +291,15 @@ export function buildMutationHook<
 >({
 	api,
 	endpointName,
-	actionName,
-	command,
-	ctx: { getState, getDispatch, posthog },
+	ctx: { getState, getDispatch },
 }: {
 	api: Api<any, Definitions, any, any, CoreModule>;
 	endpointName: string;
-	command?: string;
-	actionName?: string;
 	ctx: HookContext;
 }): MutationHook<D> {
 	const endpoint = api.endpoints[endpointName]!;
 
 	const { initiate, select } = endpoint as unknown as ApiEndpointMutation<D, Definitions>;
-
-	function track(args: {
-		failure: boolean;
-		properties: EventProperties;
-		startTime: number;
-		error?: unknown;
-	}) {
-		const durationMs = Date.now() - args.startTime;
-		const parsedError = args.error !== undefined ? parseQueryError(args.error) : undefined;
-		posthog?.capture(EVENT_NAME, {
-			...args.properties,
-			command,
-			actionName,
-			durationMs,
-			failure: args.failure,
-			error: args.error,
-			error_title: parsedError?.name,
-			error_message: parsedError?.message,
-			error_code: parsedError?.code,
-		});
-
-		/** TODO: How long do we need to send these duplicates? */
-		if (actionName !== undefined) {
-			const legacyName = args.failure ? `${actionName} Failed` : `${actionName} Successful`;
-			posthog?.capture(legacyName, {
-				...args.properties,
-				actionName,
-				command,
-				durationMs,
-				failure: args.failure,
-				error: args.error,
-			});
-		}
-	}
 
 	/**
 	 * Shared mutation execution logic used by both `mutate` and `useMutation`.
@@ -400,20 +308,16 @@ export function buildMutationHook<
 		queryArg: QueryArgFrom<D>,
 		dispatchResult: MutationActionCreatorResult<D>,
 		options: {
-			properties: EventProperties;
 			sideEffect?: UseMutationHookParams<D>["sideEffect"];
 			onError?: UseMutationHookParams<D>["onError"];
 			throwSilentError?: boolean;
 		},
 	) {
-		const startTime = Date.now();
 		try {
 			const result = await dispatchResult.unwrap();
 			options.sideEffect?.(result, queryArg);
-			track({ failure: false, properties: options.properties, startTime });
 			return result;
 		} catch (error: unknown) {
-			track({ failure: true, properties: options.properties, startTime, error });
 			if (options.onError && isNormalizedError(error)) {
 				options.onError(error, queryArg);
 			}
@@ -423,14 +327,12 @@ export function buildMutationHook<
 
 	async function mutate(queryArg: QueryArgFrom<D>, options?: UseMutationHookParams<D>) {
 		const dispatch = getDispatch();
-		const { fixedCacheKey, sideEffect, preEffect, onError, propertiesFn, throwSilentError } =
-			options ?? {};
+		const { fixedCacheKey, sideEffect, preEffect, onError, throwSilentError } = options ?? {};
 
 		preEffect?.(queryArg);
 
 		const dispatchResult = dispatch(initiate(queryArg, { fixedCacheKey }));
 		return executeMutation(queryArg, dispatchResult, {
-			properties: propertiesFn?.() || {},
 			sideEffect,
 			onError,
 			throwSilentError,
@@ -447,20 +349,15 @@ export function buildMutationHook<
 	 * @see: https://github.com/reduxjs/redux-toolkit/blob/637b0cad2b227079ccd0c5a3073c09ace6d8759e/packages/toolkit/src/query/react/buildHooks.ts#L867-L935
 	 */
 	function useMutation(params?: UseMutationHookParams<D>) {
-		const { fixedCacheKey, preEffect, sideEffect, onError, propertiesFn, throwSilentError } =
-			params || {};
+		const { fixedCacheKey, preEffect, sideEffect, onError, throwSilentError } = params || {};
 		const dispatch = getDispatch();
 
 		let promise = $state<MutationActionCreatorResult<D>>();
 
-		async function triggerMutation(
-			queryArg: QueryArgFrom<D>,
-			options?: { properties?: EventProperties },
-		) {
+		async function triggerMutation(queryArg: QueryArgFrom<D>) {
 			preEffect?.(queryArg);
 			promise = dispatch(initiate(queryArg, { fixedCacheKey }));
 			return executeMutation(queryArg, promise, {
-				properties: Object.assign({}, propertiesFn?.(), options?.properties),
 				sideEffect,
 				onError,
 				throwSilentError,

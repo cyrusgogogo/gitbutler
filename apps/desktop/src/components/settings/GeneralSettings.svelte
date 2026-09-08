@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { goto } from "$app/navigation";
 	import CliSymlinkSetup from "$components/settings/CliSymlinkSetup.svelte";
-	import AccessTokenSignIn from "$components/shared/AccessTokenSignIn.svelte";
+
 	import { BACKEND } from "$lib/backend";
 	import { getUserErrorCode } from "$lib/backend/ipc";
 	import { CLI_MANAGER } from "$lib/config/cli";
@@ -15,35 +15,19 @@
 		type CodeEditorSettings,
 		type TerminalSettings,
 	} from "$lib/state/uiState.svelte";
-	import { UPDATER_SERVICE } from "$lib/updater/updater";
-	import { USER_SERVICE } from "$lib/user/userService.svelte";
+
 	import { inject } from "@gitbutler/core/context";
 	import { message as i18nMessage } from "@gitbutler/i18n";
 	import { useTranslations } from "@gitbutler/i18n/svelte";
-	import {
-		Button,
-		CardGroup,
-		Modal,
-		ProfilePictureUpload,
-		Select,
-		SelectItem,
-		Spacer,
-		Textbox,
-		Toggle,
-		chipToasts,
-	} from "@gitbutler/ui";
+	import { Button, CardGroup, Modal, Select, SelectItem, Spacer, chipToasts } from "@gitbutler/ui";
 	import LanguageSelect from "@gitbutler/ui/i18n/LanguageSelect.svelte";
 	import I18nRichMessage from "@gitbutler/ui/i18n/RichMessage.svelte";
 	import { onMount } from "svelte";
-	import type { User } from "$lib/user/user";
+
 	const i18nMessages = useTranslations();
 
-	const userService = inject(USER_SERVICE);
 	const settingsService = inject(SETTINGS_SERVICE);
 	const projectsService = inject(PROJECTS_SERVICE);
-
-	const updaterService = inject(UPDATER_SERVICE);
-	const disableAutoChecks = updaterService.disableAutoChecks;
 
 	const cliManager = inject(CLI_MANAGER);
 	const [instalCLI, installingCLI] = cliManager.install;
@@ -56,12 +40,7 @@
 	const appSettings = settingsService.appSettings;
 	const language = inject(LANGUAGE_SERVICE);
 
-	let saving = $state(false);
-	let newName = $state("");
 	let isDeleting = $state(false);
-	let loaded = $state(false);
-
-	let userPicture = $state(userService.user?.picture);
 
 	let deleteConfirmationModal: ReturnType<typeof Modal> | undefined = $state();
 
@@ -100,60 +79,12 @@
 		}
 	});
 
-	$effect(() => {
-		if (userService.user && !loaded) {
-			loaded = true;
-			userService.getUser().then((cloudUser) => {
-				const userData: User = {
-					...cloudUser,
-					name: cloudUser.name || undefined,
-					email: cloudUser.email || undefined,
-					login: cloudUser.login || undefined,
-					picture: cloudUser.picture || "#",
-					locale: cloudUser.locale || "en",
-					access_token: cloudUser.access_token || "impossible-situation",
-					role: cloudUser.role || "user",
-					supporter: cloudUser.supporter || false,
-				};
-				userPicture = userData.picture;
-				userService.setUser(userData);
-			});
-			newName = userService.user?.name || "";
-		}
-	});
-
-	let selectedPictureFile: File | undefined = $state();
-
-	async function onSubmit(e: SubmitEvent) {
-		if (!userService.user) return;
-		saving = true;
-
-		e.preventDefault();
-
-		try {
-			const updatedUser = await userService.updateUser({
-				name: newName,
-				picture: selectedPictureFile,
-			});
-			userService.setUser(updatedUser);
-			chipToasts.success(i18nMessage("desktop:GeneralSettings.profileUpdated"));
-			selectedPictureFile = undefined;
-		} finally {
-			saving = false;
-		}
-	}
-
-	function onPictureChange(file: File) {
-		selectedPictureFile = file;
-		userPicture = URL.createObjectURL(file);
-	}
-
 	async function onDeleteClicked() {
 		isDeleting = true;
 		try {
 			await settingsService.deleteAllData();
 			projectsService.unsetLastOpenedProject();
-			await userService.forgetUserCredentials();
+
 			chipToasts.success(i18nMessage("desktop:GeneralSettings.allDataDeleted"));
 			goto("/", { replaceState: true, invalidateAll: true });
 		} finally {
@@ -169,60 +100,6 @@
 	value={$appSettings?.ui.language ?? "system"}
 	onchange={(value) => language.set(value)}
 />
-
-{#if userService.user}
-	<CardGroup>
-		<form onsubmit={onSubmit} class="profile-form">
-			<ProfilePictureUpload
-				bind:picture={userPicture}
-				onFileSelect={onPictureChange}
-				onInvalidFileType={() =>
-					chipToasts.error(i18nMessage("desktop:GeneralSettings.inlinec6a2a3810"))}
-			/>
-
-			<div id="contact-info" class="contact-info">
-				<div class="contact-info__fields">
-					<Textbox
-						label={$i18nMessages.t("desktop:GeneralSettings.fullName")}
-						bind:value={newName}
-						required
-					/>
-					<Textbox
-						label={$i18nMessages.t("desktop:GeneralSettings.email")}
-						value={userService.user?.email}
-						readonly
-					/>
-				</div>
-
-				<Button type="submit" style="pop" loading={saving}
-					>{$i18nMessages.t("desktop:GeneralSettings.updateProfile")}</Button
-				>
-			</div>
-		</form>
-	</CardGroup>
-
-	<CardGroup>
-		<CardGroup.Item>
-			{#snippet title()}
-				{$i18nMessages.t("desktop:GeneralSettings.forgetCredentialsAndLogOut")}
-			{/snippet}
-			{#snippet caption()}
-				{$i18nMessages.t("desktop:GeneralSettings.clickHereToClearYourCredentialsAndUnwind")}
-			{/snippet}
-			{#snippet actions()}
-				<Button
-					kind="outline"
-					icon="logout"
-					onclick={async () => {
-						await userService.forgetUserCredentials();
-					}}>{$i18nMessages.t("desktop:GeneralSettings.forgetCredentials")}</Button
-				>
-			{/snippet}
-		</CardGroup.Item>
-	</CardGroup>
-{/if}
-
-<AccessTokenSignIn />
 
 <Spacer />
 
@@ -278,26 +155,6 @@
 			{/snippet}
 		</CardGroup.Item>
 	{/if}
-</CardGroup>
-
-<CardGroup>
-	<CardGroup.Item labelFor="disable-auto-checks">
-		{#snippet title()}
-			{$i18nMessages.t("desktop:GeneralSettings.automaticallyCheckForUpdates")}
-		{/snippet}
-
-		{#snippet caption()}
-			{$i18nMessages.t("desktop:GeneralSettings.automaticallyCheckForUpdatesYouCanStillCheck")}
-		{/snippet}
-
-		{#snippet actions()}
-			<Toggle
-				id="disable-auto-checks"
-				checked={!$disableAutoChecks}
-				onclick={() => ($disableAutoChecks = !$disableAutoChecks)}
-			/>
-		{/snippet}
-	</CardGroup.Item>
 </CardGroup>
 
 <CardGroup>
@@ -420,24 +277,4 @@
 </Modal>
 
 <style lang="postcss">
-	.profile-form {
-		display: flex;
-		padding: 16px;
-		gap: 24px;
-	}
-
-	.contact-info {
-		display: flex;
-		flex: 1;
-		flex-direction: column;
-		align-items: flex-end;
-		gap: 20px;
-	}
-
-	.contact-info__fields {
-		display: flex;
-		flex-direction: column;
-		width: 100%;
-		gap: 12px;
-	}
 </style>

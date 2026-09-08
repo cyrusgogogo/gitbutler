@@ -8,7 +8,7 @@
 	import { showError } from "$lib/error/showError";
 	import { PROJECTS_SERVICE } from "$lib/project/projectsService";
 	import { SETTINGS_SERVICE } from "$lib/settings/appSettings";
-	import { OnboardingEvent, POSTHOG_WRAPPER } from "$lib/telemetry/posthog";
+
 	import { inject } from "@gitbutler/core/context";
 	import { message as i18nMessage } from "@gitbutler/i18n";
 	import { TestId } from "@gitbutler/ui";
@@ -22,7 +22,7 @@
 
 	const projectsService = inject(PROJECTS_SERVICE);
 	const baseService = inject(BASE_BRANCH_SERVICE);
-	const posthog = inject(POSTHOG_WRAPPER);
+
 	const settingsStore = inject(SETTINGS_SERVICE).appSettings;
 	const projectQuery = $derived(projectsService.getProject(projectId));
 	const [setBaseBranchTarget] = baseService.setTarget;
@@ -31,27 +31,20 @@
 	async function setTarget([branchName, pushRemote]: [branchName: string, pushRemote: string]) {
 		if (!branchName) return;
 
-		try {
-			if ($settingsStore?.featureFlags.singleBranch) {
-				// Only set the target; the user keeps working on their current branch.
-				await setBaseBranchTargetRef({
-					projectId: projectId,
-					targetRef: `refs/remotes/${branchName}`,
-					pushRemote,
-				});
-			} else {
-				await setBaseBranchTarget({
-					projectId: projectId,
-					branch: branchName,
-					pushRemote,
-				});
-			}
-		} catch (e: unknown) {
-			posthog.captureOnboarding(OnboardingEvent.SetTargetBranchFailed, e);
-			throw e;
+		if ($settingsStore?.featureFlags.singleBranch) {
+			// Only set the target; the user keeps working on their current branch.
+			await setBaseBranchTargetRef({
+				projectId: projectId,
+				targetRef: `refs/remotes/${branchName}`,
+				pushRemote,
+			});
+		} else {
+			await setBaseBranchTarget({
+				projectId: projectId,
+				branch: branchName,
+				pushRemote,
+			});
 		}
-
-		posthog.captureOnboarding(OnboardingEvent.SetTargetBranch);
 	}
 
 	async function openProject(): Promise<boolean> {

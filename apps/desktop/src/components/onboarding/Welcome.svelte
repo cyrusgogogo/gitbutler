@@ -1,16 +1,18 @@
 <script lang="ts">
 	import { goto } from "$app/navigation";
 	import WelcomeAction from "$components/onboarding/WelcomeAction.svelte";
-	import AccessTokenSignIn from "$components/shared/AccessTokenSignIn.svelte";
+
 	import IconLink from "$components/shared/IconLink.svelte";
 	import cloneRepoSvg from "$lib/assets/welcome/clone-repo.svg?raw";
 	import newProjectSvg from "$lib/assets/welcome/new-local-project.svg?raw";
+	import { showError } from "$lib/error/showError";
 	import { LANGUAGE_SERVICE } from "$lib/i18n";
 	import { handleAddProjectOutcome } from "$lib/project/project";
 	import { PROJECTS_SERVICE } from "$lib/project/projectsService";
 	import { SETTINGS_SERVICE } from "$lib/settings/appSettings";
-	import { OnboardingEvent, POSTHOG_WRAPPER } from "$lib/telemetry/posthog";
+
 	import { inject } from "@gitbutler/core/context";
+	import { message } from "@gitbutler/i18n";
 	import { useTranslations } from "@gitbutler/i18n/svelte";
 	import { TestId } from "@gitbutler/ui";
 	import LanguageSelect from "@gitbutler/ui/i18n/LanguageSelect.svelte";
@@ -19,7 +21,7 @@
 	const projectsService = inject(PROJECTS_SERVICE);
 	const language = inject(LANGUAGE_SERVICE);
 	const appSettings = inject(SETTINGS_SERVICE).appSettings;
-	const posthog = inject(POSTHOG_WRAPPER);
+
 	const serverCapabilitiesQuery = $derived(projectsService.serverCapabilities());
 	const canAddProjects = $derived(serverCapabilitiesQuery.response?.canAddProjects ?? true);
 
@@ -32,12 +34,11 @@
 			const testDirectoryPath = directoryInputElement?.value;
 			const outcome = await projectsService.addProject(testDirectoryPath ?? "");
 
-			posthog.captureOnboarding(OnboardingEvent.AddLocalProject);
 			if (outcome) {
 				handleAddProjectOutcome(outcome);
 			}
 		} catch (e: unknown) {
-			posthog.captureOnboarding(OnboardingEvent.AddLocalProjectFailed, e);
+			showError(message("desktop:Welcome.unableToAddProject"), e);
 		} finally {
 			newProjectLoading = false;
 		}
@@ -96,7 +97,6 @@
 			</WelcomeAction>
 		</div>
 		<!-- Using instance of user here to not hide after login -->
-		<AccessTokenSignIn />
 	</div>
 
 	<div class="links">
@@ -112,19 +112,6 @@
 				<IconLink icon="youtube" href="https://www.youtube.com/@gitbutlerapp">
 					{$i18nMessages.t("desktop:Welcome.watchTutorials")}
 				</IconLink>
-			</div>
-		</div>
-		<div class="links__section">
-			<p class="links__title text-14 text-bold">
-				{$i18nMessages.t("desktop:Welcome.joinOurCommunity")}
-			</p>
-			<div class="community-links">
-				<IconLink icon="discord" href="https://discord.gg/MmFkmaJ42D">Discord</IconLink>
-				<IconLink icon="bluesky" href="https://bsky.app/profile/gitbutler.com">Bluesky</IconLink>
-				<IconLink icon="instagram" href="https://www.instagram.com/gitbutler/"
-					>{$i18nMessages.t("desktop:Welcome.instagram")}</IconLink
-				>
-				<IconLink icon="youtube" href="https://www.youtube.com/@gitbutlerapp">YouTube</IconLink>
 			</div>
 		</div>
 	</div>
@@ -177,15 +164,6 @@
 		align-items: flex-start;
 		margin-left: -6px;
 		gap: 6px;
-	}
-
-	.community-links {
-		display: grid;
-		grid-template-columns: repeat(2, 1fr);
-		column-gap: 12px;
-		row-gap: 4px;
-		max-width: 192px;
-		margin-left: -6px;
 	}
 
 	/* SMALL ILLUSTRATIONS */

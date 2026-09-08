@@ -1,5 +1,5 @@
 import { isBackend, type IBackend } from "$lib/backend";
-import { IpcError, isNormalizedError, type NormalizedError } from "$lib/error/normalizedError";
+import { isNormalizedError, type NormalizedError } from "$lib/error/normalizedError";
 import { isErrorlike } from "@gitbutler/ui/utils/typeguards";
 import { type BaseQueryApi, type QueryReturnValue } from "@reduxjs/toolkit/query";
 import type { ExtraOptions } from "$lib/state/butlerModule";
@@ -30,12 +30,8 @@ export const tauriBaseQuery: TauriBaseQueryFn = async (
 	} catch (error: unknown) {
 		const name = `API error: (${command})`;
 		if (isNormalizedError(error)) {
-			// Forward the IpcError fingerprint across the plain-object hop so
-			// `applyIpcFingerprint` (Sentry `beforeSend`) can still find it
-			// downstream of `normalizedErrorToException` (in `normalizedError.ts`).
-			const fingerprint = error instanceof IpcError ? error.fingerprint : undefined;
 			return {
-				error: { origin: "ipc", name, message: error.message, code: error.code, fingerprint },
+				error: { origin: "ipc", name, message: error.message, code: error.code },
 			};
 		}
 

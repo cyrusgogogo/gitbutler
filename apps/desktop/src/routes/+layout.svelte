@@ -3,18 +3,18 @@
 	import "@gitbutler/design-core/core";
 	import "../styles/styles.css";
 	import { browser, dev } from "$app/environment";
-	import { afterNavigate, beforeNavigate } from "$app/navigation";
+	import { afterNavigate } from "$app/navigation";
 	import { page } from "$app/state";
 	import GlobalSettingsShortcutHandler from "$components/settings/GlobalSettingsShortcutHandler.svelte";
 	import ReloadShortcutHandler from "$components/settings/ReloadShortcutHandler.svelte";
 	import ThemeShortcutHandler from "$components/settings/ThemeShortcutHandler.svelte";
 	import ToggleSidebarShortcutHandler from "$components/settings/ToggleSidebarShortcutHandler.svelte";
 	import ZoomShortcutHandler from "$components/settings/ZoomShortcutHandler.svelte";
-	import AppUpdater from "$components/shared/AppUpdater.svelte";
+
 	import FocusCursor from "$components/shared/FocusCursor.svelte";
 	import GitInputPrompt from "$components/shared/GitInputPrompt.svelte";
 	import ReloadWarning from "$components/shared/ReloadWarning.svelte";
-	import ShareIssueModal from "$components/shared/ShareIssueModal.svelte";
+
 	import ToastController from "$components/shared/ToastController.svelte";
 	import GlobalModalRouter from "$components/views/GlobalModalRouter.svelte";
 	import { initDependencies } from "$lib/bootstrap/deps";
@@ -27,8 +27,7 @@
 	import { SHORTCUT_SERVICE } from "$lib/shortcuts/shortcutService";
 	import { CLIENT_STATE } from "$lib/state/clientState.svelte";
 	import { initUserSettings, UI_STATE } from "$lib/state/uiState.svelte";
-	import { POSTHOG_WRAPPER } from "$lib/telemetry/posthog";
-	import { USER_SERVICE } from "$lib/user/userService.svelte";
+
 	import { inject, provide } from "@gitbutler/core/context";
 	import { provideI18n } from "@gitbutler/i18n/svelte";
 	import { ChipToastContainer } from "@gitbutler/ui";
@@ -51,7 +50,7 @@
 	onMount(() => language.start());
 
 	const clientState = inject(CLIENT_STATE);
-	const posthog = inject(POSTHOG_WRAPPER);
+
 	const uiState = inject(UI_STATE);
 	const terminalService = inject(TERMINAL_SERVICE);
 
@@ -62,8 +61,6 @@
 	// =============================================================================
 	// CORE REACTIVE STATE & EFFECTS
 	// =============================================================================
-
-	const userService = inject(USER_SERVICE);
 
 	let coldstartLinks = $state<string[] | undefined>(undefined);
 	backend
@@ -77,9 +74,6 @@
 				{
 					open: (path: string, newWindow: boolean) => {
 						projectsService.handleDeepLinkOpen(path, newWindow);
-					},
-					login: (accessToken: string) => {
-						userService.setUserAccessToken(accessToken);
 					},
 				},
 				coldstartLinks,
@@ -106,12 +100,10 @@
 	const gitConfig = inject(GIT_CONFIG_SERVICE);
 
 	if (browser) {
-		beforeNavigate(() => posthog.capture("$pageleave"));
 		afterNavigate(() => {
 			// Invalidate the git config on every navigation to ensure we have the latest
 			// (in case the user changed something outside of GitButler)
 			gitConfig.invalidateGitConfig();
-			posthog.capture("$pageview");
 		});
 	}
 
@@ -176,10 +168,10 @@
 <div class="app-root" role="application" oncontextmenu={(e) => !dev && e.preventDefault()}>
 	{@render children()}
 </div>
-<ShareIssueModal />
+
 <ToastController />
 <ChipToastContainer />
-<AppUpdater />
+
 <GitInputPrompt />
 <ZoomShortcutHandler />
 <GlobalSettingsShortcutHandler />

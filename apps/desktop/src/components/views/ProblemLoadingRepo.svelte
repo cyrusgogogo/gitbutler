@@ -7,7 +7,7 @@
 	import AppLayout from "$components/views/AppLayout.svelte";
 	import loadErrorSvg from "$lib/assets/illustrations/load-error.svg?raw";
 	import { PROJECTS_SERVICE } from "$lib/project/projectsService";
-	import { POSTHOG_WRAPPER } from "$lib/telemetry/posthog";
+
 	import { inject } from "@gitbutler/core/context";
 	import { message as i18nMessage } from "@gitbutler/i18n";
 	import { useTranslations } from "@gitbutler/i18n/svelte";
@@ -25,7 +25,6 @@
 	const { projectId, projectTitle, error = undefined }: Props = $props();
 
 	const projectsService = inject(PROJECTS_SERVICE);
-	const posthog = inject(POSTHOG_WRAPPER);
 
 	let loading = $state(false);
 	let deleteConfirmationModal: ReturnType<typeof RemoveProjectButton> | undefined = $state();
@@ -42,9 +41,7 @@
 		}
 	}
 
-	onMount(() => {
-		posthog.capture("repo:load_failed", { error_message: String(error) });
-	});
+	onMount(() => {});
 </script>
 
 <AppLayout {projectId} sidebarDisabled>

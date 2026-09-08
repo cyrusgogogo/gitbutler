@@ -1,5 +1,4 @@
 import { AnthropicAIClient } from "$lib/ai/anthropicClient";
-import { ButlerAIClient } from "$lib/ai/butlerClient";
 import { OpenAIClient } from "$lib/ai/openAIClient";
 import {
 	SHORT_DEFAULT_BRANCH_TEMPLATE,
@@ -23,8 +22,6 @@ import {
 } from "$lib/ai/types";
 import { GitConfigService } from "$lib/config/gitConfigService";
 import { mockCreateBackend } from "$lib/testing/mockBackend";
-import { TokenMemoryService } from "$lib/user/tokenMemoryService";
-import { HttpClient } from "@gitbutler/shared/network/httpClient";
 import { expect, test, describe, vi } from "vitest";
 import type { SecretsService } from "$lib/secrets/secretsService";
 import type { AppDispatch } from "$lib/state/clientState.svelte";
@@ -32,9 +29,9 @@ import type { GitConfigSettings } from "@gitbutler/but-sdk";
 
 const defaultGitConfig = Object.freeze({
 	[GitAIConfigKey.ModelProvider]: ModelKind.OpenAI,
-	[GitAIConfigKey.OpenAIKeyOption]: KeyOption.ButlerAPI,
+	[GitAIConfigKey.OpenAIKeyOption]: KeyOption.BringYourOwn,
 	[GitAIConfigKey.OpenAIModelName]: OpenAIModelName.GPT54Nano,
-	[GitAIConfigKey.AnthropicKeyOption]: KeyOption.ButlerAPI,
+	[GitAIConfigKey.AnthropicKeyOption]: KeyOption.BringYourOwn,
 	[GitAIConfigKey.AnthropicModelName]: AnthropicModelName.Haiku,
 });
 
@@ -152,32 +149,28 @@ const exampleDiffs: DiffInput[] = [hunk1, hunk2];
 function buildDefaultServices() {
 	const gitConfig = new DummyGitConfigService(structuredClone(defaultGitConfig));
 	const secretsService = new DummySecretsService(structuredClone(defaultSecretsConfig));
-	const tokenMemoryService = new TokenMemoryService();
-	const fetchMock = vi.fn();
-	const cloud = new HttpClient(fetchMock, "https://www.example.com", tokenMemoryService.token);
+
 	return {
-		tokenMemoryService,
-		aiService: new AIService(gitConfig, secretsService, cloud, tokenMemoryService),
+		aiService: new AIService(gitConfig, secretsService),
 	};
 }
 
 describe("AIService", () => {
-	describe("#buildModel", () => {
-		test("With default configuration, When a user token is provided. It returns ButlerAIClient", async () => {
-			const { aiService, tokenMemoryService } = buildDefaultServices();
-			tokenMemoryService.setToken("test-token");
-
-			expect(await aiService.buildClient()).toBeInstanceOf(ButlerAIClient);
-			tokenMemoryService.setToken(undefined);
+	test("legacy cloud configuration uses the user's own OpenAI key", async () => {
+		const gitConfig = new DummyGitConfigService({
+			...defaultGitConfig,
+			[GitAIConfigKey.OpenAIKeyOption]: "butlerAPI",
 		});
+		const secrets = new DummySecretsService({ [AISecretHandle.OpenAIKey]: "test-own-key" });
 
-		test("With default configuration, When a user is undefined. It returns undefined", async () => {
-			const { aiService, tokenMemoryService } = buildDefaultServices();
-
-			await expect(aiService.buildClient.bind(aiService)).rejects.toThrowError(
-				new Error("When using GitButler's API to summarize code, you must be logged in"),
-			);
-			tokenMemoryService.setToken(undefined);
+		const service = new AIService(gitConfig, secrets);
+		expect(await service.buildClient()).toBeInstanceOf(OpenAIClient);
+	});
+	describe("#buildModel", () => {
+		test("default configuration requires an own API key", async () => {
+			const { aiService } = buildDefaultServices();
+			expect(await aiService.validateConfiguration()).toBe(false);
+			await expect(aiService.buildClient()).rejects.toThrow("provide a valid token");
 		});
 
 		test("When token is bring your own, When a openAI token is present. It returns OpenAIClient", async () => {
@@ -186,10 +179,8 @@ describe("AIService", () => {
 				[GitAIConfigKey.OpenAIKeyOption]: KeyOption.BringYourOwn,
 			});
 			const secretsService = new DummySecretsService({ [AISecretHandle.OpenAIKey]: "sk-asdfasdf" });
-			const tokenMemoryService = new TokenMemoryService();
-			const fetchMock = vi.fn();
-			const cloud = new HttpClient(fetchMock, "https://www.example.com", tokenMemoryService.token);
-			const aiService = new AIService(gitConfig, secretsService, cloud, tokenMemoryService);
+
+			const aiService = new AIService(gitConfig, secretsService);
 
 			expect(await aiService.buildClient()).toBeInstanceOf(OpenAIClient);
 		});
@@ -200,10 +191,8 @@ describe("AIService", () => {
 				[GitAIConfigKey.OpenAIKeyOption]: KeyOption.BringYourOwn,
 			});
 			const secretsService = new DummySecretsService();
-			const tokenMemoryService = new TokenMemoryService();
-			const fetchMock = vi.fn();
-			const cloud = new HttpClient(fetchMock, "https://www.example.com", tokenMemoryService.token);
-			const aiService = new AIService(gitConfig, secretsService, cloud, tokenMemoryService);
+
+			const aiService = new AIService(gitConfig, secretsService);
 
 			await expect(aiService.buildClient.bind(aiService)).rejects.toThrowError(
 				new Error(
@@ -221,10 +210,8 @@ describe("AIService", () => {
 			const secretsService = new DummySecretsService({
 				[AISecretHandle.AnthropicKey]: "test-key",
 			});
-			const tokenMemoryService = new TokenMemoryService();
-			const fetchMock = vi.fn();
-			const cloud = new HttpClient(fetchMock, "https://www.example.com", tokenMemoryService.token);
-			const aiService = new AIService(gitConfig, secretsService, cloud, tokenMemoryService);
+
+			const aiService = new AIService(gitConfig, secretsService);
 
 			expect(await aiService.buildClient()).toBeInstanceOf(AnthropicAIClient);
 		});
@@ -236,10 +223,8 @@ describe("AIService", () => {
 				[GitAIConfigKey.AnthropicKeyOption]: KeyOption.BringYourOwn,
 			});
 			const secretsService = new DummySecretsService();
-			const tokenMemoryService = new TokenMemoryService();
-			const fetchMock = vi.fn();
-			const cloud = new HttpClient(fetchMock, "https://www.example.com", tokenMemoryService.token);
-			const aiService = new AIService(gitConfig, secretsService, cloud, tokenMemoryService);
+
+			const aiService = new AIService(gitConfig, secretsService);
 
 			await expect(aiService.buildClient.bind(aiService)).rejects.toThrowError(
 				new Error(
@@ -256,10 +241,8 @@ describe("AIService", () => {
 			const secretsService = new DummySecretsService({
 				[AISecretHandle.OpenRouterKey]: "sk-or-test-key",
 			});
-			const tokenMemoryService = new TokenMemoryService();
-			const fetchMock = vi.fn();
-			const cloud = new HttpClient(fetchMock, "https://www.example.com", tokenMemoryService.token);
-			const aiService = new AIService(gitConfig, secretsService, cloud, tokenMemoryService);
+
+			const aiService = new AIService(gitConfig, secretsService);
 
 			expect(await aiService.buildClient()).toBeInstanceOf(OpenAIClient);
 		});
@@ -270,10 +253,8 @@ describe("AIService", () => {
 				[GitAIConfigKey.ModelProvider]: ModelKind.OpenRouter,
 			});
 			const secretsService = new DummySecretsService();
-			const tokenMemoryService = new TokenMemoryService();
-			const fetchMock = vi.fn();
-			const cloud = new HttpClient(fetchMock, "https://www.example.com", tokenMemoryService.token);
-			const aiService = new AIService(gitConfig, secretsService, cloud, tokenMemoryService);
+
+			const aiService = new AIService(gitConfig, secretsService);
 
 			await expect(aiService.buildClient.bind(aiService)).rejects.toThrowError(
 				new Error("When using OpenRouter, you must provide a valid API key"),
@@ -288,10 +269,8 @@ describe("AIService", () => {
 				[GitAIConfigKey.OpenAIModelName]: OpenAIModelName.GPT54,
 			});
 			const secretsService = new DummySecretsService();
-			const tokenMemoryService = new TokenMemoryService();
-			const fetchMock = vi.fn();
-			const cloud = new HttpClient(fetchMock, "https://www.example.com", tokenMemoryService.token);
-			const aiService = new AIService(gitConfig, secretsService, cloud, tokenMemoryService);
+
+			const aiService = new AIService(gitConfig, secretsService);
 
 			expect(await aiService.getOpenAIModelName()).toBe(OpenAIModelName.GPT54);
 		});
@@ -302,10 +281,8 @@ describe("AIService", () => {
 				[GitAIConfigKey.OpenAIModelName]: "gpt-4-turbo",
 			});
 			const secretsService = new DummySecretsService();
-			const tokenMemoryService = new TokenMemoryService();
-			const fetchMock = vi.fn();
-			const cloud = new HttpClient(fetchMock, "https://www.example.com", tokenMemoryService.token);
-			const aiService = new AIService(gitConfig, secretsService, cloud, tokenMemoryService);
+
+			const aiService = new AIService(gitConfig, secretsService);
 
 			expect(await aiService.getOpenAIModelName()).toBe(OpenAIModelName.GPT54Nano);
 		});
@@ -318,10 +295,8 @@ describe("AIService", () => {
 				[GitAIConfigKey.AnthropicModelName]: AnthropicModelName.Opus,
 			});
 			const secretsService = new DummySecretsService();
-			const tokenMemoryService = new TokenMemoryService();
-			const fetchMock = vi.fn();
-			const cloud = new HttpClient(fetchMock, "https://www.example.com", tokenMemoryService.token);
-			const aiService = new AIService(gitConfig, secretsService, cloud, tokenMemoryService);
+
+			const aiService = new AIService(gitConfig, secretsService);
 
 			expect(await aiService.getAnthropicModelName()).toBe(AnthropicModelName.Opus);
 		});
@@ -332,10 +307,8 @@ describe("AIService", () => {
 				[GitAIConfigKey.AnthropicModelName]: "claude-3-opus-20240229",
 			});
 			const secretsService = new DummySecretsService();
-			const tokenMemoryService = new TokenMemoryService();
-			const fetchMock = vi.fn();
-			const cloud = new HttpClient(fetchMock, "https://www.example.com", tokenMemoryService.token);
-			const aiService = new AIService(gitConfig, secretsService, cloud, tokenMemoryService);
+
+			const aiService = new AIService(gitConfig, secretsService);
 
 			expect(await aiService.getAnthropicModelName()).toBe(AnthropicModelName.Haiku);
 		});

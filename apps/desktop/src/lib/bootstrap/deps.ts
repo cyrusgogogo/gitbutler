@@ -3,7 +3,6 @@ import {
 	PROMPT_SERVICE as AI_PROMPT_SERVICE,
 } from "$lib/ai/aiPromptService";
 import { AIService, AI_SERVICE } from "$lib/ai/service";
-import { CommitAnalytics, COMMIT_ANALYTICS } from "$lib/analytics/commitAnalytics";
 import { type IBackend } from "$lib/backend";
 import { BACKEND } from "$lib/backend";
 import ClipboardService, { CLIPBOARD_SERVICE } from "$lib/backend/clipboard";
@@ -52,31 +51,14 @@ import { ShortcutService, SHORTCUT_SERVICE } from "$lib/shortcuts/shortcutServic
 import { StackService, STACK_SERVICE } from "$lib/stacks/stackService.svelte";
 import { ClientState, CLIENT_STATE } from "$lib/state/clientState.svelte";
 import { UiState, UI_STATE, uiStateSlice } from "$lib/state/uiState.svelte";
-import DataSharingService, { DATA_SHARING_SERVICE } from "$lib/support/dataSharing";
-import { EVENT_CONTEXT, EventContext } from "$lib/telemetry/eventContext";
-import { POSTHOG_WRAPPER, PostHogWrapper } from "$lib/telemetry/posthog";
-import { UPDATER_SERVICE, UpdaterService } from "$lib/updater/updater";
 import {
 	UpstreamIntegrationService,
 	UPSTREAM_INTEGRATION_SERVICE,
 } from "$lib/upstream/upstreamIntegrationService.svelte";
-import { TokenMemoryService } from "$lib/user/tokenMemoryService";
-import { USER_SERVICE, UserService } from "$lib/user/userService.svelte";
 import { WorktreeService, WORKTREE_SERVICE } from "$lib/worktree/worktreeService.svelte";
 import { provideAll } from "@gitbutler/core/context";
-import { FeedService, FEED_SERVICE } from "@gitbutler/shared/feeds/service";
-import { HttpClient, HTTP_CLIENT } from "@gitbutler/shared/network/httpClient";
-import {
-	OrganizationService,
-	ORGANIZATION_SERVICE,
-} from "@gitbutler/shared/organizations/organizationService";
 import { reactive } from "@gitbutler/shared/reactiveUtils.svelte";
 import { AppState, APP_STATE, APP_DISPATCH } from "@gitbutler/shared/redux/store.svelte";
-import { UPLOADS_SERVICE, UploadsService } from "@gitbutler/shared/uploads/uploadsService";
-import {
-	UserService as CloudUserService,
-	USER_SERVICE as CLOUD_USER_SERVICE,
-} from "@gitbutler/shared/users/userService";
 import { DragStateService, DRAG_STATE_SERVICE } from "@gitbutler/ui/drag/dragStateService.svelte";
 import { FModeManager } from "@gitbutler/ui/focus/fModeManager";
 import { FOCUS_MANAGER, FocusManager } from "@gitbutler/ui/focus/focusManager";
@@ -85,18 +67,13 @@ import {
 	type ExternalLinkService,
 } from "@gitbutler/ui/utils/externalLinkService";
 import { IMECompositionHandler, IME_COMPOSITION_HANDLER } from "@gitbutler/ui/utils/imeHandling";
-import type { AppSettings } from "@gitbutler/but-sdk";
-import { PUBLIC_API_BASE_URL } from "$env/static/public";
 
 export function initDependencies(args: {
 	backend: IBackend;
-	appSettings: AppSettings;
 	settingsService: SettingsService;
-	posthog: PostHogWrapper;
-	eventContext: EventContext;
 	homeDir: string;
 }) {
-	const { backend, settingsService, appSettings, homeDir, posthog, eventContext } = args;
+	const { backend, settingsService, homeDir } = args;
 
 	// ============================================================================
 	// FOUNDATION LAYER - Core services that others depend on
@@ -105,22 +82,16 @@ export function initDependencies(args: {
 	const appState = new AppState();
 
 	// ============================================================================
-	// ANALYTICS & TELEMETRY
-	// ============================================================================
-
-	// ============================================================================
 	// AUTHENTICATION & SECURITY
 	// ============================================================================
 
 	const secretsService = new RustSecretService(backend);
-	const tokenMemoryService = new TokenMemoryService();
-	const httpClient = new HttpClient(window.fetch, PUBLIC_API_BASE_URL, tokenMemoryService.token);
 
 	// ============================================================================
 	// STATE MANAGEMENT
 	// ============================================================================
 
-	const clientState = new ClientState(backend, posthog);
+	const clientState = new ClientState(backend);
 	const githubUserService = new GitHubUserService(clientState.backendApi);
 	const gitlabUserService = new GitLabUserService(clientState.backendApi, secretsService);
 	const bitbucketUserService = new BitbucketUserService(clientState.backendApi);
@@ -143,21 +114,14 @@ export function initDependencies(args: {
 	// ============================================================================
 
 	const aiPromptService = new AIPromptService();
-	const aiService = new AIService(gitConfig, secretsService, httpClient, tokenMemoryService);
-	const userService = new UserService(
-		clientState.backendApi,
-		backend,
-		tokenMemoryService,
-		posthog,
-		uiState,
-	);
+	const aiService = new AIService(gitConfig, secretsService);
 
 	// ============================================================================
 	// FORGE SERVICES
 	// ============================================================================
 
 	const forgeInfoService = new ForgeInfoService(clientState.backendApi);
-	const prService = new PrService(clientState.backendApi, posthog);
+	const prService = new PrService(clientState.backendApi);
 	const listingService = new ListingService(clientState.backendApi, clientState.dispatch);
 	const repoService = new RepoService(clientState.backendApi);
 	const checksMonitor = new ChecksMonitor(clientState.backendApi);
@@ -195,13 +159,6 @@ export function initDependencies(args: {
 	const focusManager = new FocusManager(fModeManager);
 	const historyService = new HistoryService(backend, clientState.backendApi);
 	const oplogService = new OplogService(clientState.backendApi);
-	const commitAnalytics = new CommitAnalytics(
-		stackService,
-		uiState,
-		worktreeService,
-		fModeManager,
-		projectsService,
-	);
 	// ============================================================================
 	// SELECTION & EDITING
 	// ============================================================================
@@ -232,20 +189,6 @@ export function initDependencies(args: {
 	);
 
 	// ============================================================================
-	// FEEDS & NOTIFICATIONS
-	// ============================================================================
-
-	const feedService = new FeedService(httpClient, appState.appDispatch);
-
-	// ============================================================================
-	// CLOUD SERVICES
-	// ============================================================================
-
-	const uploadsService = new UploadsService(httpClient);
-	const organizationService = new OrganizationService(httpClient, appState.appDispatch);
-	const cloudUserService = new CloudUserService(httpClient, appState.appDispatch);
-
-	// ============================================================================
 	// UI & INTERACTION
 	// ============================================================================
 
@@ -261,14 +204,7 @@ export function initDependencies(args: {
 	// ============================================================================
 
 	const cliManager = new CLIManager(clientState.backendApi);
-	const dataSharingService = new DataSharingService(clientState.backendApi);
 	const promptService = new PromptService(backend);
-	const updaterService = new UpdaterService(
-		backend,
-		posthog,
-		shortcutService,
-		Number(appSettings.ui.checkForUpdatesIntervalInSeconds) * 1000,
-	);
 
 	// ============================================================================
 	// UTILITIES
@@ -295,15 +231,10 @@ export function initDependencies(args: {
 		[CLIENT_STATE, clientState],
 		[CLIPBOARD_SERVICE, clipboardService],
 		[CLI_MANAGER, cliManager],
-		[CLOUD_USER_SERVICE, cloudUserService],
-		[COMMIT_ANALYTICS, commitAnalytics],
-		[DATA_SHARING_SERVICE, dataSharingService],
 		[DEPENDENCY_SERVICE, dependencyService],
 		[DIFF_SERVICE, diffService],
 		[DRAG_STATE_SERVICE, dragStateService],
 		[DROPZONE_REGISTRY, dropzoneRegistry],
-		[EVENT_CONTEXT, eventContext],
-		[FEED_SERVICE, feedService],
 		[FILE_SERVICE, fileService],
 		[FOCUS_MANAGER, focusManager],
 		[CHECKS_MONITOR, checksMonitor],
@@ -318,13 +249,10 @@ export function initDependencies(args: {
 		[GIT_SERVICE, gitService],
 		[HISTORY_SERVICE, historyService],
 		[HOOKS_SERVICE, hooksService],
-		[HTTP_CLIENT, httpClient],
 		[FILE_SELECTION_MANAGER, fileSelectionManager],
 		[IME_COMPOSITION_HANDLER, imeHandler],
 		[MODE_SERVICE, modeService],
 		[OPLOG_SERVICE, oplogService],
-		[ORGANIZATION_SERVICE, organizationService],
-		[POSTHOG_WRAPPER, posthog],
 		[PROJECTS_SERVICE, projectsService],
 		[PROMPT_SERVICE, promptService],
 		[REMOTES_SERVICE, remotesService],
@@ -337,11 +265,8 @@ export function initDependencies(args: {
 		[REORDER_DROPZONE_FACTORY, reorderDropzoneFactory],
 		[UI_STATE, uiState],
 		[UNCOMMITTED_SERVICE, uncommittedService],
-		[UPDATER_SERVICE, updaterService],
-		[UPLOADS_SERVICE, uploadsService],
 		[UPSTREAM_INTEGRATION_SERVICE, upstreamIntegrationService],
 		[URL_SERVICE, urlService],
-		[USER_SERVICE, userService],
 		[WORKTREE_SERVICE, worktreeService],
 		[EXTERNAL_LINK_SERVICE, externalLinkService],
 	]);

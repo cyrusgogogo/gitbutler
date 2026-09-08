@@ -71,11 +71,9 @@ describe("parseDeepLinkUrl", () => {
 		expect(result![1].get("path")).toBe("C:\\some\\path");
 	});
 
-	test("parses Windows-normalized login URLs", () => {
-		const result = parseDeepLinkUrl("but://login/?access_token=token&t=123");
-		expect(result).not.toBeNull();
-		expect(result![0]).toBe("login");
-		expect(result![1].get("access_token")).toBe("token");
+	test("rejects retired account login links", () => {
+		expect(parseDeepLinkUrl("but://login/?access_token=token&t=123")).toBeNull();
+		expect(isValidDeepLinkUrl("but-dev://login?access_token=token")).toBe(false);
 	});
 
 	test("parses open URLs with multiple query parameters", () => {

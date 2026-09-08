@@ -1,9 +1,7 @@
 import { SilentError } from "$lib/error/error";
-import { isNormalizedError, normalizedErrorToException } from "$lib/error/normalizedError";
 import { parseError } from "$lib/error/parser";
 import { showError } from "$lib/error/showError";
 import { message as i18nMessage } from "@gitbutler/i18n";
-import { captureException } from "@sentry/sveltekit";
 
 // Lazy-import logErrorToFile to avoid circular dependency with backend/.
 let _logErrorToFile: ((error: string) => void) | undefined;
@@ -61,39 +59,14 @@ export function logError(error: unknown, options?: LogErrorOptions) {
 	}
 
 	try {
-		// Unwrap promise rejections first so Sentry sees the underlying reason
-		// rather than the event wrapper, and so SilentError detection works
-		// against the actual thrown value.
+		// Unwrap promise rejections so error classification sees the actual failure.
 		if (error instanceof PromiseRejectionEvent) {
 			error = error.reason;
 		}
 
-		// `SilentError` indicates the caller already handled (or chose to
-		// suppress) the error — skip both Sentry capture and the toast so
-		// they don't double-up on noise or surface anything unexpected.
-		const silent = error instanceof SilentError;
-
-		if (!silent) {
-			if (options?.skipToast) {
-				// Sentry-only path (e.g. Svelte `<ErrorBoundary>`): no toast
-				// will be shown, so capture directly here. `showError`
-				// handles the same wrapping in the toast-bearing path
-				// below.
-				const forSentry =
-					isNormalizedError(error) && !(error instanceof Error)
-						? normalizedErrorToException(error)
-						: error;
-				captureException(forSentry, {
-					mechanism: {
-						type: "sveltekit",
-						handled: false,
-					},
-				});
-			} else {
-				// `showError` captures to PostHog and Sentry itself, so the
-				// toast pipeline and the telemetry stay in sync.
-				showError(i18nMessage("desktop:logError.unhandledException"), error);
-			}
+		// Keep local logging while avoiding duplicate notifications for handled errors.
+		if (!(error instanceof SilentError) && !options?.skipToast) {
+			showError(i18nMessage("desktop:logError.unhandledException"), error);
 		}
 
 		const logMessage = loggableError(error);

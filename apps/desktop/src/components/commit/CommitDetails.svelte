@@ -4,7 +4,6 @@
 	import { splitMessage } from "$lib/commits/commitMessage";
 	import { rewrapCommitMessage } from "$lib/config/uiFeatureFlags";
 	import { UI_STATE } from "$lib/state/uiState.svelte";
-	import { useUserAvatarUrl } from "$lib/user/userAvatar.svelte";
 	import { rejoinParagraphs, truncate } from "$lib/utils/string";
 	import { inject } from "@gitbutler/core/context";
 	import { message as i18nMessage } from "@gitbutler/i18n";
@@ -24,7 +23,6 @@
 
 	const uiState = inject(UI_STATE);
 	const clipboardService = inject(CLIPBOARD_SERVICE);
-	const userAvatarUrl = useUserAvatarUrl();
 	const zoom = $derived(uiState.global.zoom.current);
 
 	let messageWidth = $state(0);
@@ -48,11 +46,7 @@
 <div class="commit">
 	<div class="metadata text-12">
 		<span>{$i18nMessages.t("desktop:CommitDetails.author")}</span>
-		<Avatar
-			size="medium"
-			username={commit.author.name}
-			srcUrl={userAvatarUrl(commit.author.email) ?? commit.author.gravatarUrl}
-		/>
+		<Avatar size="medium" username={commit.author.name} srcUrl={commit.author.gravatarUrl} />
 		<span class="divider">•</span>
 		<TimeAgo date={commitCommittedAtDate(commit)} />
 		<span class="divider">•</span>

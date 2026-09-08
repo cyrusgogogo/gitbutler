@@ -114,10 +114,10 @@ const fixtureProject = (id: string): ProjectForFrontend => ({
 
 const fixtureAiConfiguration: AiConfiguration = {
 	provider: "anthropic",
-	openaiKeyOption: "butlerAPI",
+	openaiKeyOption: "bringYourOwn",
 	openaiModel: "",
 	openaiHasApiKey: false,
-	anthropicKeyOption: "butlerAPI",
+	anthropicKeyOption: "bringYourOwn",
 	anthropicModel: "",
 	anthropicHasApiKey: false,
 	ollamaEndpoint: "",

@@ -2,7 +2,6 @@ import ProjectSetupTarget from "$components/onboarding/ProjectSetupTarget.svelte
 import { GIT_CONFIG_SERVICE } from "$lib/config/gitConfigService";
 import { PROJECTS_SERVICE } from "$lib/project/projectsService";
 import { SETTINGS_SERVICE } from "$lib/settings/appSettings";
-import { POSTHOG_WRAPPER } from "$lib/telemetry/posthog";
 import { render, screen, waitFor } from "@testing-library/svelte";
 import userEvent from "@testing-library/user-event";
 import { writable } from "svelte/store";
@@ -30,7 +29,6 @@ function renderTarget(
 			},
 		],
 		[SETTINGS_SERVICE._key, { appSettings: writable(undefined) }],
-		[POSTHOG_WRAPPER._key, { captureOnboarding: vi.fn() }],
 	]);
 
 	return render(ProjectSetupTarget, {

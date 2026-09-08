@@ -7,7 +7,7 @@
 	import { classifyGitHubDeviceOAuthFailure } from "$lib/error/errorClassification";
 	import { GITHUB_USER_SERVICE } from "$lib/forge/github/githubUserService.svelte";
 	import { canonicalMessages } from "$lib/notifications/toasts";
-	import { OnboardingEvent, POSTHOG_WRAPPER } from "$lib/telemetry/posthog";
+
 	import { inject } from "@gitbutler/core/context";
 	import { message as i18nMessage } from "@gitbutler/i18n";
 	import { useTranslations } from "@gitbutler/i18n/svelte";
@@ -28,7 +28,6 @@
 	const githubUserService = inject(GITHUB_USER_SERVICE);
 	const urlService = inject(URL_SERVICE);
 	const clipboardService = inject(CLIPBOARD_SERVICE);
-	const posthog = inject(POSTHOG_WRAPPER);
 
 	const [clearAll, clearingAllResult] = githubUserService.deleteAllGitHubAccounts();
 	const [storePat, storePatResult] = githubUserService.storeGitHubPat;
@@ -87,11 +86,9 @@
 		};
 		console.error("GitHub device OAuth failed", failure);
 		(severity === "warning" ? toasts.warning : toasts.error)(message);
-		posthog.captureOnboarding(OnboardingEvent.GitHubOAuthFailed, failure);
 	}
 
 	function gitHubStartOauth() {
-		posthog.captureOnboarding(OnboardingEvent.GitHubInitiateOAuth);
 		githubUserService
 			.initDeviceOauth()
 			.then((verification) => {
@@ -133,12 +130,11 @@
 		patError = undefined;
 		try {
 			await storePat({ accessToken: patInput });
-			posthog.captureOnboarding(OnboardingEvent.GitHubStorePat);
+
 			cleanupPatFlow();
 		} catch (err: any) {
 			console.error("Failed to store GitHub PAT:", err);
 			patError = i18nMessage("desktop:detail.717e974744");
-			posthog.captureOnboarding(OnboardingEvent.GitHubStorePatFailed);
 		}
 	}
 
@@ -152,12 +148,11 @@
 		gheHostError = undefined;
 		try {
 			await storeGhePat({ accessToken: ghePatInput, host: gheHostInput });
-			posthog.captureOnboarding(OnboardingEvent.GitHubStoreGHEPat);
+
 			cleanupGheFlow();
 		} catch (err: any) {
 			console.error("Failed to store GitHub Enterprise PAT:", err);
 			ghePatError = i18nMessage("desktop:detail.a9fa8428e8");
-			posthog.captureOnboarding(OnboardingEvent.GitHubStoreGHEPatFailed);
 		}
 	}
 </script>

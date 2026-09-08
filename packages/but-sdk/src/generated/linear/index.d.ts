@@ -62,16 +62,16 @@ export declare function addReviewReaction(projectId: string, reviewId: number, k
 export interface AiConfiguration {
   /** The provider requests go to. */
   provider: 'openai' | 'anthropic' | 'ollama' | 'lmstudio' | 'openrouter'
-  /** Whether OpenAI calls use GitButler's key or the user's own. */
-  openaiKeyOption: 'butlerAPI' | 'bringYourOwn'
+  /** Credential source for OpenAI; always the user's own key. */
+  openaiKeyOption: 'bringYourOwn'
   /** The OpenAI model to request. */
   openaiModel: string
   /** An OpenAI-compatible endpoint to use instead of OpenAI's own. */
   openaiCustomEndpoint?: string
   /** Whether an OpenAI key is stored, never the key itself. */
   openaiHasApiKey: boolean
-  /** Whether Anthropic calls use GitButler's key or the user's own. */
-  anthropicKeyOption: 'butlerAPI' | 'bringYourOwn'
+  /** Credential source for Anthropic; always the user's own key. */
+  anthropicKeyOption: 'bringYourOwn'
   /** The Anthropic model to request. */
   anthropicModel: string
   /** Whether an Anthropic key is stored, never the key itself. */
@@ -92,16 +92,16 @@ export interface AiConfiguration {
 export interface AiConfigurationUpdate {
   /** The provider requests should go to. Streaming-only providers cannot be chosen here. */
   provider: 'openai' | 'anthropic' | 'ollama' | 'lmstudio'
-  /** Whether OpenAI calls should use GitButler's key or the user's own. */
-  openaiKeyOption: 'butlerAPI' | 'bringYourOwn'
+  /** Credential source for OpenAI; always the user's own key. */
+  openaiKeyOption: 'bringYourOwn'
   /** The OpenAI model to request. */
   openaiModel: string
   /** An OpenAI-compatible endpoint to use instead of OpenAI's own. */
   openaiCustomEndpoint?: string
   /** A newly entered OpenAI key to store; omitted leaves any stored key alone. */
   openaiApiKey?: string
-  /** Whether Anthropic calls should use GitButler's key or the user's own. */
-  anthropicKeyOption: 'butlerAPI' | 'bringYourOwn'
+  /** Credential source for Anthropic; always the user's own key. */
+  anthropicKeyOption: 'bringYourOwn'
   /** The Anthropic model to request. */
   anthropicModel: string
   /** A newly entered Anthropic key to store; omitted leaves any stored key alone. */
@@ -734,7 +734,7 @@ export declare function forgetGitlabAccount(account: GitlabAccountIdentifier): P
 /**
  * Read application-global AI configuration without exposing stored secrets.
  *
- * {@link ../../../../../crates/but-api/src/ai.rs:213}
+ * {@link ../../../../../crates/but-api/src/ai.rs:207}
  */
 export declare function getAiConfiguration(): Promise<AiConfiguration>
 
@@ -1292,7 +1292,7 @@ export declare function requestReview(projectId: string, reviewId: number, login
 /**
  * Clear application-global AI configuration and stored provider API keys.
  *
- * {@link ../../../../../crates/but-api/src/ai.rs:251}
+ * {@link ../../../../../crates/but-api/src/ai.rs:245}
  */
 export declare function resetAiConfiguration(): Promise<AiConfiguration>
 
@@ -1505,7 +1505,7 @@ export declare function unapplyStack(projectId: string, stackId: string): Promis
 /**
  * Validate and save one complete application-global AI configuration.
  *
- * {@link ../../../../../crates/but-api/src/ai.rs:219}
+ * {@link ../../../../../crates/but-api/src/ai.rs:213}
  */
 export declare function updateAiConfiguration(update: AiConfigurationUpdate): Promise<AiConfiguration>
 

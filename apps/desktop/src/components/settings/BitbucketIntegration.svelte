@@ -3,7 +3,7 @@
 	import ReduxResult from "$components/shared/ReduxResult.svelte";
 	import bitbucketLogoSvg from "$lib/assets/unsized-logos/bitbucket.svg?raw";
 	import { BITBUCKET_USER_SERVICE } from "$lib/forge/bitbucket/bitbucketUserService.svelte";
-	import { OnboardingEvent, POSTHOG_WRAPPER } from "$lib/telemetry/posthog";
+
 	import { inject } from "@gitbutler/core/context";
 	import { useTranslations } from "@gitbutler/i18n/svelte";
 	import { AddForgeAccountButton, Button, CardGroup, Link, Textbox } from "@gitbutler/ui";
@@ -12,7 +12,6 @@
 	const i18nMessages = useTranslations();
 
 	const bitbucketUserService = inject(BITBUCKET_USER_SERVICE);
-	const posthog = inject(POSTHOG_WRAPPER);
 
 	const [clearAll, clearingAllResult] = bitbucketUserService.deleteAllBitbucketAccounts();
 	const [storeApiToken, storeApiTokenResult] = bitbucketUserService.storeBitbucketApiToken;
@@ -48,7 +47,7 @@
 		tokenError = undefined;
 		try {
 			await storeApiToken({ email: emailInput, accessToken: tokenInput });
-			posthog.captureOnboarding(OnboardingEvent.BitbucketStoreApiToken);
+
 			cleanupApiTokenFlow();
 		} catch (err: any) {
 			console.error("Failed to store Bitbucket API token:", err);
@@ -57,7 +56,6 @@
 				message.includes("403") || message.includes("Forbidden")
 					? "Token is missing required scopes - make sure read:user:bitbucket is granted."
 					: "Invalid email/token or network error";
-			posthog.captureOnboarding(OnboardingEvent.BitbucketStoreApiTokenFailed);
 		}
 	}
 </script>

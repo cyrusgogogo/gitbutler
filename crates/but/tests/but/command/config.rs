@@ -197,7 +197,10 @@ fn ai_openai_defaults_to_global_config() {
     env.invoke_bash("git init repo");
     let global_config = env.projects_root().join("global.gitconfig");
 
-    env.but("-C repo config ai openai --key-option butler-api --model gpt-5.4-nano")
+    env.but("-C repo config ai openai --api-key test-key --model gpt-5.4-nano")
+        .env("GIT_CONFIG_COUNT", "5")
+        .env("GIT_CONFIG_KEY_4", "credential.helper")
+        .env("GIT_CONFIG_VALUE_4", "store --file test-credentials")
         .env("GIT_CONFIG_GLOBAL", &global_config)
         .assert()
         .success();
@@ -208,7 +211,7 @@ fn ai_openai_defaults_to_global_config() {
     );
     assert_eq!(
         env.invoke_git("config --file global.gitconfig --get gitbutler.aiOpenAIKeyOption"),
-        "butlerAPI"
+        "bringYourOwn"
     );
     assert_eq!(
         env.invoke_git("config --file global.gitconfig --get gitbutler.aiOpenAIModelName"),
@@ -275,7 +278,10 @@ fn ai_show_outputs_current_global_configuration_json() {
     let env = Sandbox::empty();
     let global_config = env.projects_root().join("global.gitconfig");
 
-    env.but("config ai openai --key-option butler-api --model gpt-5.4-nano")
+    env.but("config ai openai --api-key test-key --model gpt-5.4-nano")
+        .env("GIT_CONFIG_COUNT", "5")
+        .env("GIT_CONFIG_KEY_4", "credential.helper")
+        .env("GIT_CONFIG_VALUE_4", "store --file test-credentials")
         .env("GIT_CONFIG_GLOBAL", &global_config)
         .assert()
         .success();
@@ -289,7 +295,7 @@ fn ai_show_outputs_current_global_configuration_json() {
     let json: serde_json::Value = serde_json::from_slice(&output.stdout).unwrap();
 
     assert_eq!(json["provider"], "openai");
-    assert_eq!(json["openai_key_option"], "butlerAPI");
+    assert_eq!(json["openai_key_option"], "bringYourOwn");
     assert_eq!(json["openai_model"], "gpt-5.4-nano");
 }
 
@@ -321,7 +327,10 @@ fn ai_show_outputs_current_global_configuration_human() {
     let env = Sandbox::empty();
     let global_config = env.projects_root().join("global.gitconfig");
 
-    env.but("config ai openai --key-option butler-api --model gpt-5.4-nano")
+    env.but("config ai openai --api-key test-key --model gpt-5.4-nano")
+        .env("GIT_CONFIG_COUNT", "5")
+        .env("GIT_CONFIG_KEY_4", "credential.helper")
+        .env("GIT_CONFIG_VALUE_4", "store --file test-credentials")
         .env("GIT_CONFIG_GLOBAL", &global_config)
         .assert()
         .success();
@@ -334,7 +343,7 @@ fn ai_show_outputs_current_global_configuration_human() {
 AI Configuration (global)
 
   Provider: openai
-  OpenAI key option: butlerAPI
+  OpenAI key option: bringYourOwn
   OpenAI model: gpt-5.4-nano
   OpenAI endpoint: (not set)
   Anthropic key option: (not set)

@@ -1,18 +1,17 @@
 <script lang="ts">
 	import AIPromptEdit from "$components/settings/AIPromptEdit.svelte";
 	import AiCredentialCheck from "$components/settings/AiCredentialCheck.svelte";
-	import AuthorizationBanner from "$components/settings/AuthorizationBanner.svelte";
+
 	import SettingsSection from "$components/shared/SettingsSection.svelte";
-	import { AISecretHandle, AI_SERVICE, GitAIConfigKey, KeyOption } from "$lib/ai/service";
+	import { AISecretHandle, AI_SERVICE, GitAIConfigKey } from "$lib/ai/service";
 	import { OpenAIModelName, AnthropicModelName, ModelKind } from "$lib/ai/types";
 	import { GIT_CONFIG_SERVICE } from "$lib/config/gitConfigService";
 	import { SECRET_SERVICE } from "$lib/secrets/secretsService";
-	import { USER_SERVICE } from "$lib/user/userService.svelte";
+
 	import { inject } from "@gitbutler/core/context";
 	import { useTranslations } from "@gitbutler/i18n/svelte";
 	import {
 		CardGroup,
-		Icon,
 		InfoMessage,
 		Link,
 		RadioButton,
@@ -29,12 +28,11 @@
 	const gitConfigService = inject(GIT_CONFIG_SERVICE);
 	const secretsService = inject(SECRET_SERVICE);
 	const aiService = inject(AI_SERVICE);
-	const userService = inject(USER_SERVICE);
+
 	let initialized = false;
 
 	let modelKind: ModelKind | undefined = $state();
-	let openAIKeyOption: KeyOption | undefined = $state();
-	let anthropicKeyOption: KeyOption | undefined = $state();
+
 	let openAIKey: string | undefined = $state();
 	let openAICustomEndpoint: string | undefined = $state();
 	let openAIModelName: OpenAIModelName | undefined = $state();
@@ -61,12 +59,10 @@
 	onMount(async () => {
 		modelKind = await aiService.getModelKind();
 
-		openAIKeyOption = await aiService.getOpenAIKeyOption();
 		openAIModelName = await aiService.getOpenAIModelName();
 		openAIKey = await aiService.getOpenAIKey();
 		openAICustomEndpoint = await aiService.getOpenAICustomEndpoint();
 
-		anthropicKeyOption = await aiService.getAnthropicKeyOption();
 		anthropicModelName = await aiService.getAnthropicModelName();
 		anthropicKey = await aiService.getAnthropicKey();
 
@@ -86,17 +82,6 @@
 
 		initialized = true;
 	});
-
-	const keyOptions = $derived([
-		{
-			label: $i18nMessages.t("desktop:AiSettings.useGitButlerAPI"),
-			value: KeyOption.ButlerAPI,
-		},
-		{
-			label: $i18nMessages.t("desktop:AiSettings.yourOwnKey"),
-			value: KeyOption.BringYourOwn,
-		},
-	]);
 
 	const openAIModelOptions = $derived([
 		{
@@ -137,9 +122,7 @@
 	run(() => {
 		setConfiguration(GitAIConfigKey.ModelProvider, modelKind);
 	});
-	run(() => {
-		setConfiguration(GitAIConfigKey.OpenAIKeyOption, openAIKeyOption);
-	});
+
 	run(() => {
 		setConfiguration(GitAIConfigKey.OpenAIModelName, openAIModelName);
 	});
@@ -149,9 +132,7 @@
 	run(() => {
 		setSecret(AISecretHandle.OpenAIKey, openAIKey);
 	});
-	run(() => {
-		setConfiguration(GitAIConfigKey.AnthropicKeyOption, anthropicKeyOption);
-	});
+
 	run(() => {
 		setConfiguration(GitAIConfigKey.AnthropicModelName, anthropicModelName);
 	});
@@ -184,13 +165,6 @@
 	});
 </script>
 
-{#snippet shortNote(text: string)}
-	<div class="ai-settings__short-note">
-		<Icon name="info" size={14} />
-		<p class="text-12 text-body">{text}</p>
-	</div>
-{/snippet}
-
 <p class="text-13 text-body ai-settings__about-text">
 	{$i18nMessages.t("desktop:AiSettings.gitButlerSupportsMultipleAIProvidersOpenAIAndAnthropic")}
 </p>
@@ -207,63 +181,35 @@
 		</CardGroup.Item>
 		{#if modelKind === ModelKind.OpenAI}
 			<CardGroup.Item>
+				<Textbox
+					label={$i18nMessages.t("desktop:AiSettings.aPIKey")}
+					type="password"
+					bind:value={openAIKey}
+					required
+					placeholder={$i18nMessages.t("desktop:AiSettings.sk")}
+				/>
+
 				<Select
-					value={openAIKeyOption}
-					options={keyOptions}
+					value={openAIModelName}
+					options={openAIModelOptions}
+					label={$i18nMessages.t("desktop:AiSettings.modelVersion")}
 					wide
-					label={$i18nMessages.t("desktop:AiSettings.doYouWantToProvideYourOwnKey")}
 					onselect={(value) => {
-						openAIKeyOption = value as KeyOption;
+						openAIModelName = value as OpenAIModelName;
 					}}
 				>
 					{#snippet itemSnippet({ item, highlighted })}
-						<SelectItem selected={item.value === openAIKeyOption} {highlighted}>
+						<SelectItem selected={item.value === openAIModelName} {highlighted}>
 							{item.label}
 						</SelectItem>
 					{/snippet}
 				</Select>
 
-				{#if openAIKeyOption === KeyOption.ButlerAPI}
-					{#if !userService.user}
-						<AuthorizationBanner
-							message={$i18nMessages.t("desktop:AiSettings.pleaseSignInToUseTheGitButlerAPI")}
-						/>
-					{:else}
-						{@render shortNote($i18nMessages.t("desktop:AiSettings.inlined335baabd"))}
-					{/if}
-				{/if}
-
-				{#if openAIKeyOption === KeyOption.BringYourOwn}
-					<Textbox
-						label={$i18nMessages.t("desktop:AiSettings.aPIKey")}
-						type="password"
-						bind:value={openAIKey}
-						required
-						placeholder={$i18nMessages.t("desktop:AiSettings.sk")}
-					/>
-
-					<Select
-						value={openAIModelName}
-						options={openAIModelOptions}
-						label={$i18nMessages.t("desktop:AiSettings.modelVersion")}
-						wide
-						onselect={(value) => {
-							openAIModelName = value as OpenAIModelName;
-						}}
-					>
-						{#snippet itemSnippet({ item, highlighted })}
-							<SelectItem selected={item.value === openAIModelName} {highlighted}>
-								{item.label}
-							</SelectItem>
-						{/snippet}
-					</Select>
-
-					<Textbox
-						label={$i18nMessages.t("desktop:AiSettings.customEndpoint")}
-						bind:value={openAICustomEndpoint}
-						placeholder="https://api.openai.com/v1"
-					/>
-				{/if}
+				<Textbox
+					label={$i18nMessages.t("desktop:AiSettings.customEndpoint")}
+					bind:value={openAICustomEndpoint}
+					placeholder="https://api.openai.com/v1"
+				/>
 			</CardGroup.Item>
 		{/if}
 
@@ -277,56 +223,28 @@
 		</CardGroup.Item>
 		{#if modelKind === ModelKind.Anthropic}
 			<CardGroup.Item>
+				<Textbox
+					label={$i18nMessages.t("desktop:AiSettings.aPIKey")}
+					type="password"
+					bind:value={anthropicKey}
+					required
+					placeholder={$i18nMessages.t("desktop:AiSettings.skAntApi03")}
+				/>
+
 				<Select
-					value={anthropicKeyOption}
-					options={keyOptions}
-					wide
-					label={$i18nMessages.t("desktop:AiSettings.doYouWantToProvideYourOwnKey")}
+					value={anthropicModelName}
+					options={anthropicModelOptions}
+					label={$i18nMessages.t("desktop:AiSettings.modelVersion")}
 					onselect={(value) => {
-						anthropicKeyOption = value as KeyOption;
+						anthropicModelName = value as AnthropicModelName;
 					}}
 				>
 					{#snippet itemSnippet({ item, highlighted })}
-						<SelectItem selected={item.value === anthropicKeyOption} {highlighted}>
+						<SelectItem selected={item.value === anthropicModelName} {highlighted}>
 							{item.label}
 						</SelectItem>
 					{/snippet}
 				</Select>
-
-				{#if anthropicKeyOption === KeyOption.ButlerAPI}
-					{#if !userService.user}
-						<AuthorizationBanner
-							message={$i18nMessages.t("desktop:AiSettings.pleaseSignInToUseTheGitButlerAPI")}
-						/>
-					{:else}
-						{@render shortNote($i18nMessages.t("desktop:AiSettings.inline9df49d24e"))}
-					{/if}
-				{/if}
-
-				{#if anthropicKeyOption === KeyOption.BringYourOwn}
-					<Textbox
-						label={$i18nMessages.t("desktop:AiSettings.aPIKey")}
-						type="password"
-						bind:value={anthropicKey}
-						required
-						placeholder={$i18nMessages.t("desktop:AiSettings.skAntApi03")}
-					/>
-
-					<Select
-						value={anthropicModelName}
-						options={anthropicModelOptions}
-						label={$i18nMessages.t("desktop:AiSettings.modelVersion")}
-						onselect={(value) => {
-							anthropicModelName = value as AnthropicModelName;
-						}}
-					>
-						{#snippet itemSnippet({ item, highlighted })}
-							<SelectItem selected={item.value === anthropicModelName} {highlighted}>
-								{item.label}
-							</SelectItem>
-						{/snippet}
-					</Select>
-				{/if}
 			</CardGroup.Item>
 		{/if}
 
@@ -515,16 +433,6 @@
 		flex-direction: column;
 		margin-top: 16px;
 		gap: 12px;
-	}
-
-	.ai-settings__short-note {
-		display: flex;
-		align-items: center;
-		padding: 6px 10px;
-		gap: 8px;
-		border-radius: var(--radius-m);
-		background-color: var(--bg-2);
-		color: var(--text-2);
 	}
 
 	.ai-settings__section-text-block {

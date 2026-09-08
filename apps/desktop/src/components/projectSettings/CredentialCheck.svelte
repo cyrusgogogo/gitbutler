@@ -1,10 +1,8 @@
 <script lang="ts">
 	import SectionCardDisclaimer from "$components/shared/SectionCardDisclaimer.svelte";
 	import { GIT_CONFIG_SERVICE } from "$lib/config/gitConfigService";
-	import { classify } from "$lib/error/errorClassification";
 	import { parseError } from "$lib/error/parser";
-	import { canonicalMessages } from "$lib/notifications/toasts";
-	import { OnboardingEvent, POSTHOG_WRAPPER } from "$lib/telemetry/posthog";
+
 	import { inject } from "@gitbutler/core/context";
 	import { message, type LocalizedText } from "@gitbutler/i18n";
 	import { useTranslations } from "@gitbutler/i18n/svelte";
@@ -23,7 +21,6 @@
 	const { projectId, remoteName, branchName, disabled }: Props = $props();
 
 	const gitConfig = inject(GIT_CONFIG_SERVICE);
-	const posthog = inject(POSTHOG_WRAPPER);
 
 	type Check = { name: LocalizedText; promise: Promise<any> };
 	let checks = $state<Check[]>();
@@ -34,36 +31,22 @@
 
 	async function checkCredentials() {
 		if (!remoteName || !branchName) return;
-		posthog.capture(OnboardingEvent.GitCheckCredentials);
+
 		loading = true;
 		errors = 0;
 		checks = [];
-		let stage: "fetch" | "push" = "fetch";
 
 		try {
 			const fetchCheck = gitConfig.checkGitFetch(projectId, remoteName);
 			checks = [{ name: message("desktop:CredentialCheck.detaild48aafe68"), promise: fetchCheck }];
 			await fetchCheck;
-			stage = "push";
 			const pushCheck = gitConfig.checkGitPush(projectId, remoteName, branchName);
 			checks = [
 				...checks,
 				{ name: message("desktop:CredentialCheck.detail8f7f57b51"), promise: pushCheck },
 			];
 			await pushCheck;
-		} catch (error) {
-			const { code, userMessage } = classify(error);
-			posthog.captureOnboarding(
-				OnboardingEvent.GitCheckCredentialsFailed,
-				{
-					name: "Git credential check failed",
-					message: canonicalMessages.text(
-						userMessage ?? message("desktop:CredentialCheck.detail41b08996e"),
-					),
-					code,
-				},
-				{ stage },
-			);
+		} catch {
 			errors = 1;
 		} finally {
 			loading = false;

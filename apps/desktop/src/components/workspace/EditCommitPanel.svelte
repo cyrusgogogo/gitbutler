@@ -15,7 +15,6 @@
 	import { createCommitSelection } from "$lib/selection/key";
 	import { STACK_SERVICE } from "$lib/stacks/stackService.svelte";
 	import { UI_STATE } from "$lib/state/uiState.svelte";
-	import { useUserAvatarUrl } from "$lib/user/userAvatar.svelte";
 	import { inject } from "@gitbutler/core/context";
 	import { useTranslations } from "@gitbutler/i18n/svelte";
 	import { AsyncButton, Avatar, Badge, Button, InfoButton, Modal, TestId } from "@gitbutler/ui";
@@ -43,8 +42,6 @@
 	const uiState = inject(UI_STATE);
 	const urlService = inject(URL_SERVICE);
 	const fileService = inject(FILE_SERVICE);
-
-	const userAvatarUrl = useUserAvatarUrl();
 
 	const initialFiles = $derived(modeService.initialEditModeState({ projectId }));
 	const uncommittedFiles = $derived(modeService.changesSinceInitialEditState({ projectId }));
@@ -234,9 +231,7 @@
 					<div class="card commit-card">
 						<ReduxResult {projectId} result={commitQuery.result}>
 							{#snippet children(commit)}
-								{@const authorImgUrl = commit
-									? (userAvatarUrl(commit.author.email) ?? commit.author.gravatarUrl)
-									: undefined}
+								{@const authorImgUrl = commit ? commit.author.gravatarUrl : undefined}
 								{@const title = splitMessage(commit.message).title}
 								<h3 class="text-13 text-semibold text-body commit-card__title">
 									{title || $i18nMessages.t("desktop:EditCommitPanel.undefinedCommit")}

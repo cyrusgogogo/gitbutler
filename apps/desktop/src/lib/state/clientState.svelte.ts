@@ -8,7 +8,6 @@ import { FLUSH, PAUSE, PERSIST, persistReducer, PURGE, REGISTER, REHYDRATE } fro
 import persistStore from "redux-persist/lib/persistStore";
 import storage from "redux-persist/lib/storage";
 import type { IBackend } from "$lib/backend";
-import type { PostHogWrapper } from "$lib/telemetry/posthog";
 
 export const CLIENT_STATE = new InjectionToken<ClientState>("ClientState");
 
@@ -31,11 +30,10 @@ export class ClientState {
 	/** rtk-query api for communicating with the back end. */
 	readonly backendApi: BackendApi;
 
-	constructor(backend: IBackend, posthog: PostHogWrapper) {
+	constructor(backend: IBackend) {
 		const ctx = {
 			getState: () => this.rootState as unknown as RootState<any, any, any>,
 			getDispatch: () => this.dispatch,
-			posthog,
 		};
 		this.backendApi = createBackendApi(ctx);
 

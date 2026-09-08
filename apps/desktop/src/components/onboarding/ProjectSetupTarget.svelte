@@ -10,7 +10,7 @@
 	import { PROJECTS_SERVICE } from "$lib/project/projectsService";
 	import { SETTINGS_SERVICE } from "$lib/settings/appSettings";
 	import { combineResults } from "$lib/state/helpers";
-	import { OnboardingEvent, POSTHOG_WRAPPER } from "$lib/telemetry/posthog";
+
 	import { unique } from "$lib/utils/array";
 	import { inject } from "@gitbutler/core/context";
 	import { useTranslations } from "@gitbutler/i18n/svelte";
@@ -42,7 +42,6 @@
 	const { projectId, projectName, remoteBranches, onBranchSelected, onOpenProject }: Props =
 		$props();
 
-	const posthog = inject(POSTHOG_WRAPPER);
 	const gitConfig = inject(GIT_CONFIG_SERVICE);
 	const settingsStore = inject(SETTINGS_SERVICE).appSettings;
 
@@ -79,9 +78,6 @@
 		loading = true;
 		targetError = undefined;
 		if (!targetWasSet) {
-			posthog.captureOnboarding(OnboardingEvent.ProjectSetupContinue, undefined, {
-				landDirectly: $landDirectly,
-			});
 			try {
 				await onBranchSelected([branch.name, remote]);
 				targetWasSet = true;

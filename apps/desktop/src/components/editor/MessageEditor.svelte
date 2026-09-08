@@ -14,16 +14,12 @@
 		projectCommitGenerationHaiku,
 		projectCommitGenerationUseEmojis,
 	} from "$lib/config/config";
-	import { showError } from "$lib/error/showError";
-	import { canonicalMessages } from "$lib/notifications/toasts";
+
 	import { UI_STATE } from "$lib/state/uiState.svelte";
 	import { inject } from "@gitbutler/core/context";
-	import { errorText, LocalizedError } from "@gitbutler/i18n";
-	import { message as i18nMessage } from "@gitbutler/i18n";
+
 	import { useTranslations } from "@gitbutler/i18n/svelte";
-	import { uploadFiles } from "@gitbutler/shared/dom";
-	import { persisted } from "@gitbutler/shared/persisted";
-	import { UPLOADS_SERVICE } from "@gitbutler/shared/uploads/uploadsService";
+
 	import {
 		Button,
 		Checkbox,
@@ -31,20 +27,15 @@
 		ContextMenuSection,
 		DropdownButton,
 		EmojiPickerButton,
-		Modal,
 		RichTextEditor,
 		Formatter,
 		GhostTextPlugin,
 		HardWrapPlugin,
 		FormattingButton,
 	} from "@gitbutler/ui";
-	import FileUploadPlugin, {
-		type DropFileResult,
-	} from "@gitbutler/ui/richText/plugins/FileUpload.svelte";
+
 	import { tick, untrack } from "svelte";
 	const i18nMessages = useTranslations();
-
-	const ACCEPTED_FILE_TYPES = ["image/*", "application/*", "text/*", "audio/*", "video/*"];
 
 	interface Props {
 		projectId: string;
@@ -53,7 +44,6 @@
 		placeholder: string;
 		onChange?: (text: string) => void;
 		onKeyDown?: (e: KeyboardEvent) => boolean;
-		enableFileUpload?: boolean;
 		enableSmiles?: boolean;
 		enableRuler?: boolean;
 		onAiButtonClick: (params: AiButtonClickParams) => void;
@@ -72,7 +62,6 @@
 		initialValue,
 		placeholder,
 		disabled,
-		enableFileUpload,
 		enableSmiles,
 		onChange,
 		onKeyDown,
@@ -93,7 +82,6 @@
 
 	const uiState = inject(UI_STATE);
 
-	const uploadsService = inject(UPLOADS_SERVICE);
 	const commitGenerationExtraConcise = projectCommitGenerationExtraConcise(
 		untrack(() => projectId),
 	);
@@ -111,12 +99,6 @@
 
 	let composer = $state<ReturnType<typeof RichTextEditor>>();
 	let formatter = $state<ReturnType<typeof Formatter>>();
-	let fileUploadPlugin = $state<ReturnType<typeof FileUploadPlugin>>();
-	let uploadConfirmationModal = $state<ReturnType<typeof Modal>>();
-	const doNotShowUploadWarning = persisted<boolean>(false, "doNotShowUploadWarning");
-	let allowUploadOnce = $state<boolean>(false);
-	let uploadedBy = $state<"drop" | "attach" | undefined>(undefined);
-	let tempDropFiles: FileList | undefined = $state(undefined);
 
 	export async function getPlaintext(): Promise<string | undefined> {
 		return composer?.getPlaintext();
@@ -145,72 +127,6 @@
 
 	function onEmojiSelect(emoji: string) {
 		composer?.insertText(emoji);
-	}
-
-	function isAcceptedFileType(file: File): boolean {
-		const type = file.type.split("/")[0];
-		if (!type) return false;
-		return ACCEPTED_FILE_TYPES.some((acceptedType) => acceptedType.startsWith(type));
-	}
-
-	async function onDropFiles(files: FileList | undefined): Promise<DropFileResult[]> {
-		if (files === undefined) return [];
-		const uploads = Array.from(files)
-			.filter(isAcceptedFileType)
-			.map(async (file) => {
-				const upload = await uploadsService.uploadFile(file);
-
-				return { name: file.name, url: upload.url, isImage: upload.isImage };
-			});
-		const settled = await Promise.allSettled(uploads);
-		const successful = settled.filter((result) => result.status === "fulfilled");
-		const failed = settled.filter((result) => result.status === "rejected");
-
-		if (failed.length > 0) {
-			console.error("File upload failed", failed);
-			const details = failed
-				.map((result) => errorText(result.reason, String(result.reason)))
-				.reduce((first, second) => i18nMessage("common:listPair", { first, second }));
-			showError(
-				i18nMessage("desktop:MessageEditor.fileUploadFailed"),
-				new LocalizedError(details, canonicalMessages.text(details)),
-			);
-		}
-
-		allowUploadOnce = false;
-
-		return successful.map((result) => result.value);
-	}
-
-	async function handleDropFiles(
-		files: FileList | undefined,
-	): Promise<DropFileResult[] | undefined> {
-		if ($doNotShowUploadWarning || allowUploadOnce) {
-			return onDropFiles(files);
-		}
-
-		uploadedBy = "drop";
-		tempDropFiles = files;
-		uploadConfirmationModal?.show();
-		return undefined;
-	}
-
-	async function attachFiles() {
-		composer?.focus();
-
-		const files = await uploadFiles(ACCEPTED_FILE_TYPES.join(","));
-
-		if (!files) return;
-		await fileUploadPlugin?.handleFileUpload(files);
-	}
-
-	function handleAttachFiles() {
-		if ($doNotShowUploadWarning) {
-			attachFiles();
-			return;
-		}
-		uploadedBy = "attach";
-		uploadConfirmationModal?.show();
 	}
 
 	export function focus() {
@@ -271,47 +187,6 @@
 		: $i18nMessages.t("desktop:MessageEditor.generate")}
 {/snippet}
 
-<Modal
-	type="warning"
-	title={$i18nMessages.t("desktop:MessageEditor.offToTheCloudItGoes")}
-	width="small"
-	bind:this={uploadConfirmationModal}
-	onSubmit={async (close) => {
-		allowUploadOnce = true;
-
-		if (uploadedBy === "drop") {
-			const files = tempDropFiles;
-			tempDropFiles = undefined;
-			if (files) {
-				composer?.focus();
-				await fileUploadPlugin?.handleFileUpload(files);
-			}
-		} else if (uploadedBy === "attach") {
-			await attachFiles();
-		}
-
-		uploadedBy = undefined;
-		close();
-	}}
->
-	{$i18nMessages.t("desktop:MessageEditor.yourFileWillBeStoredInGitButlerS")}
-	{#snippet controls(close)}
-		<div class="modal-footer">
-			<div class="flex flex-1">
-				<label for="dont-show-again" class="modal-footer__checkbox">
-					<Checkbox name="dont-show-again" small bind:checked={$doNotShowUploadWarning} />
-					<span class="text-12">{$i18nMessages.t("desktop:MessageEditor.donTShowAgain")}</span>
-				</label>
-			</div>
-			<Button kind="outline" onclick={close}
-				>{$i18nMessages.t("desktop:MessageEditor.cancel")}</Button
-			>
-			<Button style="pop" type="submit">{$i18nMessages.t("desktop:MessageEditor.yesUpload")}</Button
-			>
-		</div>
-	{/snippet}
-</Modal>
-
 <div
 	data-remove-from-panning
 	role="presentation"
@@ -363,7 +238,7 @@
 				>
 					{#snippet plugins()}
 						<Formatter bind:this={formatter} />
-						<FileUploadPlugin bind:this={fileUploadPlugin} onDrop={handleDropFiles} />
+
 						{#if suggestionsHandler}
 							<GhostTextPlugin
 								bind:this={suggestionsHandler.ghostTextComponent}
@@ -392,14 +267,7 @@
 				{#if enableSmiles}
 					<EmojiPickerButton onEmojiSelect={(emoji) => onEmojiSelect(emoji.unicode)} />
 				{/if}
-				{#if enableFileUpload}
-					<Button
-						kind="ghost"
-						icon="paperclip"
-						tooltip={$i18nMessages.t("desktop:MessageEditor.dropPasteOrClickToUploadFiles")}
-						onclick={handleAttachFiles}
-					/>
-				{/if}
+
 				{#if enableRuler}
 					<FormattingButton
 						icon="text-wrap"
@@ -589,15 +457,4 @@
 	}
 
 	/* MODAL */
-	.modal-footer {
-		display: flex;
-		width: 100%;
-		gap: 6px;
-	}
-
-	.modal-footer__checkbox {
-		display: flex;
-		align-items: center;
-		gap: 8px;
-	}
 </style>

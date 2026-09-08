@@ -16,7 +16,6 @@ import { STACK_SERVICE } from "$lib/stacks/stackService.svelte";
 import { butlerModule } from "$lib/state/butlerModule";
 import { CLIENT_STATE } from "$lib/state/clientState.svelte";
 import { ReduxTag } from "$lib/state/tags";
-import { POSTHOG_WRAPPER } from "$lib/telemetry/posthog";
 import { WORKTREE_SERVICE } from "$lib/worktree/worktreeService.svelte";
 import { configureStore } from "@reduxjs/toolkit";
 import { buildCreateApi, coreModule, QueryStatus } from "@reduxjs/toolkit/query";
@@ -193,7 +192,6 @@ function setup(
 		[LISTING_SERVICE._key, listingService],
 		[GIT_SERVICE._key, { onFetch: () => noop }],
 		[MODE_SERVICE._key, { mode: () => query(), head: () => query() }],
-		[POSTHOG_WRAPPER._key, { setPostHogRepo: noop, captureOnboarding: noop }],
 		[PROJECTS_SERVICE._key, { projects: () => query([]), setActiveProject: async () => undefined }],
 		[FILE_SELECTION_MANAGER._key, { retain: noop }],
 		[UNCOMMITTED_SERVICE._key, { updateData: noop }],

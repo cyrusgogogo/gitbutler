@@ -1,4 +1,3 @@
-import { checkForUpdates, registerUpdater, setAutoUpdateEnabled } from "./updater.js";
 import WatcherManager from "./watcher.js";
 import * as sdk from "@gitbutler/but-sdk";
 import {
@@ -22,7 +21,6 @@ import {
 } from "@gitbutler/but-sdk";
 import {
 	app,
-	autoUpdater,
 	BrowserWindow,
 	clipboard,
 	dialog,
@@ -36,19 +34,12 @@ import {
 	type MenuItem,
 	type MenuItemConstructorOptions,
 } from "electron";
-import {
-	REACT_DEVELOPER_TOOLS,
-	REDUX_DEVTOOLS,
-	installExtension,
-} from "electron-devtools-installer";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { initLogging } from "./logging.js";
 import { type GUISettings, readSettings, writeSettings } from "./settings.js";
-import { initMetrics, metricsOnLogin, shutdownMetrics, withApiCommandCapture } from "./metrics.js";
-import { apiParamNames } from "@gitbutler/but-sdk/api-param-names";
 import { createI18n, normalizePreference, resolveLocale, type MessageKey } from "@gitbutler/i18n";
 import { resources as nativeResources } from "@gitbutler/i18n/catalogs/native";
 
@@ -122,7 +113,6 @@ const localizeApplicationMenu = (menu = Menu.getApplicationMenu()): void => {
 // [ref:lite_default_settings]
 const applyGUISettings = (settings: GUISettings): void => {
 	nativeTheme.themeSource = settings.theme ?? "system";
-	setAutoUpdateEnabled(settings.autoUpdate ?? true);
 	nativeI18n.setLocale(
 		resolveLocale(normalizePreference(settings.language), app.getSystemLocale()),
 	);
@@ -156,7 +146,7 @@ const trustedOriginDefaultPermissions: Array<
 /**
  * Hosts allowed to supply images, shared by both policies.
  *
- * Both GitHub attachments and GitButler avatars are served by a host that 302s to a
+ * GitHub attachments are served by a host that 302s to a
  * bucket, and CSP checks every hop — hence the bucket names alongside the app ones.
  */
 const imgSrc = [
@@ -166,9 +156,6 @@ const imgSrc = [
 	"https://*.githubusercontent.com",
 	"https://github.com",
 	"https://github-production-user-asset-6210df.s3.amazonaws.com",
-	"https://app.gitbutler.com",
-	"https://app.staging.gitbutler.com",
-	"https://gitbutler-public.s3.amazonaws.com",
 ].join(" ");
 
 const liteProtocolScheme = "but";
@@ -424,14 +411,9 @@ const registerIpcHandlers = (): void => {
 		ipcMain.handle(channel, senderValidatingListener);
 	};
 
-	for (const [name, handler] of createEndpointTable(electronHandlerOverrides)) {
-		// Only but-api endpoints record `api_command`; the host's own members
-		// (clipboard, settings, dialogs) do not.
-		const captureWrapped = Object.hasOwn(apiParamNames, name)
-			? withApiCommandCapture(name, handler)
-			: handler;
-		senderValidatingHandle(name, (_e, params: unknown) => captureWrapped(params));
-	}
+	for (const [name, handler] of createEndpointTable(electronHandlerOverrides))
+		senderValidatingHandle(name, (_e, params: unknown) => handler(params));
+
 	senderValidatingHandle("watcherUnsubscribe", (_e, { subscriptionId }: WatcherUnsubscribeParams) =>
 		WatcherManager.getInstance().removeSubscription(subscriptionId),
 	);
@@ -510,26 +492,6 @@ const deepLinkTarget = (link: string): { url: string; path: string } | null => {
 	return { url: target.href, path: `${target.pathname}${target.search}` };
 };
 
-/**
- * Sign in from a `but://login?access_token=…` link, which is how the login page
- * hands the account back once it knows which client asked.
- */
-const completeLogin = async (url: URL): Promise<boolean> => {
-	if (url.host !== "login") return false;
-
-	const accessToken = url.searchParams.get("access_token");
-	if (accessToken === null) return true;
-
-	try {
-		const profile = await sdk.loginAndPersist(accessToken);
-		void metricsOnLogin(profile);
-	} catch (error) {
-		// oxlint-disable-next-line no-console
-		console.error("Failed to sign in from a login link", error);
-	}
-	return true;
-};
-
 const showAndFocusWindow = (window: BrowserWindow): void => {
 	if (window.isMinimized()) window.restore();
 	window.show();
@@ -544,17 +506,10 @@ const showAndFocusWindow = (window: BrowserWindow): void => {
  * a URL arrives too.
  */
 const openDeepLink = async (link: string): Promise<void> => {
-	const url = newUrlOrNull(link);
-	if (url !== null && url.protocol === `${liteProtocolScheme}:` && (await completeLogin(url))) {
-		const [existing] = BrowserWindow.getAllWindows();
-		if (existing) showAndFocusWindow(existing);
-		return;
-	}
-
 	const target = deepLinkTarget(link);
 	if (target === null) {
 		// oxlint-disable-next-line no-console
-		console.error(`Ignored deep link ${link}`);
+		console.error("Ignored unsupported deep link");
 		return;
 	}
 
@@ -619,10 +574,8 @@ const createMainWindow = async (initialUrl?: string): Promise<void> => {
 
 		mainWindow.on("close", hideWindowInsteadOfClosing);
 		app.once("before-quit", allowWindowToClose);
-		autoUpdater.once("before-quit-for-update", allowWindowToClose);
 		mainWindow.once("closed", () => {
 			app.removeListener("before-quit", allowWindowToClose);
-			autoUpdater.removeListener("before-quit-for-update", allowWindowToClose);
 		});
 	}
 
@@ -634,8 +587,6 @@ const createMainWindow = async (initialUrl?: string): Promise<void> => {
 
 	const rootUrl = `${liteProtocolScheme}://${liteProtocolHost}/`;
 	await mainWindow.loadURL(initialUrl ?? rootUrl);
-	registerUpdater(mainWindow);
-	checkForUpdates();
 };
 
 app.enableSandbox(); // forces sandboxing for all renderers, even if they try to launch without
@@ -665,10 +616,6 @@ void app.whenReady().then(async () => {
 	configureAskpass();
 
 	if (app.isPackaged) {
-		// Packaged-only so dev builds send nothing, and awaited so the client
-		// exists before the IPC handlers and the launch-link login below run.
-		await initMetrics(app.getVersion());
-
 		registerLiteProtocolHandler();
 
 		// Basic non-Strict CSP based on https://cheatsheetseries.owasp.org/cheatsheets/Content_Security_Policy_Cheat_Sheet.html#basic-non-strict-csp-policy
@@ -697,8 +644,6 @@ void app.whenReady().then(async () => {
 		});
 	} else {
 		if (!isHeadless) {
-			await installExtension([REACT_DEVELOPER_TOOLS, REDUX_DEVTOOLS]);
-
 			const dockIcon = getMacDockIcon();
 			if (dockIcon !== undefined) app.dock?.setIcon(dockIcon);
 		}
@@ -762,10 +707,6 @@ void app.whenReady().then(async () => {
 	}
 
 	const launchLink = deepLinkFromArgv(process.argv);
-	// Windows and Linux deliver a cold-launch link only through argv, never as
-	// `open-url`, so a login link arriving that way has to be handled here too.
-	const launchUrl = launchLink === undefined ? null : newUrlOrNull(launchLink);
-	if (launchUrl?.protocol === `${liteProtocolScheme}:`) await completeLogin(launchUrl);
 
 	await createMainWindow(
 		launchLink === undefined ? undefined : (deepLinkTarget(launchLink)?.url ?? undefined),
@@ -778,16 +719,8 @@ void app.whenReady().then(async () => {
 	});
 });
 
-app.on("before-quit", (event) => {
+app.on("before-quit", () => {
 	WatcherManager.destroyInstance();
-
-	// The metrics queue lives in memory, so hold the quit until it has
-	// flushed; the re-issued quit finds nothing to flush and goes through.
-	const flushing = shutdownMetrics();
-	if (flushing !== null) {
-		event.preventDefault();
-		void flushing.then(() => app.quit());
-	}
 });
 
 app.on("window-all-closed", () => {

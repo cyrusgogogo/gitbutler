@@ -12,11 +12,11 @@ export const modelSelection = (model: string, presets: ReadonlyArray<string>) =>
 
 export const configurationUpdate = (configuration: AiConfiguration): AiConfigurationUpdate => ({
 	provider: configuration.provider === "openrouter" ? "openai" : configuration.provider,
-	openaiKeyOption: configuration.openaiKeyOption,
+	openaiKeyOption: "bringYourOwn",
 	openaiModel: configuration.openaiModel,
 	openaiCustomEndpoint: configuration.openaiCustomEndpoint,
 	openaiApiKey: undefined,
-	anthropicKeyOption: configuration.anthropicKeyOption,
+	anthropicKeyOption: "bringYourOwn",
 	anthropicModel: configuration.anthropicModel,
 	anthropicApiKey: undefined,
 	ollamaEndpoint: configuration.ollamaEndpoint,

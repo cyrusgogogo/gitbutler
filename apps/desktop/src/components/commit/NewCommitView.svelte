@@ -1,6 +1,6 @@
 <script lang="ts">
 	import CommitMessageEditor from "$components/commit/CommitMessageEditor.svelte";
-	import { COMMIT_ANALYTICS } from "$lib/analytics/commitAnalytics";
+
 	import { projectRunCommitHooks } from "$lib/config/config";
 	import { HOOKS_SERVICE } from "$lib/git/hooksService";
 	import { showToast, showWarning } from "$lib/notifications/toasts";
@@ -27,7 +27,7 @@
 	const uiState = inject(UI_STATE);
 	const hooksService = inject(HOOKS_SERVICE);
 	const uncommittedService = inject(UNCOMMITTED_SERVICE);
-	const commitAnalytics = inject(COMMIT_ANALYTICS);
+
 	const idSelection = inject(FILE_SELECTION_MANAGER);
 
 	const projectState = $derived(uiState.project(projectId));
@@ -108,35 +108,19 @@
 
 			const worktreeChanges = await uncommittedService.worktreeChanges(projectId, stackId);
 
-			// Get current editor mode from the component instance
-			const isRichTextMode = input?.isRichTextMode?.() || false;
-
-			// Await analytics data before creating commit
-			const analyticsProperties = await commitAnalytics.getCommitProperties({
-				projectId,
-				stackId: finalStackId,
-				selectedBranchName: finalBranchName,
-				message: finalMessage,
-				parentId,
-				isRichTextMode,
-			});
-
 			if ($runCommitHooks) {
 				await hooksService.runPreCommitHooks(projectId, worktreeChanges);
 			}
 
-			const response = await createCommitInStack(
-				{
-					projectId,
-					parentId,
-					insertBelow,
-					message: finalMessage,
-					stackBranchName: finalBranchName,
-					worktreeChanges,
-					dryRun: false,
-				},
-				{ properties: analyticsProperties },
-			);
+			const response = await createCommitInStack({
+				projectId,
+				parentId,
+				insertBelow,
+				message: finalMessage,
+				stackBranchName: finalBranchName,
+				worktreeChanges,
+				dryRun: false,
+			});
 
 			if ($runCommitHooks) {
 				await hooksService.runPostCommitHooks(projectId);

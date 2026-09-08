@@ -1,10 +1,10 @@
 import { message as i18nMessage } from "@gitbutler/i18n";
 import type { LocalizedText } from "@gitbutler/i18n";
 import { Message as I18nMessage, useTranslations } from "@gitbutler/i18n/react";
-import { useQueryClient, useSuspenseQueries } from "@tanstack/react-query";
+import { useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { useState, type FC } from "react";
 import type { AiConfiguration, AiConfigurationUpdate } from "@gitbutler/but-sdk";
-import { aiConfigurationQueryOptions, userProfileQueryOptions } from "#ui/api/queries.ts";
+import { aiConfigurationQueryOptions } from "#ui/api/queries.ts";
 import { getButtonClassName } from "#ui/components/Button.tsx";
 import { classes } from "#ui/components/classes.ts";
 import { errorMessageForToast } from "#ui/errors.ts";
@@ -19,7 +19,6 @@ import { Row, Section } from "./Section.tsx";
 import styles from "./Ai.module.css";
 
 type Provider = AiConfigurationUpdate["provider"];
-type KeyOption = AiConfiguration["openaiKeyOption"];
 
 const providerLabels: Record<Provider, string> = {
 	openai: "OpenAI",
@@ -83,9 +82,7 @@ const ModelField: FC<{
 
 export const Ai: FC = () => {
 	const i18nMessages = useTranslations();
-	const [{ data: configuration }, { data: profile }] = useSuspenseQueries({
-		queries: [aiConfigurationQueryOptions, userProfileQueryOptions],
-	});
+	const { data: configuration } = useSuspenseQuery(aiConfigurationQueryOptions);
 	const client = useQueryClient();
 	const [update, setUpdate] = useState<AiConfigurationUpdate>(() =>
 		configurationUpdate(configuration),
@@ -156,9 +153,6 @@ export const Ai: FC = () => {
 	};
 
 	const provider = update.provider;
-	const usesGitButler =
-		(provider === "openai" && update.openaiKeyOption === "butlerAPI") ||
-		(provider === "anthropic" && update.anthropicKeyOption === "butlerAPI");
 	const busy = saving || testing || resetting;
 
 	return (
@@ -184,42 +178,24 @@ export const Ai: FC = () => {
 
 				{provider === "openai" && (
 					<>
-						<Row label={i18nMessages.t("lite:Ai.credentials")} htmlFor="openai-credentials">
-							<select
-								id="openai-credentials"
-								value={update.openaiKeyOption}
-								onChange={(event) =>
-									change("openaiKeyOption", event.currentTarget.value as KeyOption)
-								}
-							>
-								<option value="butlerAPI">
-									<I18nMessage value={{ key: "lite:Ai.gitButlerAccount" }} />
-								</option>
-								<option value="bringYourOwn">
-									<I18nMessage value={{ key: "lite:Ai.yourOwnKey" }} />
-								</option>
-							</select>
+						<Row
+							label={i18nMessages.t("lite:Ai.aPIKey")}
+							htmlFor="openai-api-key"
+							hint={
+								saved.openaiHasApiKey
+									? i18nMessages.t("lite:Ai.aKeyIsConfiguredLeaveBlankToKeep")
+									: undefined
+							}
+						>
+							<input
+								id="openai-api-key"
+								type="password"
+								autoComplete="off"
+								placeholder={saved.openaiHasApiKey ? "••••••••" : i18nMessages.t("lite:Ai.sk")}
+								value={update.openaiApiKey ?? ""}
+								onChange={(event) => change("openaiApiKey", event.currentTarget.value)}
+							/>
 						</Row>
-						{update.openaiKeyOption === "bringYourOwn" && (
-							<Row
-								label={i18nMessages.t("lite:Ai.aPIKey")}
-								htmlFor="openai-api-key"
-								hint={
-									saved.openaiHasApiKey
-										? i18nMessages.t("lite:Ai.aKeyIsConfiguredLeaveBlankToKeep")
-										: undefined
-								}
-							>
-								<input
-									id="openai-api-key"
-									type="password"
-									autoComplete="off"
-									placeholder={saved.openaiHasApiKey ? "••••••••" : i18nMessages.t("lite:Ai.sk")}
-									value={update.openaiApiKey ?? ""}
-									onChange={(event) => change("openaiApiKey", event.currentTarget.value)}
-								/>
-							</Row>
-						)}
 						<ModelField
 							id="openai-model"
 							label={i18nMessages.t("lite:Ai.model")}
@@ -227,64 +203,44 @@ export const Ai: FC = () => {
 							presets={openAiModels}
 							onChange={(model) => change("openaiModel", model)}
 						/>
-						{update.openaiKeyOption === "bringYourOwn" && (
-							<Row
-								label={i18nMessages.t("lite:Ai.customEndpoint")}
-								htmlFor="openai-endpoint"
-								hint={i18nMessages.t("lite:Ai.optional")}
-							>
-								<input
-									id="openai-endpoint"
-									type="url"
-									placeholder="https://api.openai.com/v1"
-									value={update.openaiCustomEndpoint ?? ""}
-									onChange={(event) => change("openaiCustomEndpoint", event.currentTarget.value)}
-								/>
-							</Row>
-						)}
+						<Row
+							label={i18nMessages.t("lite:Ai.customEndpoint")}
+							htmlFor="openai-endpoint"
+							hint={i18nMessages.t("lite:Ai.optional")}
+						>
+							<input
+								id="openai-endpoint"
+								type="url"
+								placeholder="https://api.openai.com/v1"
+								value={update.openaiCustomEndpoint ?? ""}
+								onChange={(event) => change("openaiCustomEndpoint", event.currentTarget.value)}
+							/>
+						</Row>
 					</>
 				)}
 
 				{provider === "anthropic" && (
 					<>
-						<Row label={i18nMessages.t("lite:Ai.credentials")} htmlFor="anthropic-credentials">
-							<select
-								id="anthropic-credentials"
-								value={update.anthropicKeyOption}
-								onChange={(event) =>
-									change("anthropicKeyOption", event.currentTarget.value as KeyOption)
+						<Row
+							label={i18nMessages.t("lite:Ai.aPIKey")}
+							htmlFor="anthropic-api-key"
+							hint={
+								saved.anthropicHasApiKey
+									? i18nMessages.t("lite:Ai.aKeyIsConfiguredLeaveBlankToKeep")
+									: undefined
+							}
+						>
+							<input
+								id="anthropic-api-key"
+								type="password"
+								autoComplete="off"
+								placeholder={
+									saved.anthropicHasApiKey ? "••••••••" : i18nMessages.t("lite:Ai.skAnt")
 								}
-							>
-								<option value="butlerAPI">
-									<I18nMessage value={{ key: "lite:Ai.gitButlerAccount" }} />
-								</option>
-								<option value="bringYourOwn">
-									<I18nMessage value={{ key: "lite:Ai.yourOwnKey" }} />
-								</option>
-							</select>
+								value={update.anthropicApiKey ?? ""}
+								onChange={(event) => change("anthropicApiKey", event.currentTarget.value)}
+							/>
 						</Row>
-						{update.anthropicKeyOption === "bringYourOwn" && (
-							<Row
-								label={i18nMessages.t("lite:Ai.aPIKey")}
-								htmlFor="anthropic-api-key"
-								hint={
-									saved.anthropicHasApiKey
-										? i18nMessages.t("lite:Ai.aKeyIsConfiguredLeaveBlankToKeep")
-										: undefined
-								}
-							>
-								<input
-									id="anthropic-api-key"
-									type="password"
-									autoComplete="off"
-									placeholder={
-										saved.anthropicHasApiKey ? "••••••••" : i18nMessages.t("lite:Ai.skAnt")
-									}
-									value={update.anthropicApiKey ?? ""}
-									onChange={(event) => change("anthropicApiKey", event.currentTarget.value)}
-								/>
-							</Row>
-						)}
 						<ModelField
 							id="anthropic-model"
 							label={i18nMessages.t("lite:Ai.model")}
@@ -352,12 +308,6 @@ export const Ai: FC = () => {
 				</p>
 			)}
 
-			{usesGitButler && profile === null && (
-				<p className={classes("text-12", styles.warning)}>
-					<I18nMessage value={{ key: "lite:Ai.signInOnTheGeneralPageBeforeUsing" }} />{" "}
-				</p>
-			)}
-
 			<div className={styles.actions}>
 				<button
 					type="button"
@@ -386,7 +336,7 @@ export const Ai: FC = () => {
 				<button
 					type="button"
 					className={getButtonClassName({ variant: "pop", size: "small" })}
-					disabled={busy || (usesGitButler && profile === null)}
+					disabled={busy}
 					onClick={() => void test()}
 				>
 					{testing ? (

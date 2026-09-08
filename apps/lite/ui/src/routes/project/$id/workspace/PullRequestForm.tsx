@@ -31,7 +31,6 @@ import { FieldControlStyles, FieldRootStyles } from "#ui/components/Field.tsx";
 import { Icon } from "#ui/components/Icon.tsx";
 import { Markdown } from "#ui/components/Markdown.tsx";
 import { branchDetailsParams } from "#ui/branch.ts";
-import { MarkdownAttachments } from "#ui/components/MarkdownAttachments.tsx";
 import { MarkdownToolbar } from "#ui/components/MarkdownToolbar.tsx";
 import { SwitchButton } from "#ui/components/SwitchButton.tsx";
 import { TooltipPopup } from "#ui/components/Tooltip.tsx";
@@ -350,13 +349,6 @@ export const PullRequestForm: FC<{
 				<div className={styles.descriptionFooter}>
 					<div className={styles.footerRow}>
 						<div className={styles.footerStart}>
-							<MarkdownAttachments
-								disabled={isAnyPending}
-								// An upload can land long after the click, so this updates from
-								// the current document, not the one captured at click time.
-								onInput={(nextBody) => setLocalDocument((prev) => ({ ...prev, body: nextBody }))}
-								targetRef={bodyRef}
-							/>
 							<div aria-hidden className={styles.footerSeparator} />
 							<Tooltip.Root>
 								{/* Disabled buttons swallow hover, so the wrapper span carries the tooltip. */}

@@ -123,8 +123,6 @@ pub fn set_menu_locale(handle: AppHandle, locale: MenuLocale) -> Result<(), Stri
 
 pub fn build<R: Runtime>(handle: &AppHandle<R>, locale: MenuLocale) -> tauri::Result<Menu<R>> {
     let t = |key| locale.text(key);
-    #[cfg(not(feature = "disable-auto-updates"))]
-    let check_for_updates = MenuItemBuilder::with_id("global/update", t("update")).build(handle)?;
 
     #[cfg(target_os = "macos")]
     let app_name = handle
@@ -140,8 +138,7 @@ pub fn build<R: Runtime>(handle: &AppHandle<R>, locale: MenuLocale) -> tauri::Re
 
     #[cfg(target_os = "macos")]
     let mac_menu = {
-        #[cfg_attr(feature = "disable-auto-updates", allow(unused_mut))]
-        let mut menu = SubmenuBuilder::new(handle, app_name)
+        let menu = SubmenuBuilder::new(handle, app_name)
             .item(&PredefinedMenuItem::about(
                 handle,
                 Some(t("about")),
@@ -150,10 +147,6 @@ pub fn build<R: Runtime>(handle: &AppHandle<R>, locale: MenuLocale) -> tauri::Re
             .separator()
             .item(&settings_menu);
 
-        #[cfg(not(feature = "disable-auto-updates"))]
-        {
-            menu = menu.item(&check_for_updates);
-        }
         menu.separator()
             .item(&PredefinedMenuItem::services(handle, Some(t("services")))?)
             .separator()
@@ -192,8 +185,6 @@ pub fn build<R: Runtime>(handle: &AppHandle<R>, locale: MenuLocale) -> tauri::Re
 
     if cfg!(not(target_os = "macos")) {
         file_menu.append_items(&[&PredefinedMenuItem::quit(handle, Some(t("quit")))?])?;
-        #[cfg(not(feature = "disable-auto-updates"))]
-        file_menu.append_items(&[&check_for_updates])?;
     }
 
     #[cfg(not(target_os = "linux"))]
@@ -290,19 +281,10 @@ pub fn build<R: Runtime>(handle: &AppHandle<R>, locale: MenuLocale) -> tauri::Re
         .text("help/documentation", t("documentation"))
         .text("help/debugging-guide", t("debugging"))
         .text("help/github", t("source"))
-        .text("help/release-notes", t("releaseNotes"))
-        .separator()
-        .text("help/share-debug-info", t("shareDebug"))
-        .text("help/report-issue", t("issue"))
         .separator()
         .text("help/open-logs-folder", t("logs"))
         .text("help/open-config-folder", t("config"))
         .text("help/open-cache-folder", t("cache"))
-        .separator()
-        .text("help/discord", "Discord")
-        .text("help/youtube", "YouTube")
-        .text("help/bluesky", "Bluesky")
-        .text("help/x", "X")
         .separator()
         .item(
             &MenuItemBuilder::with_id(
@@ -394,11 +376,6 @@ pub fn handle_event(webview: &WebviewWindow, event: &MenuEvent) {
         return;
     }
 
-    if event.id() == "help/share-debug-info" {
-        emit(webview, SHORTCUT_EVENT, "share-debug-info");
-        return;
-    }
-
     if event.id() == "project/history" {
         emit(webview, SHORTCUT_EVENT, "history");
         return;
@@ -426,11 +403,6 @@ pub fn handle_event(webview: &WebviewWindow, event: &MenuEvent) {
 
     if event.id() == "global/settings" {
         emit(webview, SHORTCUT_EVENT, "global-settings");
-        return;
-    }
-
-    if event.id() == "global/update" {
-        emit(webview, SHORTCUT_EVENT, "update");
         return;
     }
 
@@ -462,16 +434,6 @@ pub fn handle_event(webview: &WebviewWindow, event: &MenuEvent) {
                 open::that("https://docs.gitbutler.com/development/debugging")
             }
             "help/github" => open::that("https://github.com/gitbutlerapp/gitbutler"),
-            "help/release-notes" => {
-                open::that("https://github.com/gitbutlerapp/gitbutler/releases")
-            }
-            "help/report-issue" => {
-                open::that("https://github.com/gitbutlerapp/gitbutler/issues/new/choose")
-            }
-            "help/discord" => open::that("https://discord.com/invite/MmFkmaJ42D"),
-            "help/youtube" => open::that("https://www.youtube.com/@gitbutlerapp"),
-            "help/bluesky" => open::that("https://bsky.app/profile/gitbutler.com"),
-            "help/x" => open::that("https://x.com/gitbutler"),
             _ => break 'open_link,
         };
 

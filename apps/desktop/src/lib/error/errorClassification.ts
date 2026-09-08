@@ -20,9 +20,8 @@ export type ActionHint = {
  * UX classification for a backend error. Keyed by `Code` in the
  * `CLASSIFICATIONS` table below.
  *
- * `severity` drives the toast style and which capture event fires:
- * `error` → danger style + Sentry capture; `warning` → warning style,
- * no Sentry; `silent` → suppress the toast and capture entirely.
+ * `severity` drives the toast style: `error` uses danger styling,
+ * `warning` uses warning styling, and `silent` suppresses the toast.
  *
  * `userMessage` is the long-form, user-facing description rendered in
  * the toast body. `actionHint` adds an optional CTA button.
@@ -30,7 +29,7 @@ export type ActionHint = {
 export type Classification = {
 	severity: Severity;
 	/**
-	 * Replaces the error's own name as the toast/capture title. IPC errors
+	 * Replaces the error's own name as the toast title. IPC errors
 	 * all arrive named `API error: (<command>)`, so a code that identifies
 	 * a specific condition needs this to surface under a stable title.
 	 */

@@ -8,7 +8,7 @@
 	import { createWorktreeSelection } from "$lib/selection/key";
 	import { UNCOMMITTED_SERVICE } from "$lib/selection/uncommittedService.svelte";
 	import { UI_STATE } from "$lib/state/uiState.svelte";
-	import { ActionEvent, POSTHOG_WRAPPER } from "$lib/telemetry/posthog";
+
 	import { WORKTREE_SERVICE } from "$lib/worktree/worktreeService.svelte";
 	import { inject } from "@gitbutler/core/context";
 	import { useTranslations } from "@gitbutler/i18n/svelte";
@@ -31,7 +31,7 @@
 	const uncommittedService = inject(UNCOMMITTED_SERVICE);
 	const worktreeService = inject(WORKTREE_SERVICE);
 	const idSelection = inject(FILE_SELECTION_MANAGER);
-	const posthog = inject(POSTHOG_WRAPPER);
+
 	const projectState = $derived(uiState.project(projectId));
 	const unassignedSidebarFolded = $derived(uiState.global.unassignedSidebarFolded);
 	const exclusiveAction = $derived(projectState.exclusiveAction.current);
@@ -151,7 +151,6 @@
 								branchName: undefined,
 							});
 							checkFilesForCommit();
-							posthog.captureAction(ActionEvent.CommitToNewBranch);
 						}}
 						icon={isCommitting ? undefined : "plus"}
 						testId={TestId.CommitToNewBranchButton}

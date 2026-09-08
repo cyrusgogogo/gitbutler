@@ -15,12 +15,20 @@ export type LiteTestEnvironment = {
 	workdir: string;
 };
 
-export const processEnvironment = (overrides: Record<string, string>): Record<string, string> =>
-	Object.fromEntries(
-		Object.entries({ ...process.env, ...overrides }).filter(
+export const processEnvironment = (overrides: Record<string, string>): Record<string, string> => {
+	const environment: NodeJS.ProcessEnv = {
+		...process.env,
+		GIT_CONFIG_NOSYSTEM: "1",
+		GIT_TERMINAL_PROMPT: "0",
+		GCM_INTERACTIVE: "never",
+		...overrides,
+	};
+	return Object.fromEntries(
+		Object.entries(environment).filter(
 			(entry): entry is [string, string] => entry[1] !== undefined,
 		),
 	);
+};
 
 export const createLiteTestEnvironment = (): LiteTestEnvironment => {
 	const rootDir = mkdtempSync(path.join(os.tmpdir(), "gitbutler-lite-e2e-"));
@@ -36,11 +44,11 @@ export const createLiteTestEnvironment = (): LiteTestEnvironment => {
 	const baseGitConfig = readFileSync(fixtureGitConfig, "utf8").trimEnd();
 	writeFileSync(
 		gitConfig,
-		`${baseGitConfig}\n[credential]\n\thelper = ${JSON.stringify(`store --file "${credentialStore}"`)}\n`,
+		`${baseGitConfig}\n[credential]\n\thelper =\n\thelper = ${JSON.stringify(`store --file "${credentialStore}"`)}\n`,
 	);
 	writeFileSync(
 		path.join(electronUserDataDir, "settings.json"),
-		JSON.stringify({ version: 1, autoUpdate: false, theme: "light", language: "en" }, null, "\t"),
+		JSON.stringify({ version: 1, theme: "light", language: "en" }, null, "\t"),
 	);
 
 	return { appDataDir, electronUserDataDir, gitConfig, rootDir, workdir };

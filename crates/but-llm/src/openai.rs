@@ -2,12 +2,11 @@ use anyhow::{Context as _, Result};
 use async_openai::{Client, config::OpenAIConfig};
 use but_secret::{Sensitive, secret};
 use but_tools::tool::Toolset;
-use reqwest::header::{HeaderMap, HeaderValue};
 use schemars::JsonSchema;
 use serde::de::DeserializeOwned;
 
 use crate::{
-    AI_OPENAI_SECRET_HANDLE, GITBUTLER_ACCESS_TOKEN_HANDLE,
+    AI_OPENAI_SECRET_HANDLE,
     chat::ChatMessage,
     client::LLMClient,
     openai_utils::{
@@ -16,13 +15,10 @@ use crate::{
     },
 };
 
-pub const GB_OPENAI_API_BASE: &str = "https://app.gitbutler.com/api/proxy/openai";
-
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize, strum::Display)]
 pub enum CredentialsKind {
     EnvVarOpenAiKey,
     OwnOpenAiKey,
-    GitButlerProxied,
 }
 
 #[derive(Debug, Clone)]
@@ -44,11 +40,9 @@ impl OpenAiProvider {
             match kind {
                 CredentialsKind::EnvVarOpenAiKey => OpenAiProvider::openai_env_var_creds(),
                 CredentialsKind::OwnOpenAiKey => OpenAiProvider::openai_own_key_creds(),
-                CredentialsKind::GitButlerProxied => OpenAiProvider::gitbutler_proxied_creds(),
             }
         } else {
-            OpenAiProvider::gitbutler_proxied_creds()
-                .or_else(|_| OpenAiProvider::openai_own_key_creds())
+            OpenAiProvider::openai_own_key_creds()
                 .or_else(|_| OpenAiProvider::openai_env_var_creds())
                 .context("No OpenAI credentials found. This can be configured in the app or read from a OPENAI_API_KEY environment variable")
         };
@@ -77,14 +71,6 @@ impl OpenAiProvider {
 
     pub fn credentials_kind(&self) -> CredentialsKind {
         self.credentials.0.clone()
-    }
-
-    fn gitbutler_proxied_creds() -> Result<(CredentialsKind, Sensitive<String>)> {
-        let creds = secret::retrieve(GITBUTLER_ACCESS_TOKEN_HANDLE, secret::Namespace::BuildKind)?
-            .ok_or(anyhow::anyhow!(
-                "No GitButler token available. Log-in to use the GitButler OpenAI provider"
-            ))?;
-        Ok((CredentialsKind::GitButlerProxied, creds))
     }
 
     fn openai_own_key_creds() -> Result<(CredentialsKind, Sensitive<String>)> {
@@ -120,23 +106,6 @@ impl OpenAIClientProvider for OpenAiProvider {
                 let config =
                     self.configure_custom_endpoint(OpenAIConfig::new().with_api_key(key.0.clone()));
                 Ok(Client::with_config(config))
-            }
-
-            (CredentialsKind::GitButlerProxied, key) => {
-                let config = OpenAIConfig::new().with_api_base(GB_OPENAI_API_BASE);
-                let mut headers = HeaderMap::new();
-                headers.insert(
-                    reqwest::header::CONTENT_TYPE,
-                    HeaderValue::from_static("application/json"),
-                );
-                headers.insert(
-                    "X-Auth-Token",
-                    key.0.parse().unwrap_or(HeaderValue::from_static("")),
-                );
-                let http_client = reqwest::Client::builder()
-                    .default_headers(headers)
-                    .build()?;
-                Ok(Client::with_config(config).with_http_client(http_client))
             }
         }
     }

@@ -1,4 +1,3 @@
-import type { PostHogWrapper } from "$lib/telemetry/posthog";
 import type { ThunkDispatch, UnknownAction } from "@reduxjs/toolkit";
 import type { RootState } from "@reduxjs/toolkit/query";
 
@@ -13,5 +12,4 @@ export type HookContext = {
 	/** Without the nested function we get looping reactivity.  */
 	getState: () => RootState<any, any, any>;
 	getDispatch: () => ThunkDispatch<any, any, UnknownAction>;
-	posthog?: PostHogWrapper;
 };

@@ -18,8 +18,6 @@ export default class Web implements IBackend {
 	systemTheme = readable<string | null>(null);
 	invoke = webInvoke;
 	listen = webListen;
-	checkUpdate = webCheckUpdate;
-	currentVersion = webCurrentVersion;
 	readFile = webReadFile;
 	openExternalUrl = webOpenExternalUrl;
 	relaunch = webRelaunch;
@@ -226,16 +224,6 @@ async function webInvoke<T>(command: string, params: Record<string, unknown> = {
 function webListen<T>(event: EventName, handle: EventCallback<T>) {
 	const webListener = WebListener.getInstance();
 	return webListener.listen({ name: event, handle });
-}
-
-async function webCheckUpdate(): Promise<null> {
-	// TODO: Implement this for the web version if needed
-	return null;
-}
-
-async function webCurrentVersion(): Promise<string> {
-	// TODO: Implement this for the web version if needed
-	return "0.0.0";
 }
 
 async function webReadFile(_path: string): Promise<Uint8Array> {

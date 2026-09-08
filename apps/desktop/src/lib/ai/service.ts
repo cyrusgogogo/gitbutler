@@ -1,5 +1,4 @@
 import { AnthropicAIClient } from "$lib/ai/anthropicClient";
-import { ButlerAIClient } from "$lib/ai/butlerClient";
 import { formatStagedChanges } from "$lib/ai/diffFormatting";
 import {
 	LM_STUDIO_DEFAULT_ENDPOINT,
@@ -31,18 +30,13 @@ import {
 } from "$lib/ai/types";
 import { splitMessage } from "$lib/commits/commitMessage";
 import { InjectionToken } from "@gitbutler/core/context";
-import { get } from "svelte/store";
 import type { GitConfigService } from "$lib/config/gitConfigService";
 import type { SecretsService } from "$lib/secrets/secretsService";
-import type { TokenMemoryService } from "$lib/user/tokenMemoryService";
-import type { HttpClient } from "@gitbutler/shared/network/httpClient";
 
-const maxDiffLengthLimitForAPI = 5000;
 const prDescriptionTokenLimit = 4096;
 
 export enum KeyOption {
 	BringYourOwn = "bringYourOwn",
-	ButlerAPI = "butlerAPI",
 }
 
 export enum AISecretHandle {
@@ -67,7 +61,6 @@ export enum GitAIConfigKey {
 }
 
 interface BaseAIServiceOpts {
-	userToken?: string;
 	onToken?: (token: string) => void;
 }
 
@@ -130,21 +123,12 @@ export class AIService {
 	constructor(
 		private gitConfig: GitConfigService,
 		private secretsService: SecretsService,
-		private cloud: HttpClient,
-		private tokenMemoryService: TokenMemoryService,
 	) {}
 
 	async getModelKind() {
 		return await this.gitConfig.getWithDefault<ModelKind>(
 			GitAIConfigKey.ModelProvider,
 			ModelKind.OpenAI,
-		);
-	}
-
-	async getOpenAIKeyOption() {
-		return await this.gitConfig.getWithDefault<KeyOption>(
-			GitAIConfigKey.OpenAIKeyOption,
-			KeyOption.ButlerAPI,
 		);
 	}
 
@@ -166,13 +150,6 @@ export class AIService {
 			return storedValue as OpenAIModelName;
 		}
 		return defaultModel;
-	}
-
-	async getAnthropicKeyOption() {
-		return await this.gitConfig.getWithDefault<KeyOption>(
-			GitAIConfigKey.AnthropicKeyOption,
-			KeyOption.ButlerAPI,
-		);
 	}
 
 	async getAnthropicKey() {
@@ -198,19 +175,6 @@ export class AIService {
 		);
 
 		return parseInt(limitString, 10);
-	}
-
-	/**
-	 * Returns the diff length limit with a specified upper bound of characters in order to not inundate the API.
-	 */
-	async getDiffLengthLimitConsideringAPI() {
-		const diffLengthLimit = await this.getDiffLengthLimit();
-
-		if (await this.usingGitButlerAPI()) {
-			return Math.max(maxDiffLengthLimitForAPI, diffLengthLimit);
-		} else {
-			return diffLengthLimit;
-		}
 	}
 
 	async getOllamaEndpoint() {
@@ -252,27 +216,12 @@ export class AIService {
 		);
 	}
 
-	async usingGitButlerAPI() {
-		const modelKind = await this.getModelKind();
-		const openAIKeyOption = await this.getOpenAIKeyOption();
-		const anthropicKeyOption = await this.getAnthropicKeyOption();
-
-		const openAIActiveAndUsingButlerAPI =
-			modelKind === ModelKind.OpenAI && openAIKeyOption === KeyOption.ButlerAPI;
-		const anthropicActiveAndUsingButlerAPI =
-			modelKind === ModelKind.Anthropic && anthropicKeyOption === KeyOption.ButlerAPI;
-
-		return openAIActiveAndUsingButlerAPI || anthropicActiveAndUsingButlerAPI;
-	}
-
 	async validateConfiguration(): Promise<boolean> {
 		const modelKind = await this.getModelKind();
 		const ollamaEndpoint = await this.getOllamaEndpoint();
 		const ollamaModelName = await this.getOllamaModelName();
 		const lmStudioEndpoint = await this.getLMStudioEndpoint();
 		const lmStudioModelName = await this.getLMStudioModelName();
-
-		if (await this.usingGitButlerAPI()) return !!get(this.tokenMemoryService.token);
 
 		const openAIActiveAndKeyProvided =
 			modelKind === ModelKind.OpenAI && !!(await this.getOpenAIKey());
@@ -294,28 +243,9 @@ export class AIService {
 		);
 	}
 
-	async validateGitButlerAPIConfiguration(): Promise<boolean> {
-		if (!(await this.usingGitButlerAPI())) {
-			return false;
-		}
-		return !!get(this.tokenMemoryService.token);
-	}
-
-	// This optionally returns a summarizer. There are a few conditions for how this may occur
-	// Firstly, if the user has opted to use the GB API and isn't logged in, it will return undefined
-	// Secondly, if the user has opted to bring their own key but hasn't provided one, it will return undefined
+	/** Build a client for the user-configured provider and credentials. */
 	async buildClient(): Promise<AIClient | undefined> {
 		const modelKind = await this.getModelKind();
-
-		if (await this.usingGitButlerAPI()) {
-			// TODO(CTO): Once @estib has landed the new auth, it would be good to
-			// about a good way of checking whether the user is authenticated.
-			if (!get(this.tokenMemoryService.token)) {
-				throw new Error("When using GitButler's API to summarize code, you must be logged in");
-			}
-
-			return new ButlerAIClient(this.cloud, modelKind);
-		}
 
 		if (modelKind === ModelKind.Ollama) {
 			const ollamaEndpoint = await this.getOllamaEndpoint();
@@ -388,7 +318,7 @@ export class AIService {
 
 		if (!aiClient) return;
 
-		const diffLengthLimit = await this.getDiffLengthLimitConsideringAPI();
+		const diffLengthLimit = await this.getDiffLengthLimit();
 		const defaultedCommitTemplate = commitTemplate || aiClient.defaultCommitTemplate;
 
 		const prompt = defaultedCommitTemplate.map((promptMessage) => {
@@ -468,7 +398,7 @@ export class AIService {
 
 		if (!aiClient) return;
 
-		const diffLengthLimit = await this.getDiffLengthLimitConsideringAPI();
+		const diffLengthLimit = await this.getDiffLengthLimit();
 		const defaultedBranchTemplate = params.branchTemplate || aiClient.defaultBranchTemplate;
 		const hunks = params.type === "hunks" ? params.hunks : [];
 		const commitMessages = params.type === "commitMessages" ? params.commitMessages : [];

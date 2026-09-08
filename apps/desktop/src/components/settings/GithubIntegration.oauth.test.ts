@@ -3,13 +3,11 @@ import { CLIPBOARD_SERVICE } from "$lib/backend/clipboard";
 import { URL_SERVICE } from "$lib/backend/url";
 import { GITHUB_USER_SERVICE } from "$lib/forge/github/githubUserService.svelte";
 import { canonicalMessages } from "$lib/notifications/toasts";
-import { OnboardingEvent, POSTHOG_WRAPPER } from "$lib/telemetry/posthog";
 import { chipToasts } from "@gitbutler/ui";
 import { render, screen, waitFor } from "@testing-library/svelte";
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, test, vi } from "vitest";
 import type { GitHubUserService } from "$lib/forge/github/githubUserService.svelte";
-import type { PostHogWrapper } from "$lib/telemetry/posthog";
 
 // jsdom has no PointerEvent; ContextMenu.onMount does `target instanceof PointerEvent`.
 (globalThis as any).PointerEvent ??= MouseEvent;
@@ -62,10 +60,8 @@ function renderIntegration(
 		storeGithuibEnterprisePat: [vi.fn(), idle],
 		accounts: () => ({ result: { data: [], status: "fulfilled" } }),
 	} as unknown as GitHubUserService;
-	const posthog = { capture: vi.fn(), captureOnboarding: vi.fn() } as unknown as PostHogWrapper;
 	const context = new Map<any, any>([
 		[GITHUB_USER_SERVICE._key, githubUserService],
-		[POSTHOG_WRAPPER._key, posthog],
 		[URL_SERVICE._key, { openExternalUrl: vi.fn(async () => {}) }],
 		[CLIPBOARD_SERVICE._key, { write: vi.fn(async () => {}) }],
 	]);
@@ -74,7 +70,7 @@ function renderIntegration(
 	const successToast = vi.spyOn(chipToasts, "success").mockReturnValue("toast");
 	const errorLog = vi.spyOn(console, "error").mockImplementation(() => {});
 	render(GithubIntegration, { context });
-	return { githubUserService, posthog, errorToast, warningToast, successToast, errorLog };
+	return { githubUserService, errorToast, warningToast, successToast, errorLog };
 }
 
 afterEach(() => vi.restoreAllMocks());
@@ -97,8 +93,8 @@ function expectFlowClosed() {
 }
 
 describe("GithubIntegration device OAuth failure", () => {
-	test("shows and reports only the classifier's guidance for a terminal refusal", async () => {
-		const { githubUserService, posthog, errorToast, warningToast, errorLog } = renderIntegration(
+	test("shows only the classifier's guidance for a terminal refusal", async () => {
+		const { githubUserService, errorToast, warningToast, errorLog } = renderIntegration(
 			async () => {
 				throw rejection;
 			},
@@ -115,36 +111,26 @@ describe("GithubIntegration device OAuth failure", () => {
 				"The authorization request was denied on GitHub. Start again and approve GitButler on the device activation page.",
 			code: "GitHubDeviceAccessDenied",
 		};
-		await waitFor(() =>
-			expect(posthog.captureOnboarding).toHaveBeenCalledWith(
-				OnboardingEvent.GitHubOAuthFailed,
-				payload,
-			),
-		);
-		expect(posthog.captureOnboarding).toHaveBeenCalledTimes(2);
+
 		// A denied request is a user state, so it toasts as a warning.
 		expect(warningToast).toHaveBeenCalledTimes(1);
 		expect(canonicalMessages.text(warningToast.mock.calls[0]![0])).toBe(payload.message);
 		expect(errorToast).not.toHaveBeenCalled();
 		expect(errorLog).toHaveBeenCalledTimes(1);
 		expect(errorLog.mock.calls.flat()).not.toContain(rejection);
-		const serialized = JSON.stringify([
-			vi.mocked(posthog.captureOnboarding).mock.calls,
-			warningToast.mock.calls,
-			errorLog.mock.calls,
-		]);
+		const serialized = JSON.stringify([warningToast.mock.calls, errorLog.mock.calls]);
 		for (const raw of rawFields) expect(serialized).not.toContain(raw);
 		expectFlowClosed();
 	});
 
-	test("reports an initialization refusal the same way and never opens the flow", async () => {
+	test("shows an initialization refusal the same way and never opens the flow", async () => {
 		const initRejection = {
 			...rejection,
 			name: "API error: (init_github_device_oauth)",
 			message: rejection.message.replace("access_denied", "device_flow_disabled"),
 			code: "GitHubDeviceFlowRejected",
 		};
-		const { posthog, errorToast, warningToast, errorLog } = renderIntegration(
+		const { errorToast, warningToast, errorLog } = renderIntegration(
 			async () => ({ login: "octocat" }),
 			async () => {
 				throw initRejection;
@@ -161,32 +147,19 @@ describe("GithubIntegration device OAuth failure", () => {
 				"GitHub rejected the device authorization request. Start again, or connect with a personal access token instead.",
 			code: "GitHubDeviceFlowRejected",
 		};
-		await waitFor(() =>
-			expect(posthog.captureOnboarding).toHaveBeenCalledWith(
-				OnboardingEvent.GitHubOAuthFailed,
-				payload,
-			),
-		);
-		expect(vi.mocked(posthog.captureOnboarding).mock.calls).toEqual([
-			[OnboardingEvent.GitHubInitiateOAuth],
-			[OnboardingEvent.GitHubOAuthFailed, payload],
-		]);
+
 		expect(errorToast).toHaveBeenCalledTimes(1);
 		expect(canonicalMessages.text(errorToast.mock.calls[0]![0])).toBe(payload.message);
 		expect(warningToast).not.toHaveBeenCalled();
 		expect(errorLog).toHaveBeenCalledTimes(1);
-		const serialized = JSON.stringify([
-			vi.mocked(posthog.captureOnboarding).mock.calls,
-			errorToast.mock.calls,
-			errorLog.mock.calls,
-		]);
+		const serialized = JSON.stringify([errorToast.mock.calls, errorLog.mock.calls]);
 		for (const raw of [...rawFields, "device_flow_disabled"]) expect(serialized).not.toContain(raw);
 		expect(screen.queryByRole("button", { name: /copy to clipboard/i })).not.toBeInTheDocument();
 		expect(screen.getByRole("button", { name: /add account/i })).toBeEnabled();
 	});
 
 	test("keeps the success path unchanged", async () => {
-		const { posthog, errorToast, successToast } = renderIntegration(async () => ({
+		const { errorToast, successToast } = renderIntegration(async () => ({
 			login: "octocat",
 		}));
 
@@ -195,7 +168,5 @@ describe("GithubIntegration device OAuth failure", () => {
 		await waitFor(() => expectFlowClosed());
 		expect(canonicalMessages.text(successToast.mock.calls[0]![0])).toBe("GitHub authenticated");
 		expect(errorToast).not.toHaveBeenCalled();
-		expect(posthog.captureOnboarding).toHaveBeenCalledTimes(1);
-		expect(posthog.captureOnboarding).toHaveBeenCalledWith(OnboardingEvent.GitHubInitiateOAuth);
 	});
 });

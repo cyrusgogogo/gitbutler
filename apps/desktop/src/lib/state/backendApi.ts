@@ -6,7 +6,6 @@ import { buildStackEndpoints } from "$lib/stacks/stackEndpoints";
 import { tauriBaseQuery, type TauriBaseQueryFn } from "$lib/state/backendQuery";
 import { butlerModule } from "$lib/state/butlerModule";
 import { ReduxTag } from "$lib/state/tags";
-import { buildUserEndpoints } from "$lib/user/userEndpoints";
 import { buildWorktreeEndpoints } from "$lib/worktree/worktreeEndpoints";
 import { buildCreateApi, coreModule } from "@reduxjs/toolkit/query";
 import type { HookContext } from "$lib/state/context";
@@ -35,7 +34,6 @@ export function createBackendApi(ctx: HookContext) {
 			...buildGitEndpoints(build),
 			...buildModeEndpoints(build),
 			...buildProjectEndpoints(build),
-			...buildUserEndpoints(build),
 		}),
 	});
 }

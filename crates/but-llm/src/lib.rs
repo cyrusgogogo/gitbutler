@@ -166,7 +166,6 @@ impl LLMProvider {
             LLMProviderKind::OpenAi => {
                 let credentials = match configuration.openai.key_option {
                     CredentialsKeyOption::BringYourOwn => openai::CredentialsKind::OwnOpenAiKey,
-                    CredentialsKeyOption::ButlerApi => openai::CredentialsKind::GitButlerProxied,
                 };
                 let client = openai::OpenAiProvider::with(
                     Some(credentials),
@@ -182,7 +181,6 @@ impl LLMProvider {
                     CredentialsKeyOption::BringYourOwn => {
                         anthropic::CredentialsKind::OwnAnthropicKey
                     }
-                    CredentialsKeyOption::ButlerApi => anthropic::CredentialsKind::GitButlerProxied,
                 };
                 let client = anthropic::AnthropicProvider::with(
                     Some(credentials),

@@ -19,7 +19,7 @@ export default class URLService {
 				showToast({ title: i18nMessage("desktop:url.externalURLError"), message, style: "danger" });
 			}
 
-			// Rethrowing for sentry and posthog
+			// Let the caller handle the failure.
 			throw e;
 		}
 	}

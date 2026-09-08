@@ -26,7 +26,6 @@ tauri-build = { version = "2.6.1", features = [] }
 
 [dependencies]
 but = { workspace = true, optional = true }
-but-feedback.workspace = true
 but-error.workspace = true
 but-secret.workspace = true
 but-db.workspace = true
@@ -49,7 +48,6 @@ tauri-plugin-os = "2.3.2"
 tauri-plugin-process = "2.3.1"
 tauri-plugin-shell = "2.3.5"
 tauri-plugin-store = "2.4.3"
-tauri-plugin-updater = "2.10.1"
 tauri-plugin-window-state = "2.4.1"
 tauri-plugin-clipboard-manager = "2.3.2"
 anyhow.workspace = true
@@ -91,9 +89,7 @@ default = ["custom-protocol", "devtools", "opener"]
 builtin-but = ["dep:but", "but-action/builtin-but"]
 ## A very specific utility flag to make clear that the 'but' binary is managed by a package manager.
 packaged-but-distribution = ["but?/packaged-but-distribution"]
-## Disable the auto-updater in the frontend.
-##
-## Note that it will still be compiled into the backend, so the technical capability of auto-updates remains.
+## Compatibility flag for existing distribution scripts; this local edition has no updater.
 disable-auto-updates = []
 ## A forwarding to all crates that have windows-specific adjustments for testing on non-Windows.
 windows = []

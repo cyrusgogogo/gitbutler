@@ -589,7 +589,7 @@ View and manage GitButler configuration.
 ```bash
 but config
 but config user               # Also: forge, target, metrics, feature, ui, ai
-but config ai openai          # Also: anthropic, ollama, lmstudio, openrouter
+but config ai openai --api-key-env OPENAI_API_KEY # Own credentials; also: anthropic, ollama, lmstudio, openrouter
 but config target             # Show the current target branch
 but config target origin/main # Set the fetch target
 but config push-remote         # Show the current push remote

@@ -3,7 +3,6 @@
 	import { BRANCH_SERVICE } from "$lib/branches/branchService.svelte";
 	import { GIT_CONFIG_SERVICE } from "$lib/config/gitConfigService";
 	import { getPrStatus } from "$lib/forge/interface/prUtils";
-	import { useUserAvatarUrl } from "$lib/user/userAvatar.svelte";
 	import { inject } from "@gitbutler/core/context";
 	import { useTranslations } from "@gitbutler/i18n/svelte";
 	import { AvatarGroup, ReviewBadge, SeriesLabelsRow, TestId, TimeAgo } from "@gitbutler/ui";
@@ -24,7 +23,6 @@
 	}
 
 	const { reviewUnit, forge, projectId, branchListing, prs, selected, onclick }: Props = $props();
-	const userAvatarUrl = useUserAvatarUrl();
 
 	const unknownName = "unknown";
 	const unknownEmail = "example@example.com";
@@ -78,7 +76,7 @@
 			avatars = [
 				{
 					username: name,
-					srcUrl: userAvatarUrl(email) ?? (await gravatarUrlFromEmail(email)),
+					srcUrl: await gravatarUrlFromEmail(email),
 				},
 			];
 		} else if (branchListingDetails) {
@@ -88,9 +86,7 @@
 							return {
 								username: author.name || unknownName,
 								srcUrl:
-									userAvatarUrl(author.email) ??
-									author.gravatarUrl ??
-									(await gravatarUrlFromEmail(author.email || unknownEmail)),
+									author.gravatarUrl ?? (await gravatarUrlFromEmail(author.email || unknownEmail)),
 							};
 						}),
 					)

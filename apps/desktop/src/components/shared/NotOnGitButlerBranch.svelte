@@ -76,7 +76,7 @@
 		<!-- Allow the display of the project settings -->
 		{@render children()}
 	{:else}
-		<IllustrationSplitLayout img={directionDoubtSvg} hideDetails>
+		<IllustrationSplitLayout img={directionDoubtSvg}>
 			{@const uncommittedChanges = changes.response || []}
 
 			<div class="switchrepo__content" data-testid={TestId.NotOnGitButlerBranchView}>

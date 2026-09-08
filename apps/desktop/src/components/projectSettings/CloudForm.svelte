@@ -1,22 +1,19 @@
 <script lang="ts">
 	import AiPromptSelect from "$components/projectSettings/AIPromptSelect.svelte";
-	import AccessTokenSignIn from "$components/shared/AccessTokenSignIn.svelte";
+
 	import SettingsSection from "$components/shared/SettingsSection.svelte";
-	import { projectAiExperimentalFeaturesEnabled, projectAiGenEnabled } from "$lib/config/config";
+	import { projectAiGenEnabled } from "$lib/config/config";
 	import { useSettingsModal } from "$lib/settings/settingsModal.svelte";
-	import { USER_SERVICE } from "$lib/user/userService.svelte";
-	import { inject } from "@gitbutler/core/context";
+
 	import { useTranslations } from "@gitbutler/i18n/svelte";
 	import { Button, CardGroup, Spacer, Toggle } from "@gitbutler/ui";
 	const i18nMessages = useTranslations();
 
 	const { projectId }: { projectId: string } = $props();
 
-	const userService = inject(USER_SERVICE);
 	const { openGeneralSettings } = useSettingsModal();
 
 	const aiGenEnabled = $derived(projectAiGenEnabled(projectId));
-	const experimentalAiGenEnabled = $derived(projectAiExperimentalFeaturesEnabled(projectId));
 </script>
 
 <SettingsSection>
@@ -25,11 +22,6 @@
 	{/snippet}
 
 	<Spacer />
-
-	{#if !userService.user}
-		<AccessTokenSignIn />
-		<Spacer />
-	{/if}
 
 	<CardGroup>
 		<CardGroup.Item labelFor="aiGenEnabled">
@@ -50,28 +42,6 @@
 			{/snippet}
 		</CardGroup.Item>
 	</CardGroup>
-
-	{#if $aiGenEnabled}
-		<CardGroup>
-			<CardGroup.Item labelFor="aiExperimental">
-				{#snippet title()}
-					{$i18nMessages.t("desktop:CloudForm.enableExperimentalAIFeatures")}
-				{/snippet}
-				{#snippet caption()}
-					{$i18nMessages.t("desktop:CloudForm.ifEnabledYouWillBeAbleToAccess")}
-				{/snippet}
-				{#snippet actions()}
-					<Toggle
-						id="aiExperimental"
-						checked={$experimentalAiGenEnabled}
-						onclick={() => {
-							$experimentalAiGenEnabled = !$experimentalAiGenEnabled;
-						}}
-					/>
-				{/snippet}
-			</CardGroup.Item>
-		</CardGroup>
-	{/if}
 
 	<CardGroup>
 		<CardGroup.Item>

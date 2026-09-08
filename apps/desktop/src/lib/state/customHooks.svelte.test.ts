@@ -5,14 +5,11 @@ import { buildCreateApi, coreModule } from "@reduxjs/toolkit/query";
 import { describe, expect, test, vi } from "vitest";
 import type { TauriBaseQueryFn } from "$lib/state/backendQuery";
 import type { HookContext } from "$lib/state/context";
-import type { PostHogWrapper } from "$lib/telemetry/posthog";
 
 function setup() {
-	const capture = vi.fn();
 	const ctx: HookContext = {
 		getState: () => store.getState(),
 		getDispatch: () => store.dispatch,
-		posthog: { capture } as unknown as PostHogWrapper,
 	};
 	async function baseQuery(
 		args: Parameters<TauriBaseQueryFn>[0],
@@ -46,49 +43,34 @@ function setup() {
 		reducer: { [api.reducerPath]: api.reducer },
 		middleware: (getDefaultMiddleware) => getDefaultMiddleware().concat(api.middleware),
 	});
-	return { api, capture };
+	return { api };
 }
 
-function capturedEventNames(capture: ReturnType<typeof vi.fn>) {
-	return capture.mock.calls.map((call) => call[0]);
-}
-
-describe("mutation tracking", () => {
-	test("a failed unnamed mutation emits tauri_command but no legacy event", async () => {
-		const { api, capture } = setup();
-
-		await expect(api.endpoints.unnamedMutation.mutate({ fail: true })).rejects.toMatchObject({
-			message: "it broke",
-		});
-
-		expect(capturedEventNames(capture)).toEqual(["tauri_command"]);
-		expect(capture).toHaveBeenCalledWith(
-			"tauri_command",
-			expect.objectContaining({ command: "some_command", failure: true }),
-		);
+describe("local mutation lifecycle", () => {
+	test("preserves successful mutation callbacks", async () => {
+		const { api } = setup();
+		const sideEffect = vi.fn();
+		const preEffect = vi.fn();
+		await api.endpoints.namedMutation.mutate({}, { sideEffect, preEffect });
+		expect(preEffect).toHaveBeenCalledWith({});
+		expect(sideEffect).toHaveBeenCalledWith(undefined, {});
 	});
-
-	test("a successful unnamed mutation emits tauri_command but no legacy event", async () => {
-		const { api, capture } = setup();
-
-		await api.endpoints.unnamedMutation.mutate({});
-
-		expect(capturedEventNames(capture)).toEqual(["tauri_command"]);
-	});
-
-	test("a named mutation still emits the legacy events", async () => {
-		const { api, capture } = setup();
-
-		await api.endpoints.namedMutation.mutate({});
-		await expect(api.endpoints.namedMutation.mutate({ fail: true })).rejects.toMatchObject({
-			message: "it broke",
+	test("preserves backend failure and invokes the error callback", async () => {
+		const { api } = setup();
+		const onError = vi.fn();
+		const sideEffect = vi.fn();
+		await expect(
+			api.endpoints.unnamedMutation.mutate({ fail: true }, { onError, sideEffect }),
+		).rejects.toMatchObject({ message: "it broke" });
+		expect(onError).toHaveBeenCalledWith(expect.objectContaining({ message: "it broke" }), {
+			fail: true,
 		});
-
-		expect(capturedEventNames(capture)).toEqual([
-			"tauri_command",
-			"Some Action Successful",
-			"tauri_command",
-			"Some Action Failed",
-		]);
+		expect(sideEffect).not.toHaveBeenCalled();
+	});
+	test("keeps already handled failures silent", async () => {
+		const { api } = setup();
+		await expect(
+			api.endpoints.unnamedMutation.mutate({ fail: true }, { throwSilentError: true }),
+		).rejects.toMatchObject({ name: "SilentError", message: "it broke" });
 	});
 });

@@ -12,7 +12,6 @@ import { InjectionToken } from "@gitbutler/core/context";
 import { writable } from "svelte/store";
 import type { BackendApi } from "$lib/state/backendApi";
 import type { QueryOptions } from "$lib/state/butlerModule";
-import type { PostHogWrapper } from "$lib/telemetry/posthog";
 import type {
 	PublishReviewOutcome,
 	PublishReviewInput,
@@ -43,23 +42,13 @@ export class PrService {
 	loading = writable(false);
 	private backendApi: ReturnType<typeof injectBackendEndpoints>;
 
-	constructor(
-		backendApi: BackendApi,
-		private posthog?: PostHogWrapper,
-	) {
+	constructor(backendApi: BackendApi) {
 		this.backendApi = injectBackendEndpoints(backendApi);
 	}
 
 	async createPr(
 		projectId: string,
-		{
-			title,
-			body,
-			draft,
-			localBranchName,
-			upstreamName,
-			posthogLabel,
-		}: CreatePullRequestArgs & { posthogLabel?: string },
+		{ title, body, draft, localBranchName, upstreamName }: CreatePullRequestArgs,
 	): Promise<PullRequest> {
 		this.loading.set(true);
 		const request = async () => {
@@ -83,7 +72,6 @@ export class PrService {
 		while (attempts < 4) {
 			try {
 				const pr = await request();
-				if (posthogLabel) this.posthog?.capture(`${posthogLabel} Successful`);
 				return pr;
 			} catch (err: any) {
 				lastError = err;
@@ -93,7 +81,6 @@ export class PrService {
 				this.loading.set(false);
 			}
 		}
-		if (posthogLabel) this.posthog?.capture(`${posthogLabel} Failure`);
 		throw lastError;
 	}
 

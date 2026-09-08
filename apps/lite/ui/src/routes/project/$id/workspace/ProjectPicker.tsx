@@ -249,7 +249,7 @@ export const ProjectPicker: FC<{ project: ProjectForFrontend }> = (p) => {
 	// project not yet opened since the record began simply shows the plain folder.
 	const { data: repoInfo } = useQuery(repoInfoQueryOptions(p.project.id));
 	useEffect(() => {
-		if (repoInfo === undefined) return;
+		if (repoInfo == null) return;
 		writeProjectRepoMarks(p.project.id, { private: repoInfo.private, fork: repoInfo.fork });
 	}, [p.project.id, repoInfo]);
 

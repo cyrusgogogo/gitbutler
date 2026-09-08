@@ -14,9 +14,7 @@ export type GeneralSettingsPageId =
 	| "git"
 	| "integrations"
 	| "ai"
-	| "telemetry"
-	| "experimental"
-	| "organizations";
+	| "experimental";
 export type ProjectSettingsPageId = "project" | "git" | "ai" | "experimental";
 export type RejectionReason =
 	| "workspaceMergeConflict"
@@ -81,12 +79,7 @@ export type ProjectUiState = {
 	branchesToPoll: string[];
 };
 
-type GlobalModalType =
-	| "commit-failed"
-	| "author-missing"
-	| "general-settings"
-	| "project-settings"
-	| "login-confirmation";
+type GlobalModalType = "commit-failed" | "author-missing" | "general-settings" | "project-settings";
 type BaseGlobalModalState = {
 	type: GlobalModalType;
 };
@@ -118,18 +111,13 @@ export type ProjectSettingsModalState = BaseGlobalModalState & {
 	selectedId?: ProjectSettingsPageId;
 };
 
-export type LoginConfirmationModalState = BaseGlobalModalState & {
-	type: "login-confirmation";
-};
-
 export type AppTheme = "system" | "light" | "dark";
 
 export type GlobalModalState =
 	| CommitFailedModalState
 	| AuthorMissingModalState
 	| GeneralSettingsModalState
-	| ProjectSettingsModalState
-	| LoginConfirmationModalState;
+	| ProjectSettingsModalState;
 
 export type CodeEditorSettings = {
 	schemeIdentifer: string;

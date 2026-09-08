@@ -18,8 +18,8 @@ type SDK = Pick<
 >;
 
 /**
- * What the renderer can call: every SDK endpoint, whose signatures are the
- * SDK's, plus the members electron implements itself.
+ * Local and forge SDK endpoints the renderer can call, plus the members
+ * Electron implements itself. Official account and upload APIs are excluded.
  */
 export type LiteElectronApi = SDK & {
 	onAskpassPrompt: (callback: (event: AskpassPromptEvent) => void) => () => void;
@@ -55,12 +55,22 @@ export type LiteElectronApi = SDK & {
 };
 
 /**
- * The SDK endpoints the renderer can call: all of them, each under its own
- * name as the IPC channel, so a new declaration in Rust reaches `window.lite`
- * with nothing to keep in step.
+ * SDK endpoints keep their names as IPC channels. Retired official account
+ * and upload APIs remain unavailable to the renderer.
  */
 // `Object.keys` erases key types; the record's keys are exactly these.
-export const exposedEndpoints = Object.keys(apiParamNames) as ReadonlyArray<Endpoint>;
+const officialAccountEndpoints = [
+	"getUserProfileLocal",
+	"updateProfileAndPersist",
+	"uploadFile",
+	"loginAndPersist",
+	"deleteUser",
+	"getLoginToken",
+] as const satisfies ReadonlyArray<keyof typeof apiParamNames>;
+const officialAccountEndpointSet = new Set<string>(officialAccountEndpoints);
+export const exposedEndpoints = Object.keys(apiParamNames).filter(
+	(name): name is Endpoint => !officialAccountEndpointSet.has(name),
+);
 
 /** Members the main process answers itself rather than forwarding to the SDK. */
 export const localEndpoints = [
@@ -87,7 +97,10 @@ export const localEndpoints = [
 ] as const;
 
 /** An endpoint the SDK exposes to JavaScript. */
-export type Endpoint = keyof typeof apiParamNames & keyof typeof sdk;
+export type Endpoint = Exclude<
+	keyof typeof apiParamNames & keyof typeof sdk,
+	(typeof officialAccountEndpoints)[number]
+>;
 
 /**
  * The payload for an endpoint, named.

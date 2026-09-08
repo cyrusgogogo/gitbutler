@@ -7,12 +7,9 @@ import {
 	listEditorsQueryOptions,
 	listProjectsQueryOptions,
 	terminalsQueryOptions,
-	userProfileQueryOptions,
 } from "#ui/api/queries.ts";
 import { useDeleteAllData, useSaveGUISettings } from "#ui/api/mutations.ts";
-import { AccountSection } from "./Account.tsx";
 import { getButtonClassName } from "#ui/components/Button.tsx";
-import { Switch } from "#ui/components/Switch.tsx";
 import { defaultSettings } from "#ui/settings.ts";
 import styles from "./General.module.css";
 import { Row, Section } from "./Section.tsx";
@@ -20,21 +17,15 @@ import { LanguageSetting } from "#ui/LanguageSetting.tsx";
 
 export const General: FC = () => {
 	const i18nMessages = useTranslations();
-	const [
-		{ data: editors },
-		{ data: terminals },
-		{ data: settings },
-		{ data: projects },
-		{ data: profile },
-	] = useSuspenseQueries({
-		queries: [
-			listEditorsQueryOptions,
-			terminalsQueryOptions,
-			guiSettingsQueryOptions,
-			listProjectsQueryOptions,
-			userProfileQueryOptions,
-		],
-	});
+	const [{ data: editors }, { data: terminals }, { data: settings }, { data: projects }] =
+		useSuspenseQueries({
+			queries: [
+				listEditorsQueryOptions,
+				terminalsQueryOptions,
+				guiSettingsQueryOptions,
+				listProjectsQueryOptions,
+			],
+		});
 	const { mutate: saveGUISettings } = useSaveGUISettings();
 	const { isPending: isRemoving, mutate: deleteAllData } = useDeleteAllData();
 	const navigate = useNavigate();
@@ -52,7 +43,6 @@ export const General: FC = () => {
 			<Section>
 				<LanguageSetting />
 			</Section>
-			<AccountSection profile={profile} />
 
 			<Section>
 				<Row label={i18nMessages.t("lite:General.defaultEditor")} htmlFor="editor">
@@ -87,18 +77,6 @@ export const General: FC = () => {
 							</option>
 						))}
 					</select>
-				</Row>
-
-				<Row
-					label={i18nMessages.t("lite:General.checkForUpdatesAutomatically")}
-					labelId="auto-update"
-					hint={i18nMessages.t("lite:General.anUpdateAlreadyDownloadedStillInstallsOnQuit")}
-				>
-					<Switch
-						aria-labelledby="auto-update"
-						checked={settings.autoUpdate ?? defaultSettings.autoUpdate}
-						onCheckedChange={(autoUpdate) => saveGUISettings({ autoUpdate })}
-					/>
 				</Row>
 
 				<Row

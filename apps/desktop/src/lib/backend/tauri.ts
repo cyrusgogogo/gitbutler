@@ -1,5 +1,5 @@
 import { IpcError, isNormalizedError } from "$lib/error/normalizedError";
-import { getName, getVersion, getVersion as tauriGetVersion } from "@tauri-apps/api/app";
+import { getName, getVersion } from "@tauri-apps/api/app";
 import { invoke as invokeTauri } from "@tauri-apps/api/core";
 import { documentDir as documentDirTauri } from "@tauri-apps/api/path";
 import { join as joinPathTauri } from "@tauri-apps/api/path";
@@ -15,7 +15,6 @@ import { error as logErrorToFile } from "@tauri-apps/plugin-log";
 import { platform, locale } from "@tauri-apps/plugin-os";
 import { relaunch as relaunchTauri } from "@tauri-apps/plugin-process";
 import { Store } from "@tauri-apps/plugin-store";
-import { check as tauriCheck } from "@tauri-apps/plugin-updater";
 import { readable } from "svelte/store";
 import type { AppInfo, DeepLinkHandlers, DiskStore, IBackend } from "$lib/backend/backend";
 import type { Locale } from "@gitbutler/i18n";
@@ -57,8 +56,6 @@ export default class Tauri implements IBackend {
 	}
 	invoke = tauriInvoke;
 	listen = tauriListen;
-	checkUpdate = tauriCheck;
-	currentVersion = tauriGetVersion;
 	readFile = tauriReadFile;
 	openExternalUrl = tauriOpenExternalUrl;
 	relaunch = relaunchTauri;
@@ -104,15 +101,13 @@ function handleDeepLinkUrls(urls: string[], handlers: DeepLinkHandlers) {
 	if (!url) return;
 	const result = parseDeepLinkUrl(url);
 	if (!result) {
-		console.warn("Received invalid deep link URL:", url);
+		console.warn("Received unsupported deep link URL");
 		return;
 	}
 
 	const [topLevel, params] = result;
 	handleTopLevel(topLevel, params, handlers);
 }
-
-const LOGIN_LINK_EXPIRATION_MS = 30 * 1000; // 30 seconds
 
 function handleTopLevel(
 	path: DeepLinkTopLevelPath,
@@ -127,29 +122,12 @@ function handleTopLevel(
 			}
 			return true;
 		}
-		case "login": {
-			const accessToken = params.get("access_token");
-			const timestampStr = params.get("t");
-			if (!timestampStr) {
-				return true;
-			}
-			const timestamp = Number(timestampStr);
-			const now = Date.now();
-			if (isNaN(timestamp) || now - timestamp > LOGIN_LINK_EXPIRATION_MS) {
-				console.warn("Ignoring expired login deep link");
-				return true;
-			}
-			if (accessToken) {
-				handlers.login(accessToken);
-			}
-			return true;
-		}
 	}
 }
 
 const DEEP_LINK_SCHEMES = ["but", "but-dev", "but-nightly"] as const;
 
-const DEEP_LINK_TOP_LEVEL_PATHS = ["open", "login"] as const;
+const DEEP_LINK_TOP_LEVEL_PATHS = ["open"] as const;
 type DeepLinkTopLevelPath = (typeof DEEP_LINK_TOP_LEVEL_PATHS)[number];
 
 function isValidDeepLinkTopLevelPath(path: string): path is DeepLinkTopLevelPath {
@@ -230,9 +208,8 @@ async function tauriInvoke<T>(command: string, params: Record<string, unknown> =
 	} catch (error: unknown) {
 		if (isNormalizedError(error)) {
 			console.error(`ipc->${command}: ${JSON.stringify(params)}`, error);
-			// Re-throw as a proper Error subclass so the stack points at the
-			// caller and Sentry can fingerprint by name + message instead of
-			// bucketing every raw `{name, message, code}` rejection together.
+			// Preserve the error name, message and code in an Error subclass
+			// with a stack pointing at the caller.
 			throw new IpcError(error, command);
 		}
 		throw error;

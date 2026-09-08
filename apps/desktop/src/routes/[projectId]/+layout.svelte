@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { goto } from "$app/navigation";
 	import ProjectSettingsShortcutHandler from "$components/settings/ProjectSettingsShortcutHandler.svelte";
-	import AnalyticsMonitor from "$components/shared/AnalyticsMonitor.svelte";
+
 	import FullviewLoading from "$components/shared/FullviewLoading.svelte";
 	import NotOnGitButlerBranch from "$components/shared/NotOnGitButlerBranch.svelte";
 	import ProjectShortcutHandler from "$components/shared/ProjectShortcutHandler.svelte";
@@ -28,7 +28,7 @@
 	import { CLIENT_STATE } from "$lib/state/clientState.svelte";
 	import { combineResults } from "$lib/state/helpers";
 	import { invalidatesList, ReduxTag } from "$lib/state/tags";
-	import { OnboardingEvent, POSTHOG_WRAPPER } from "$lib/telemetry/posthog";
+
 	import { debounce } from "$lib/utils/debounce";
 	import { WORKTREE_SERVICE } from "$lib/worktree/worktreeService.svelte";
 	import { inject } from "@gitbutler/core/context";
@@ -45,7 +45,7 @@
 	const { projectId } = $derived(data);
 
 	// Core services
-	const posthog = inject(POSTHOG_WRAPPER);
+
 	const settingsService = inject(SETTINGS_SERVICE);
 	const settingsStore = settingsService.appSettings;
 	const projectsService = inject(PROJECTS_SERVICE);
@@ -63,10 +63,6 @@
 	const baseBranchService = inject(BASE_BRANCH_SERVICE);
 	const branchService = inject(BRANCH_SERVICE);
 	const gitService = inject(GIT_SERVICE);
-
-	const repoInfoQuery = $derived(baseBranchService.repo(projectId));
-
-	const repoInfo = $derived(repoInfoQuery.response);
 
 	const baseBranchQuery = $derived(baseBranchService.baseBranch(projectId));
 	const baseBranch = $derived(baseBranchQuery.response);
@@ -155,10 +151,7 @@
 	// =============================================================================
 
 	$effect(() => {
-		posthog.setPostHogRepo(repoInfo);
-		return () => {
-			posthog.setPostHogRepo(undefined);
-		};
+		return () => {};
 	});
 
 	// =============================================================================
@@ -317,7 +310,6 @@
 		const dontShowAgainKey = `git-filters--dont-show-again--${projectId}`;
 		try {
 			const info = await projectsService.setActiveProject(projectId);
-			posthog.captureOnboarding(OnboardingEvent.SetProjectActive);
 
 			if (!info) return;
 
@@ -342,7 +334,6 @@
 				});
 			}
 		} catch (error: unknown) {
-			posthog.captureOnboarding(OnboardingEvent.SetProjectActiveFailed, error);
 			showError(i18nMessage("desktop:layout.failedToSetTheProjectActive"), error);
 		}
 	}
@@ -392,8 +383,6 @@
 		<ProblemLoadingRepo {projectId} error={baseError} />
 	{/snippet}
 </ReduxResult>
-
-<AnalyticsMonitor {projectId} />
 
 <style>
 	.view-wrap {

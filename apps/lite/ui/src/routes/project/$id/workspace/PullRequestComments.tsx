@@ -23,7 +23,6 @@ import {
 	listEditorsQueryOptions,
 	workspaceFileQueryOptions,
 	reviewerCandidatesQueryOptions,
-	userProfileQueryOptions,
 } from "#ui/api/queries.ts";
 import {
 	nativeMenuItem,
@@ -44,7 +43,6 @@ import { Icon } from "#ui/components/Icon.tsx";
 import { Kbd } from "#ui/components/Kbd.tsx";
 import type { IconName } from "#ui/components/iconNames.ts";
 import { Markdown } from "#ui/components/Markdown.tsx";
-import { MarkdownAttachments } from "#ui/components/MarkdownAttachments.tsx";
 import { MarkdownToolbar } from "#ui/components/MarkdownToolbar.tsx";
 import { RelativeTime } from "#ui/components/RelativeTime.tsx";
 import {
@@ -918,7 +916,6 @@ const timelineItems = (
  * The signed-in user's forge avatar. There is no endpoint for it, so it is
  * read off whichever timeline entry they authored — exact when it hits, but
  * blank on a review they have not posted to yet, which is the common case.
- * The caller falls back to the GitButler profile picture for that.
  */
 const ownForgeAvatar = (
 	items: Array<TimelineItem>,
@@ -1128,7 +1125,6 @@ const Composer: FC<{
 
 			<div className={styles.composerFooter}>
 				<div className={styles.composerFooterStart}>
-					<MarkdownAttachments onInput={setDraft} targetRef={textareaRef} />
 					<ForgeInserts onInput={setDraft} projectId={projectId} targetRef={textareaRef} />
 				</div>
 				<button
@@ -1262,9 +1258,6 @@ export const PullRequestComments: FC<{ projectId: string; review: ForgeReview }>
 		select: (headInfo) =>
 			getHeadInfoIndex(headInfo).isApplied(encodeBytes(`refs/heads/${review.sourceBranch}`)),
 	});
-	// The forge has no "authenticated user" endpoint, so the GitButler account
-	// picture stands in until the caller has actually posted here.
-	const { data: profile } = useQuery(userProfileQueryOptions);
 	const { mutate: createReviewComment } = useCreateReviewComment(projectId);
 	const [draft, setDraft] = useState("");
 	const composerRef = useRef<HTMLTextAreaElement | null>(null);
@@ -1381,7 +1374,7 @@ export const PullRequestComments: FC<{ projectId: string; review: ForgeReview }>
 		<div className={styles.comments}>
 			<RegisterFreshItems source="conversation" items={freshItems} />
 			<Composer
-				avatarUrl={ownForgeAvatar(items, currentLogin) ?? profile?.picture}
+				avatarUrl={ownForgeAvatar(items, currentLogin)}
 				projectId={projectId}
 				draft={draft}
 				onSubmit={handleSubmit}

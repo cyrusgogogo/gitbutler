@@ -48,11 +48,6 @@ export const externalLinks = [
 		icon: "docs",
 		url: "https://docs.gitbutler.com/",
 	},
-	{
-		label: i18nMessage("lite:pages.statica31feef28"),
-		icon: "discord",
-		url: "https://discord.gg/MmFkmaJ42D",
-	},
 ] as const satisfies ReadonlyArray<{ label: LocalizedText; icon: IconName; url: string }>;
 
 export const settingsPagesInScope = (scope: SettingsScope) =>

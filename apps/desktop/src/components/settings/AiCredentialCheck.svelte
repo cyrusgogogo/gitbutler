@@ -2,7 +2,6 @@
 	import { AI_SERVICE, type DiffInput } from "$lib/ai/service";
 	import { ModelKind } from "$lib/ai/types";
 	import { canonicalMessages } from "$lib/notifications/toasts";
-	import { USER_SERVICE } from "$lib/user/userService.svelte";
 	import { inject } from "@gitbutler/core/context";
 	import { errorText, message as i18nMessage } from "@gitbutler/i18n";
 	import { getI18n, useTranslations } from "@gitbutler/i18n/svelte";
@@ -14,7 +13,6 @@
 	const i18n = getI18n();
 
 	const aiService = inject(AI_SERVICE);
-	const userService = inject(USER_SERVICE);
 
 	let testing = $state(false);
 	let isStreaming = $state(false);
@@ -22,7 +20,6 @@
 	let streamingResult = $state<string>("");
 	let error = $state<LocalizedText | null>(null);
 	let modelKind = $state<ModelKind | undefined>();
-	let isUsingButlerAPI = $state(false);
 	let debugInfo = $state<string | null>(null);
 	let showDebug = $state(false);
 	let showSampleDiff = $state(false);
@@ -70,21 +67,13 @@
 			modelKind = await aiService.getModelKind();
 			debugInfo = `Model kind: ${modelKind}`;
 
-			// Check if using GitButler API
-			isUsingButlerAPI = await aiService.usingGitButlerAPI();
-			debugInfo += `, Using GB API: ${isUsingButlerAPI}`;
-
 			// Check if configuration is valid
 			const isConfigValid = await aiService.validateConfiguration();
 			debugInfo += `, Config valid: ${isConfigValid}`;
 
 			if (!isConfigValid) {
 				if (modelKind === ModelKind.OpenAI || modelKind === ModelKind.Anthropic) {
-					if (isUsingButlerAPI && !userService.user) {
-						throw i18n.error("desktop:ai.validation.signIn");
-					} else {
-						throw i18n.error("desktop:ai.validation.apiKey");
-					}
+					throw i18n.error("desktop:ai.validation.apiKey");
 				} else if (modelKind === ModelKind.Ollama) {
 					// Get Ollama configuration for more detailed error
 					const endpoint = await aiService.getOllamaEndpoint();
@@ -211,18 +200,8 @@
 				{#snippet content()}
 					<div class="result-content" transition:slide={{ duration: 250 }}>
 						{#if error}
-							{#if (modelKind === ModelKind.OpenAI || modelKind === ModelKind.Anthropic) && isUsingButlerAPI && !userService.user}
-								<span
-									>{$i18nMessages.t(
-										"desktop:AiCredentialCheck.pleaseSignInToUseGitButlerSAI",
-									)}</span
-								>
-							{:else if modelKind === ModelKind.OpenAI || modelKind === ModelKind.Anthropic}
-								<span
-									>{$i18nMessages.t(
-										"desktop:AiCredentialCheck.pleaseCheckYourAPIKeyOrTryGitButler",
-									)}</span
-								>
+							{#if modelKind === ModelKind.OpenAI || modelKind === ModelKind.Anthropic}
+								<span>{$i18nMessages.t("desktop:ai.validation.apiKey")}</span>
 							{:else if modelKind === ModelKind.Ollama}
 								<span>
 									{#snippet i18nSlot3()}<br />{/snippet}

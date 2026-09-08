@@ -16,7 +16,6 @@ const guiSettingsV1 = type({
 	version: "1",
 	"language?": "'system' | 'en' | 'zh-CN'",
 	"autoFetchFrequency?": "string",
-	"autoUpdate?": "boolean",
 	"commentAnnotations?": "boolean",
 	"diffBackground?": "boolean",
 	"diffFontFamily?": "string",
@@ -82,8 +81,10 @@ export const readSettings = async (): Promise<GUISettings> => {
 
 		return cfg;
 	} catch (e) {
-		// oxlint-disable-next-line no-console
-		console.warn(e);
+		if (!(e instanceof Error && "code" in e && e.code === "ENOENT")) {
+			// oxlint-disable-next-line no-console
+			console.warn(e);
+		}
 
 		return emptySettings;
 	}

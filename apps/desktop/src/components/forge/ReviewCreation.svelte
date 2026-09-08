@@ -236,7 +236,6 @@
 				draft: params.draft,
 				localBranchName: params.branchName,
 				upstreamName: params.upstreamBranchName,
-				posthogLabel: forgeInfo?.posthogLabel,
 			});
 
 			// The PR association is now derived from the forge review cache (the
@@ -358,7 +357,6 @@
 			{projectId}
 			disabled={isExecuting}
 			initialValue={$prBody}
-			enableFileUpload
 			enableSmiles
 			placeholder={$i18nMessages.t("desktop:ReviewCreation.valueDescription", {
 				reviewUnitAbbr: String(reviewUnitAbbr),

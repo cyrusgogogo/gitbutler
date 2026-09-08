@@ -44,7 +44,6 @@ impl From<AiKeyOption> for String {
     fn from(value: AiKeyOption) -> Self {
         match value {
             AiKeyOption::BringYourOwn => "Bring your own key".to_string(),
-            AiKeyOption::ButlerApi => "Use GitButler API".to_string(),
         }
     }
 }
@@ -1478,7 +1477,7 @@ fn ai_config_non_interactive(
             api_key,
             api_key_env,
         } => {
-            let selected_key_option = key_option.unwrap_or(AiKeyOption::ButlerApi);
+            let selected_key_option = key_option.unwrap_or(AiKeyOption::BringYourOwn);
             let secret = resolve_secret_input(api_key, api_key_env)?;
             require_non_interactive_secret_if_byok(selected_key_option, secret.as_ref(), "OpenAI")?;
             apply_openai_config(repo, scope, selected_key_option, model, endpoint, secret)?;
@@ -1490,7 +1489,7 @@ fn ai_config_non_interactive(
             api_key,
             api_key_env,
         } => {
-            let selected_key_option = key_option.unwrap_or(AiKeyOption::ButlerApi);
+            let selected_key_option = key_option.unwrap_or(AiKeyOption::BringYourOwn);
             let secret = resolve_secret_input(api_key, api_key_env)?;
             require_non_interactive_secret_if_byok(
                 selected_key_option,
@@ -1547,52 +1546,28 @@ fn ai_config_interactive(
 
     match provider {
         LLMProviderKind::OpenAi => {
-            let key_options = nonempty::nonempty![
-                ("Use GitButler API", AiKeyOption::ButlerApi),
-                ("Bring your own key", AiKeyOption::BringYourOwn)
-            ];
-            let key_option = inout
-                .prompt_select("Select OpenAI credential source", &key_options)?
-                .copied()
-                .ok_or_else(|| anyhow::anyhow!("Could not determine OpenAI credential source"))?;
+            let key_option = AiKeyOption::BringYourOwn;
 
             let model = inout.prompt("Preferred OpenAI model (leave empty for default):")?;
             let endpoint = inout.prompt("Custom endpoint URL (optional):")?;
 
-            let secret = if matches!(key_option, AiKeyOption::BringYourOwn) {
-                Some(
-                    inout
-                        .prompt_secret("Enter OpenAI API key:")?
-                        .context("No API key provided. Aborting configuration.")?,
-                )
-            } else {
-                None
-            };
+            let secret = Some(
+                inout
+                    .prompt_secret("Enter OpenAI API key:")?
+                    .context("No API key provided. Aborting configuration.")?,
+            );
 
             apply_openai_config(repo, scope, key_option, model, endpoint, secret)?;
         }
         LLMProviderKind::Anthropic => {
-            let key_options = nonempty::nonempty![
-                ("Use GitButler API", AiKeyOption::ButlerApi),
-                ("Bring your own key", AiKeyOption::BringYourOwn)
-            ];
-            let key_option = inout
-                .prompt_select("Select Anthropic credential source", &key_options)?
-                .copied()
-                .ok_or_else(|| {
-                    anyhow::anyhow!("Could not determine Anthropic credential source")
-                })?;
+            let key_option = AiKeyOption::BringYourOwn;
 
             let model = inout.prompt("Preferred Anthropic model (leave empty for default):")?;
-            let secret = if matches!(key_option, AiKeyOption::BringYourOwn) {
-                Some(
-                    inout
-                        .prompt_secret("Enter Anthropic API key:")?
-                        .context("No API key provided. Aborting configuration.")?,
-                )
-            } else {
-                None
-            };
+            let secret = Some(
+                inout
+                    .prompt_secret("Enter Anthropic API key:")?
+                    .context("No API key provided. Aborting configuration.")?,
+            );
 
             apply_anthropic_config(repo, scope, key_option, model, secret)?;
         }
@@ -1726,9 +1701,7 @@ fn apply_openai_config(
         )
     })?;
 
-    if matches!(key_option, AiKeyOption::BringYourOwn) {
-        maybe_set_secret(AI_OPENAI_SECRET_HANDLE, api_key)?;
-    }
+    maybe_set_secret(AI_OPENAI_SECRET_HANDLE, api_key)?;
     Ok(())
 }
 
@@ -1743,9 +1716,7 @@ fn apply_anthropic_config(
         apply_anthropic_configuration(config, key_option.into(), model.as_deref())
     })?;
 
-    if matches!(key_option, AiKeyOption::BringYourOwn) {
-        maybe_set_secret(AI_ANTHROPIC_SECRET_HANDLE, api_key)?;
-    }
+    maybe_set_secret(AI_ANTHROPIC_SECRET_HANDLE, api_key)?;
     Ok(())
 }
 

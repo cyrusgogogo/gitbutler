@@ -11,8 +11,8 @@ use but_core::git_config::edit_config;
 use but_llm::{
     AI_ANTHROPIC_SECRET_HANDLE, AI_OPENAI_SECRET_HANDLE, AI_OPENROUTER_SECRET_HANDLE,
     AiConfiguration as DomainConfiguration, AnthropicConfiguration, CredentialsKeyOption,
-    GITBUTLER_ACCESS_TOKEN_HANDLE, LLMProviderKind, LmStudioConfiguration, OllamaConfiguration,
-    OpenAiConfiguration, clear_ai_configuration,
+    LLMProviderKind, LmStudioConfiguration, OllamaConfiguration, OpenAiConfiguration,
+    clear_ai_configuration,
 };
 use but_secret::{Sensitive, secret};
 use serde::{Deserialize, Serialize};
@@ -30,8 +30,8 @@ pub struct AiConfiguration {
         napi(ts_type = "'openai' | 'anthropic' | 'ollama' | 'lmstudio' | 'openrouter'")
     )]
     pub provider: String,
-    /// Whether OpenAI calls use GitButler's key or the user's own.
-    #[cfg_attr(feature = "napi", napi(ts_type = "'butlerAPI' | 'bringYourOwn'"))]
+    /// Credential source for OpenAI; always the user's own key.
+    #[cfg_attr(feature = "napi", napi(ts_type = "'bringYourOwn'"))]
     pub openai_key_option: String,
     /// The OpenAI model to request.
     pub openai_model: String,
@@ -39,8 +39,8 @@ pub struct AiConfiguration {
     pub openai_custom_endpoint: Option<String>,
     /// Whether an OpenAI key is stored, never the key itself.
     pub openai_has_api_key: bool,
-    /// Whether Anthropic calls use GitButler's key or the user's own.
-    #[cfg_attr(feature = "napi", napi(ts_type = "'butlerAPI' | 'bringYourOwn'"))]
+    /// Credential source for Anthropic; always the user's own key.
+    #[cfg_attr(feature = "napi", napi(ts_type = "'bringYourOwn'"))]
     pub anthropic_key_option: String,
     /// The Anthropic model to request.
     pub anthropic_model: String,
@@ -70,8 +70,8 @@ pub struct AiConfigurationUpdate {
         napi(ts_type = "'openai' | 'anthropic' | 'ollama' | 'lmstudio'")
     )]
     pub provider: String,
-    /// Whether OpenAI calls should use GitButler's key or the user's own.
-    #[cfg_attr(feature = "napi", napi(ts_type = "'butlerAPI' | 'bringYourOwn'"))]
+    /// Credential source for OpenAI; always the user's own key.
+    #[cfg_attr(feature = "napi", napi(ts_type = "'bringYourOwn'"))]
     pub openai_key_option: String,
     /// The OpenAI model to request.
     pub openai_model: String,
@@ -79,8 +79,8 @@ pub struct AiConfigurationUpdate {
     pub openai_custom_endpoint: Option<String>,
     /// A newly entered OpenAI key to store; omitted leaves any stored key alone.
     pub openai_api_key: Option<String>,
-    /// Whether Anthropic calls should use GitButler's key or the user's own.
-    #[cfg_attr(feature = "napi", napi(ts_type = "'butlerAPI' | 'bringYourOwn'"))]
+    /// Credential source for Anthropic; always the user's own key.
+    #[cfg_attr(feature = "napi", napi(ts_type = "'bringYourOwn'"))]
     pub anthropic_key_option: String,
     /// The Anthropic model to request.
     pub anthropic_model: String,
@@ -106,13 +106,7 @@ fn get_configuration() -> Result<AiConfiguration> {
 
     let openai_has_api_key = has_secret(AI_OPENAI_SECRET_HANDLE, secret::Namespace::Global)?;
     let anthropic_has_api_key = has_secret(AI_ANTHROPIC_SECRET_HANDLE, secret::Namespace::Global)?;
-    let has_gitbutler_token =
-        has_secret(GITBUTLER_ACCESS_TOKEN_HANDLE, secret::Namespace::BuildKind)?;
-    let is_configured = configuration.is_configured(
-        openai_has_api_key,
-        anthropic_has_api_key,
-        has_gitbutler_token,
-    );
+    let is_configured = configuration.is_configured(openai_has_api_key, anthropic_has_api_key);
 
     Ok(AiConfiguration {
         provider: configuration.provider.as_git_config_value().into(),

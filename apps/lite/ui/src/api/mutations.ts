@@ -30,7 +30,6 @@ import {
 	splitGeneratedDescription,
 } from "#ui/pr-description-generation.ts";
 import { errorMessageForToast } from "#ui/errors.ts";
-import { oversizedFile, toBase64, UPLOAD_SIZE_LIMIT } from "#ui/uploads.ts";
 import { createDiffSpec, resolveDiffSpecs } from "#ui/operations/diff-specs.ts";
 import {
 	discardChangesToastOptions,
@@ -41,7 +40,6 @@ import { projectSlice } from "#ui/projects/state.ts";
 import { projectAiSettingsQueryOptions } from "#ui/project-ai-settings.ts";
 import { type AppDispatch, useAppDispatch, useAppStore } from "#ui/store.ts";
 import { RelativeTime } from "#ui/components/RelativeTime.tsx";
-import { i18n } from "#ui/i18n.ts";
 import { Toast } from "@base-ui/react";
 import { Match } from "effect";
 import type {
@@ -273,38 +271,6 @@ export const useGeneratePrDescription = () => {
 		meta: { failureTitle: i18nMessage("lite:mutations.failedToGenerateDescription") },
 	});
 };
-
-/**
- * Upload files and return them in the order given, so the markdown they turn
- * into matches the order they were picked or dropped in.
- *
- * One failure fails the batch: a body half-linking a set of screenshots is
- * worse than one the user retries.
- */
-export const useUploadFiles = () =>
-	useMutation({
-		mutationFn: async (files: Array<File>) => {
-			const tooLarge = oversizedFile(files);
-			if (tooLarge !== undefined) {
-				throw i18n.error("lite:upload.tooLarge", {
-					name: tooLarge.name,
-					size: (tooLarge.size / (1024 * 1024)).toFixed(1),
-					limit: UPLOAD_SIZE_LIMIT / (1024 * 1024),
-				});
-			}
-
-			return Promise.all(
-				files.map(async (file) =>
-					window.lite.uploadFile({
-						filename: file.name,
-						content_type: file.type === "" ? null : file.type,
-						data_base64: await toBase64(file),
-					}),
-				),
-			);
-		},
-		meta: { failureTitle: i18nMessage("lite:mutations.failedToUploadFiles") },
-	});
 
 export const useUpdateReview = (projectId: string) =>
 	useMutation({

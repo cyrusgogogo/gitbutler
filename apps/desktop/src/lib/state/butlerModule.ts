@@ -67,32 +67,6 @@ type CustomEndpoints<T> = {
 	[x: string]: EndpointDefinition<any, any, any, any> & { [K in keyof T]: T[K] };
 };
 
-function isObjectWithActionName(value: unknown): value is { actionName: string } {
-	return (
-		value !== null &&
-		typeof value === "object" &&
-		"actionName" in value &&
-		typeof value.actionName === "string"
-	);
-}
-
-function isObjectWithCommand(value: unknown): value is { command: string } {
-	return (
-		value !== null &&
-		typeof value === "object" &&
-		"command" in value &&
-		typeof value.command === "string"
-	);
-}
-
-function extractActionName(extraOptions: unknown): string | undefined {
-	return isObjectWithActionName(extraOptions) ? extraOptions.actionName : undefined;
-}
-
-function extractCommand(extraOptions: unknown): string | undefined {
-	return isObjectWithCommand(extraOptions) ? extraOptions.command : undefined;
-}
-
 export type ExtensionDefinitions = ApiModules<
 	TauriBaseQueryFn,
 	CustomEndpoints<
@@ -124,13 +98,9 @@ export function butlerModule(ctx: HookContext): Module<ButlerModule> {
 				injectEndpoint(endpointName, definition) {
 					const endpoint = typedApi.endpoints[endpointName]!; // Known to exist.
 					if (isQueryDefinition(definition)) {
-						const command = extractCommand(definition.extraOptions);
-						const actionName = extractActionName(definition.extraOptions);
 						const { fetch, useQuery, useQueryState, useQueries, useQueryTimeStamp } =
 							buildQueryHooks({
 								endpointName,
-								command,
-								actionName,
 								api,
 								ctx,
 							});
@@ -140,13 +110,8 @@ export function butlerModule(ctx: HookContext): Module<ButlerModule> {
 						endpoint.useQueries = useQueries;
 						endpoint.useQueryTimeStamp = useQueryTimeStamp;
 					} else if (isMutationDefinition(definition)) {
-						const actionName = extractActionName(definition.extraOptions);
-						const command = extractCommand(definition.extraOptions);
-
 						const { mutate, useMutation } = buildMutationHook({
 							endpointName,
-							actionName,
-							command,
 							api,
 							ctx,
 						});

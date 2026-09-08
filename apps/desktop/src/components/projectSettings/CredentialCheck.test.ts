@@ -1,26 +1,14 @@
 import CredentialCheck from "$components/projectSettings/CredentialCheck.svelte";
 import { GIT_CONFIG_SERVICE } from "$lib/config/gitConfigService";
-import { OnboardingEvent, POSTHOG_WRAPPER } from "$lib/telemetry/posthog";
-import { render, screen, waitFor } from "@testing-library/svelte";
+import { render, screen } from "@testing-library/svelte";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, test, vi } from "vitest";
 import type { GitConfigService } from "$lib/config/gitConfigService";
 import type { NormalizedError } from "$lib/error/normalizedError";
-import type { PostHogWrapper } from "$lib/telemetry/posthog";
 
 const projectId = "private-project";
 const remoteName = "private-remote";
 const branchName = "private-branch";
-const safeAuthError = {
-	name: "Git credential check failed",
-	message: "Authentication failed. Check that your git credentials are configured correctly.",
-	code: "ProjectGitAuth",
-};
-const safeUnknownError = {
-	name: "Git credential check failed",
-	message: "Git credential check failed.",
-	code: "Unknown",
-};
 
 function renderCredentialCheck({
 	fetchError,
@@ -37,78 +25,64 @@ function renderCredentialCheck({
 			if (pushError) throw pushError;
 		}),
 	} as unknown as GitConfigService;
-	const posthog = {
-		capture: vi.fn(),
-		captureOnboarding: vi.fn(),
-	} as unknown as PostHogWrapper;
-	const context = new Map<any, any>([
-		[GIT_CONFIG_SERVICE._key, gitConfig],
-		[POSTHOG_WRAPPER._key, posthog],
-	]);
+	const context = new Map<any, any>([[GIT_CONFIG_SERVICE._key, gitConfig]]);
 
 	render(CredentialCheck, {
 		props: { projectId, remoteName, branchName, disabled: false },
 		context,
 	});
 
-	return { gitConfig, posthog };
+	return { gitConfig };
 }
 
-describe("CredentialCheck telemetry", () => {
-	test("reports a normalized fetch failure with only its safe stage", async () => {
+describe("CredentialCheck", () => {
+	test("keeps a fetch failure visible and does not attempt push", async () => {
 		const error: NormalizedError = {
 			origin: "ipc",
 			name: "Git fetch failed",
 			message: "Credential helper failed for https://secret@example.com/private/repository.git",
 			code: "ProjectGitAuth",
 		};
-		const { gitConfig, posthog } = renderCredentialCheck({ fetchError: error });
+		const { gitConfig } = renderCredentialCheck({ fetchError: error });
 		const user = userEvent.setup();
 
 		await user.click(screen.getByRole("button"));
+		await screen.findByRole("button", { name: "Re-test credentials" });
+		expect(gitConfig.checkGitFetch).toHaveBeenCalledWith(projectId, remoteName);
 
-		await waitFor(() =>
-			expect(posthog.captureOnboarding).toHaveBeenCalledWith(
-				OnboardingEvent.GitCheckCredentialsFailed,
-				safeAuthError,
-				{ stage: "fetch" },
-			),
-		);
-		expect(posthog.captureOnboarding).toHaveBeenCalledTimes(1);
+		expect(screen.getByText("There was a problem with your credentials")).toBeInTheDocument();
+		expect(screen.getByText(error.message, { exact: false })).toBeInTheDocument();
 		expect(gitConfig.checkGitPush).not.toHaveBeenCalled();
 	});
 
-	test("reports a normalized push failure with only its safe stage", async () => {
+	test("keeps a push failure visible", async () => {
 		const error: NormalizedError = {
 			origin: "ipc",
 			name: "Git push failed",
 			message: "Credential helper failed for /private/repository on private-branch",
 			code: "Unknown",
 		};
-		const { posthog } = renderCredentialCheck({ pushError: error });
-		const user = userEvent.setup();
-
-		await user.click(screen.getByRole("button"));
-
-		await waitFor(() =>
-			expect(posthog.captureOnboarding).toHaveBeenCalledWith(
-				OnboardingEvent.GitCheckCredentialsFailed,
-				safeUnknownError,
-				{ stage: "push" },
-			),
-		);
-		expect(posthog.captureOnboarding).toHaveBeenCalledTimes(1);
-	});
-
-	test("does not report a failure when both checks pass", async () => {
-		const { posthog } = renderCredentialCheck();
+		const { gitConfig } = renderCredentialCheck({ pushError: error });
 		const user = userEvent.setup();
 
 		await user.click(screen.getByRole("button"));
 		await screen.findByRole("button", { name: "Re-test credentials" });
+		expect(gitConfig.checkGitFetch).toHaveBeenCalledWith(projectId, remoteName);
 
-		expect(posthog.capture).toHaveBeenCalledWith(OnboardingEvent.GitCheckCredentials);
-		expect(posthog.capture).toHaveBeenCalledTimes(1);
-		expect(posthog.captureOnboarding).not.toHaveBeenCalled();
+		expect(screen.getByText("There was a problem with your credentials")).toBeInTheDocument();
+		expect(screen.getByText(error.message, { exact: false })).toBeInTheDocument();
+		expect(gitConfig.checkGitPush).toHaveBeenCalledWith(projectId, remoteName, branchName);
+	});
+
+	test("shows success when both checks pass", async () => {
+		const { gitConfig } = renderCredentialCheck();
+		const user = userEvent.setup();
+
+		await user.click(screen.getByRole("button"));
+		await screen.findByRole("button", { name: "Re-test credentials" });
+		expect(gitConfig.checkGitFetch).toHaveBeenCalledWith(projectId, remoteName);
+
+		expect(screen.getByText("All checks passed successfully")).toBeInTheDocument();
+		expect(gitConfig.checkGitPush).toHaveBeenCalledWith(projectId, remoteName, branchName);
 	});
 });

@@ -19,7 +19,6 @@ pub const AI_OPENROUTER_ENDPOINT_KEY: &str = "gitbutler.aiOpenRouterEndpoint";
 pub const AI_OPENAI_SECRET_HANDLE: &str = "aiOpenAIKey";
 pub const AI_ANTHROPIC_SECRET_HANDLE: &str = "aiAnthropicKey";
 pub const AI_OPENROUTER_SECRET_HANDLE: &str = "aiOpenRouterKey";
-pub const GITBUTLER_ACCESS_TOKEN_HANDLE: &str = "gitbutler_access_token";
 
 pub const DEFAULT_OPENAI_MODEL: &str = "gpt-5.4-nano";
 pub const DEFAULT_ANTHROPIC_MODEL: &str = "claude-haiku-4-5";
@@ -83,12 +82,12 @@ impl Default for AiConfiguration {
         Self {
             provider: LLMProviderKind::OpenAi,
             openai: OpenAiConfiguration {
-                key_option: CredentialsKeyOption::ButlerApi,
+                key_option: CredentialsKeyOption::BringYourOwn,
                 model: DEFAULT_OPENAI_MODEL.into(),
                 custom_endpoint: None,
             },
             anthropic: AnthropicConfiguration {
-                key_option: CredentialsKeyOption::ButlerApi,
+                key_option: CredentialsKeyOption::BringYourOwn,
                 model: DEFAULT_ANTHROPIC_MODEL.into(),
             },
             ollama: OllamaConfiguration {
@@ -155,12 +154,11 @@ impl AiConfiguration {
         required(&self.lmstudio.model, "LM Studio model")?;
         validate_ollama_endpoint(&self.ollama.endpoint)?;
         validate_url(&self.lmstudio.endpoint, "LM Studio endpoint")?;
-        if self.openai.key_option == CredentialsKeyOption::BringYourOwn
-            && let Some(endpoint) = self
-                .openai
-                .custom_endpoint
-                .as_deref()
-                .filter(|endpoint| !endpoint.trim().is_empty())
+        if let Some(endpoint) = self
+            .openai
+            .custom_endpoint
+            .as_deref()
+            .filter(|endpoint| !endpoint.trim().is_empty())
         {
             validate_url(endpoint, "OpenAI custom endpoint")?;
         }
@@ -171,9 +169,7 @@ impl AiConfiguration {
         match self.provider {
             LLMProviderKind::OpenAi => {
                 required(&self.openai.model, "OpenAI model")?;
-                if self.openai.key_option == CredentialsKeyOption::BringYourOwn
-                    && let Some(endpoint) = nonempty(self.openai.custom_endpoint.as_deref())
-                {
+                if let Some(endpoint) = nonempty(self.openai.custom_endpoint.as_deref()) {
                     validate_url(endpoint, "OpenAI custom endpoint")?;
                 }
             }
@@ -194,24 +190,13 @@ impl AiConfiguration {
     }
 
     /// Return whether the active provider has valid settings and its required credentials.
-    pub fn is_configured(
-        &self,
-        has_openai_key: bool,
-        has_anthropic_key: bool,
-        has_gitbutler_token: bool,
-    ) -> bool {
+    pub fn is_configured(&self, has_openai_key: bool, has_anthropic_key: bool) -> bool {
         if self.validate_active().is_err() {
             return false;
         }
         match self.provider {
-            LLMProviderKind::OpenAi => match self.openai.key_option {
-                CredentialsKeyOption::BringYourOwn => has_openai_key,
-                CredentialsKeyOption::ButlerApi => has_gitbutler_token,
-            },
-            LLMProviderKind::Anthropic => match self.anthropic.key_option {
-                CredentialsKeyOption::BringYourOwn => has_anthropic_key,
-                CredentialsKeyOption::ButlerApi => has_gitbutler_token,
-            },
+            LLMProviderKind::OpenAi => has_openai_key,
+            LLMProviderKind::Anthropic => has_anthropic_key,
             LLMProviderKind::Ollama | LLMProviderKind::LMStudio => true,
             LLMProviderKind::OpenRouter => false,
         }
@@ -475,16 +460,10 @@ mod tests {
     }
 
     #[test]
-    fn custom_openai_endpoint_only_applies_to_own_keys() {
+    fn custom_openai_endpoint_must_be_valid() {
         let mut configuration = AiConfiguration::default();
         configuration.openai.custom_endpoint = Some("not a URL".into());
 
-        assert!(
-            configuration.validate().is_ok(),
-            "the GitButler proxy ignores custom endpoints"
-        );
-
-        configuration.openai.key_option = CredentialsKeyOption::BringYourOwn;
         assert!(
             configuration.validate().is_err(),
             "own-key endpoints must remain valid URLs"
@@ -495,35 +474,31 @@ mod tests {
     fn configured_requires_the_active_providers_credentials() {
         let mut config = AiConfiguration::default();
         assert!(
-            !config.is_configured(false, false, false),
-            "GitButler-proxied OpenAI needs an account token"
-        );
-        assert!(
-            config.is_configured(false, false, true),
-            "an account token configures GitButler-proxied OpenAI"
+            !config.is_configured(false, false),
+            "OpenAI needs the user's own key"
         );
 
         config.openai.key_option = CredentialsKeyOption::BringYourOwn;
         assert!(
-            config.is_configured(true, false, false),
+            config.is_configured(true, false),
             "BYOK OpenAI needs only its own key"
         );
 
         config.provider = LLMProviderKind::Anthropic;
         config.anthropic.key_option = CredentialsKeyOption::BringYourOwn;
         assert!(
-            config.is_configured(false, true, false),
+            config.is_configured(false, true),
             "BYOK Anthropic needs its own key"
         );
 
         config.provider = LLMProviderKind::Ollama;
         assert!(
-            config.is_configured(false, false, false),
+            config.is_configured(false, false),
             "a valid local provider needs no credentials"
         );
         config.ollama.endpoint.clear();
         assert!(
-            !config.is_configured(false, false, false),
+            !config.is_configured(false, false),
             "an invalid local provider is not configured"
         );
     }

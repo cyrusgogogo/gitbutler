@@ -18,7 +18,7 @@ use but_api::{
 };
 use but_settings::AppSettingsWithDiskSync;
 use gitbutler_tauri::{
-    WindowState, askpass, csp::csp_with_extras, env, logs, menu, projects, settings, zip,
+    WindowState, askpass, csp::csp_with_extras, env, logs, menu, projects, settings,
 };
 use tauri::{Emitter, Manager, generate_context};
 use tauri_plugin_deep_link::DeepLinkExt;
@@ -54,19 +54,6 @@ fn main() -> anyhow::Result<()> {
     std::fs::create_dir_all(&config_dir).expect("failed to create config dir");
     let custom_settings = cfg!(feature = "packaged-but-distribution")
         .then(but_settings::customization::packaged_but_binary);
-    // While it serves a function, this behavior is sub-optimal. The proper solution is to decouple:
-    // - Checking for updates from
-    // - Performing an update
-    // This way people can be informed that there is an update even if self-updating is not possible (i.e. installed via package manager).
-    let custom_settings = if cfg!(feature = "disable-auto-updates") {
-        but_settings::customization::merge_two(
-            but_settings::customization::disable_auto_update_checks(),
-            custom_settings,
-        )
-        .into()
-    } else {
-        custom_settings
-    };
     let mut app_settings =
         AppSettingsWithDiskSync::new_with_customization(config_dir.clone(), custom_settings)
             .expect("failed to create app settings");
@@ -169,11 +156,6 @@ fn main() -> anyhow::Result<()> {
                     }
                 })?;
 
-                let archival = but_feedback::Archival {
-                    cache_dir: app_cache_dir.clone(),
-                    logs_dir: app_log_dir.clone(),
-                };
-                app_handle.manage(archival);
                 app_handle.manage(app_settings);
 
                 tauri_app.on_menu_event(move |handle, event| {
@@ -209,7 +191,6 @@ fn main() -> anyhow::Result<()> {
             .plugin(tauri_plugin_os::init())
             .plugin(tauri_plugin_process::init())
             .plugin(tauri_plugin_deep_link::init())
-            .plugin(tauri_plugin_updater::Builder::new().build())
             .plugin(tauri_plugin_dialog::init())
             .plugin(tauri_plugin_fs::init())
             .plugin(tauri_plugin_clipboard_manager::init())
@@ -258,13 +239,6 @@ fn main() -> anyhow::Result<()> {
                 legacy::git::tauri_git_test_push::git_test_push,
                 legacy::git::tauri_git_test_fetch::git_test_fetch,
                 legacy::git::tauri_git_index_size::git_index_size,
-                legacy::users::tauri_set_user::set_user,
-                legacy::users::tauri_delete_user::delete_user,
-                legacy::users::tauri_get_user::get_user,
-                legacy::users::tauri_get_login_token::get_login_token,
-                legacy::users::tauri_login_with_token::login_with_token,
-                legacy::users::tauri_get_user_profile::get_user_profile,
-                legacy::users::tauri_update_user_profile::update_user_profile,
                 legacy::projects::tauri_add_project::add_project,
                 legacy::projects::tauri_add_project_best_effort::add_project_best_effort,
                 legacy::projects::tauri_get_project::get_project,
@@ -358,9 +332,6 @@ fn main() -> anyhow::Result<()> {
                 projects::server_capabilities,
                 projects::set_project_active,
                 projects::open_project_in_window,
-                zip::get_logs_archive_path,
-                zip::get_project_archive_path,
-                zip::get_anonymous_graph_path,
                 settings::get_app_settings,
                 settings::update_onboarding_complete,
                 settings::update_telemetry,

@@ -1,17 +1,16 @@
 <script lang="ts">
 	import CommitFailedModalContent from "$components/commit/CommitFailedModalContent.svelte";
-	import LoginConfirmationModalContent from "$components/onboarding/LoginConfirmationModalContent.svelte";
+
 	import AuthorMissingModalContent from "$components/settings/AuthorMissingModalContent.svelte";
 	import GeneralSettingsModalContent from "$components/settings/GeneralSettingsModalContent.svelte";
 	import ProjectSettingsModalContent from "$components/settings/ProjectSettingsModalContent.svelte";
 	import { type GlobalModalState, UI_STATE } from "$lib/state/uiState.svelte";
-	import { USER_SERVICE } from "$lib/user/userService.svelte";
+
 	import { inject } from "@gitbutler/core/context";
 	import { Modal, TestId } from "@gitbutler/ui";
 	import type { ModalProps } from "@gitbutler/ui";
 
 	const uiState = inject(UI_STATE);
-	const userService = inject(USER_SERVICE);
 
 	type ModalData = {
 		state: GlobalModalState;
@@ -66,18 +65,6 @@
 					},
 				};
 			}
-			case "login-confirmation": {
-				return {
-					state: modalState,
-					props: {
-						testId: TestId.LoginConfirmationModal,
-						closeButton: false,
-						width: 360,
-						noPadding: true,
-						preventCloseOnClickOutside: true,
-					},
-				};
-			}
 		}
 	}
 
@@ -107,14 +94,6 @@
 	});
 
 	function handleModalClose() {
-		// If the login confirmation modal is closed without explicit user action (e.g., via ESC),
-		// we should reject the incoming user to maintain state consistency.
-		// We check if there's still an incoming user to avoid calling reject after accept/reject buttons.
-		if (stableModalData?.state.type === "login-confirmation") {
-			if (userService.incomingUserLogin) {
-				userService.rejectIncomingUser();
-			}
-		}
 		uiState.global.modal.set(undefined);
 	}
 
@@ -148,8 +127,6 @@
 			<GeneralSettingsModalContent data={stableModalData.state} />
 		{:else if stableModalData.state.type === "project-settings"}
 			<ProjectSettingsModalContent data={stableModalData.state} />
-		{:else if stableModalData.state.type === "login-confirmation"}
-			<LoginConfirmationModalContent data={stableModalData.state} close={closeModal} />
 		{/if}
 	</Modal>
 {/if}

@@ -40,20 +40,9 @@ export const generalSettingsPages = [
 		icon: "ai",
 	},
 	{
-		id: "telemetry",
-		label: message("desktop:settings.telemetry"),
-		icon: "chart-bar-x",
-	},
-	{
 		id: "experimental",
 		label: message("desktop:settings.experimental"),
 		icon: "lab",
-	},
-	{
-		id: "organizations",
-		label: message("desktop:settings.organizations"),
-		icon: "factory",
-		adminOnly: true,
 	},
 ] as const satisfies readonly SettingsPage[];
 

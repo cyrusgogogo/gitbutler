@@ -413,11 +413,6 @@ export const terminalsQueryOptions = queryOptions({
 	staleTime: Number.POSITIVE_INFINITY,
 });
 
-export const userProfileQueryOptions = queryOptions({
-	queryKey: ["userProfile"],
-	queryFn: () => window.lite.getUserProfileLocal(),
-});
-
 export const aiConfigurationQueryOptions = queryOptions({
 	queryKey: ["aiConfiguration"],
 	queryFn: () => window.lite.getAiConfiguration(),
@@ -444,14 +439,16 @@ export const listProjectsQueryOptions = queryOptions({
 });
 
 /**
- * Repo-level metadata from the forge for one project. Needs forge credentials
- * and a recognised remote, so it fails for a purely local repo — callers treat
- * a failure as "not known" rather than an error worth showing.
+ * Repo-level metadata is optional. Reuse the forge's capabilities before
+ * requesting it so local repositories and unsupported hosts need no request.
  */
 export const repoInfoQueryOptions = (projectId: string) =>
 	queryOptions({
 		queryKey: [projectId, "getRepoInfo"],
-		queryFn: () => window.lite.getRepoInfo(projectId),
+		queryFn: async ({ client }) => {
+			const forge = await client.ensureQueryData(forgeInfoOptions(projectId));
+			return forge?.capabilities.repoInfo ? window.lite.getRepoInfo(projectId) : null;
+		},
 		// Visibility and permissions change on the forge, not here, so there is
 		// nothing local to invalidate on — age it out instead.
 		staleTime: 60 * 60_000,

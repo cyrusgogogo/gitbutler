@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { goto } from "$app/navigation";
-	import ProfileButton from "$components/shared/ProfileButton.svelte";
-	import ShareIssueModal from "$components/shared/ShareIssueModal.svelte";
+
 	import {
 		branchesPath,
 		isBranchesPath,
@@ -23,7 +22,6 @@
 
 	let contextTriggerButton = $state<HTMLButtonElement | undefined>();
 	let contextMenuOpen = $state(false);
-	let shareIssueModal = $state<ShareIssueModal>();
 
 	const uiState = inject(UI_STATE);
 	const { openGeneralSettings, openProjectSettings } = useSettingsModal();
@@ -214,23 +212,8 @@
 					{/snippet}
 				</Button>
 			</div>
-
-			<ProfileButton />
 		</div>
-		<div class="bottom__ghost-actions">
-			<Button
-				icon="mail"
-				kind="ghost"
-				tooltip={$i18nMessages.t("desktop:AppSidebar.shareFeedback")}
-				tooltipPosition="top"
-				tooltipAlign="start"
-				width={34}
-				class="faded-btn"
-				onclick={() => {
-					shareIssueModal?.show();
-				}}
-			/>
-		</div>
+		<div class="bottom__ghost-actions"></div>
 	</div>
 </div>
 
@@ -279,8 +262,6 @@
 		</ContextMenuSection>
 	</ContextMenu>
 {/if}
-
-<ShareIssueModal bind:this={shareIssueModal} />
 
 <style lang="postcss">
 	.sidebar {

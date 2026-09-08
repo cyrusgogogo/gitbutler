@@ -27,7 +27,6 @@ pub mod debug;
 pub mod projects;
 
 pub mod settings;
-pub mod zip;
 
 pub mod env;
 

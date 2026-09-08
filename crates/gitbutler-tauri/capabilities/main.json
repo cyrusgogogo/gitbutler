@@ -18,7 +18,6 @@
 		"process:default",
 		"shell:allow-open",
 		"store:default",
-		"updater:default",
 		"clipboard-manager:allow-read-text",
 		"clipboard-manager:allow-write-text",
 		"deep-link:default"

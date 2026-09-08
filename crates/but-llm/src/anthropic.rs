@@ -11,13 +11,12 @@ use schemars::{JsonSchema, schema_for};
 use serde::de::DeserializeOwned;
 
 use crate::{
-    AI_ANTHROPIC_SECRET_HANDLE, GITBUTLER_ACCESS_TOKEN_HANDLE, StreamToolCallResult, ToolCall,
-    ToolCallContent, ToolResponseContent, chat::ChatMessage, client::LLMClient,
+    AI_ANTHROPIC_SECRET_HANDLE, StreamToolCallResult, ToolCall, ToolCallContent,
+    ToolResponseContent, chat::ChatMessage, client::LLMClient,
 };
 
 const ANTHROPIC_API_BASE: &str = "https://api.anthropic.com/v1";
 const ANTHROPIC_VERSION: &str = "2023-06-01";
-pub const GB_ANTHROPIC_API_BASE: &str = "https://app.gitbutler.com/api/proxy/anthropic";
 
 /// Result of a tool calling loop with streaming
 pub struct ConversationResult {
@@ -29,17 +28,15 @@ pub struct ConversationResult {
 pub enum CredentialsKind {
     EnvVarAnthropicKey,
     OwnAnthropicKey,
-    GitButlerProxied,
 }
 
 #[derive(Debug, Clone)]
 pub struct AnthropicClient {
-    kind: CredentialsKind,
     client: reqwest::Client,
 }
 
 impl AnthropicClient {
-    pub fn new(kind: CredentialsKind, credentials: &Sensitive<String>) -> Result<Self> {
+    pub fn new(credentials: &Sensitive<String>) -> Result<Self> {
         let mut headers = HeaderMap::new();
         headers.insert(CONTENT_TYPE, HeaderValue::from_static("application/json"));
         headers.insert(
@@ -58,7 +55,7 @@ impl AnthropicClient {
             .default_headers(headers)
             .build()?;
 
-        Ok(Self { kind, client })
+        Ok(Self { client })
     }
 
     /// Send a message request to the Anthropic Messages API
@@ -69,7 +66,7 @@ impl AnthropicClient {
     }
 
     async fn message_raw(&self, request: &AnthropicRequest) -> Result<Response> {
-        let api_base = self.api_base();
+        let api_base = ANTHROPIC_API_BASE;
         let response = self
             .client
             .post(format!("{api_base}/messages"))
@@ -85,13 +82,6 @@ impl AnthropicClient {
 
         Ok(response)
     }
-
-    fn api_base(&self) -> &str {
-        match self.kind {
-            CredentialsKind::GitButlerProxied => GB_ANTHROPIC_API_BASE,
-            _ => ANTHROPIC_API_BASE,
-        }
-    }
 }
 
 #[derive(Debug, Clone)]
@@ -106,11 +96,9 @@ impl AnthropicProvider {
             match kind {
                 CredentialsKind::EnvVarAnthropicKey => AnthropicProvider::anthropic_env_var_creds(),
                 CredentialsKind::OwnAnthropicKey => AnthropicProvider::anthropic_own_key_creds(),
-                CredentialsKind::GitButlerProxied => AnthropicProvider::gitbutler_proxied_creds(),
             }
         } else {
-            AnthropicProvider::gitbutler_proxied_creds()
-                .or_else(|_| AnthropicProvider::anthropic_own_key_creds())
+            AnthropicProvider::anthropic_own_key_creds()
                 .or_else(|_| AnthropicProvider::anthropic_env_var_creds())
                 .context("No Anthropic credentials found. This can be configured in the app or read from a ANTHROPIC_API_KEY environment variable")
         };
@@ -126,21 +114,12 @@ impl AnthropicProvider {
 
     pub fn client(&self) -> Result<AnthropicClient> {
         let credentials = &self.credentials.1;
-        let kind = self.credentials.0.clone();
-        AnthropicClient::new(kind, credentials)
+        AnthropicClient::new(credentials)
     }
 
     pub fn credentials_kind(&self) -> CredentialsKind {
         self.credentials.0.clone()
     }
-    fn gitbutler_proxied_creds() -> Result<(CredentialsKind, Sensitive<String>)> {
-        let creds = secret::retrieve(GITBUTLER_ACCESS_TOKEN_HANDLE, secret::Namespace::BuildKind)?
-            .ok_or(anyhow::anyhow!(
-                "No GitButler token available. Log-in to use the GitButler Anthropic provider"
-            ))?;
-        Ok((CredentialsKind::GitButlerProxied, creds))
-    }
-
     fn anthropic_own_key_creds() -> Result<(CredentialsKind, Sensitive<String>)> {
         let creds = secret::retrieve(AI_ANTHROPIC_SECRET_HANDLE, secret::Namespace::Global)?
             .ok_or(anyhow::anyhow!(
