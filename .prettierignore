@@ -32,3 +32,6 @@ apps/lite/resources/icons/
 apps/lite/resources/icons-dev/
 
 apps/lite/release
+
+# Git symlink targets must not acquire a trailing newline on Windows checkouts.
+apps/lite/CLAUDE.md
